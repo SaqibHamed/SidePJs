@@ -2,14 +2,19 @@
 <html lang="de">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sectors</title>
+    <title>Sectors mit Bildern</title>
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0;
             padding: 20px;
             display: flex;
             justify-content: center;
             background: #222;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         }
 
         .mainbody {
@@ -18,23 +23,22 @@
             gap: 10px;
             width: 80%;
             max-width: 900px;
-            background-color: aqua;
-            border: 10px solid black;
+            background-color: rgb(223, 223, 223);
             padding: 10px;
         }
 
         .sectors {
-            background-color: blue;
-            border: 2px dashed pink;
+            border-radius: 5px;
             color: white;
-            font-size: 1.5rem;
-            border-radius: 15px;
             display: flex;
             align-items: center;
             justify-content: center;
 
             /* Verhältnis Höhe : Breite = 5 : 4 */
             aspect-ratio: 5 / 4;
+
+            position: relative;
+            overflow: hidden;
         }
 
         .sectors.big {
@@ -42,17 +46,38 @@
             grid-column-end: span 2;
             grid-row-end: span 2;
         }
+
+        .sectors img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* Optional: Nummer oben links anzeigen */
+        .sectors::after {
+            content: attr(data-id);
+            position: absolute;
+            top: 4px;
+            left: 6px;
+            padding: 2px 6px;
+            font-size: 0.8rem;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
     <div class="mainbody" id="mainbody"></div>
 
     <script>
+        // Einstellungen
         const COLS = 4;
         const TOTAL_SECTORS = 26;
         const BIG_SECTORS = 2;
+        const IMAGE_BASE_PATH = 'img';  // Ordnerpfad anpassen
 
-        // Wieviele Zellen braucht das Grid insgesamt?
+        // Gesamtanzahl Zellen im Grid:
         // 1 normaler Sector = 1 Zelle
         // 1 großer Sector (2x2) = 4 Zellen = 1 Element + 3 extra Zellen
         const totalCells = TOTAL_SECTORS + 3 * BIG_SECTORS; // 26 + 6 = 32
@@ -108,7 +133,7 @@
                         // nur oben links erzeugen wir das große Element
                         sectorsConfig.push({
                             id,
-                            rowStart: r + 1,   // Grid ist 1-basiert
+                            rowStart: r + 1,   // CSS Grid ist 1-basiert
                             colStart: c + 1,
                             big: true
                         });
@@ -133,7 +158,6 @@
             console.warn('Anzahl der erzeugten Sectors stimmt nicht:', sectorsConfig.length);
         }
 
-        // DOM erzeugen
         const mainbody = document.getElementById('mainbody');
 
         sectorsConfig.forEach(cfg => {
@@ -141,8 +165,22 @@
             div.classList.add('sectors');
             if (cfg.big) div.classList.add('big');
 
-            // Nummer anzeigen (z.B. 01, 02, 03, ...)
-            div.textContent = String(cfg.id).padStart(2, '0');
+            // Nummer für Debug / Overlay
+            const idStr = String(cfg.id).padStart(2, '0');
+            div.dataset.id = idStr;
+
+            // Bild-Element erstellen
+            const img = document.createElement('img');
+
+            // Erst .jpg probieren, wenn Fehler → .png
+            img.src = `${IMAGE_BASE_PATH}/${idStr}.jpg`;
+            img.alt = `Bild ${idStr}`;
+            img.onerror = () => {
+                img.onerror = null; // Endlosschleife vermeiden
+                img.src = `${IMAGE_BASE_PATH}/${idStr}.png`;
+            };
+
+            div.appendChild(img);
 
             // Position im Grid explizit setzen
             div.style.gridRowStart = cfg.rowStart;
