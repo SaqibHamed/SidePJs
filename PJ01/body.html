@@ -118,6 +118,7 @@
         }
 
         .badge-id {
+            color: white;
             font-weight: 600;
             background: rgba(0, 0, 0, 0.8);
             border-color: rgba(255, 255, 255, 0.9);
@@ -326,432 +327,431 @@
     </div>
 
     <script>
-        // =========================
-        // Grundeinstellungen
-        // =========================
-        const COLS = 4;
-        const TOTAL_SECTORS = 26;
-        const BIG_SECTORS = 2;
-        const IMAGE_BASE_PATH = 'img';
+    const COLS = 4;
+    const TOTAL_SECTORS = 26;
+    const BIG_SECTORS = 2;
+    const IMAGE_BASE_PATH = 'img';
 
-        // Sounds
-        const downloadSound = new Audio('download.mp3'); // Kopieren
-        const hoverSound    = new Audio('hover.mp3');    // Hover
-        const selectSound   = new Audio('select.mp3');   // Klick normal
-        const bigSound      = new Audio('big.mp3');      // Klick groß
-        const closeSound    = new Audio('close.mp3');    // Viewer schließen
-        const nextSound     = new Audio('next.mp3');     // Navigation
-        const errorSound    = new Audio('error.mp3');    // Klick auf disabled Tab
+    // Sounds
+    const downloadSound = new Audio('download.mp3'); // Kopieren
+    const hoverSound    = new Audio('hover.mp3');    // Hover
+    const selectSound   = new Audio('select.mp3');   // Klick normal
+    const bigSound      = new Audio('big.mp3');      // Klick groß
+    const closeSound    = new Audio('close.mp3');    // Viewer schließen
+    const nextSound     = new Audio('next.mp3');     // Navigation
+    const errorSound    = new Audio('error.mp3');    // Klick auf disabled Tab
 
-        function playSound(audio) {
-            if (!audio) return;
-            try {
-                audio.currentTime = 0;
-                audio.play();
-            } catch (e) {
-                console.warn('Sound konnte nicht abgespielt werden:', e);
+    function playSound(audio) {
+        if (!audio) return;
+        try {
+            audio.currentTime = 0;
+            audio.play();
+        } catch (e) {
+            console.warn('Sound konnte nicht abgespielt werden:', e);
+        }
+    }
+
+    // Tabs: disabled → error.mp3 + roter Flash
+    document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            if (tab.classList.contains('disabled')) {
+                playSound(errorSound);
+                tab.classList.add('error-flash');
+                setTimeout(() => {
+                    tab.classList.remove('error-flash');
+                }, 180);
+                return;
             }
-        }
-
-        // Tabs: disabled → error.mp3
-        document.querySelectorAll('.tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-        if (tab.classList.contains('disabled')) {
-            playSound(errorSound);
-
-            // roten Flash hinzufügen
-            tab.classList.add('error-flash');
-            setTimeout(() => {
-                tab.classList.remove('error-flash');
-            }, 180); // Dauer des Effekts (kannst du anpassen)
-
-            return;
-        }
-                // spätere Tab-Logik könnte hier rein
-            });
+            // spätere Tab-Logik für aktive Tabs
         });
+    });
 
-        // Hover-Sound mit Cooldown
-        let lastHoverSoundTime = 0;
-        const HOVER_SOUND_COOLDOWN = 200;
-        function playHoverSound() {
-            const now = (window.performance && performance.now) ? performance.now() : Date.now();
-            if (now - lastHoverSoundTime < HOVER_SOUND_COOLDOWN) return;
-            lastHoverSoundTime = now;
-            playSound(hoverSound);
-        }
+    // Hover-Sound mit Cooldown
+    let lastHoverSoundTime = 0;
+    const HOVER_SOUND_COOLDOWN = 200;
+    function playHoverSound() {
+        const now = (window.performance && performance.now) ? performance.now() : Date.now();
+        if (now - lastHoverSoundTime < HOVER_SOUND_COOLDOWN) return;
+        lastHoverSoundTime = now;
+        playSound(hoverSound);
+    }
 
-        // =========================
-        // Manuelle Info-Reihen
-        // =========================
-        const infoRow1 = [
-            "11454","11687","11836","12305","10459","5471","13068","4004",
-            "22302","22017","21967","22394","22019","19761","22364","22392",
-            "11898","21859","22396","22091","22030","21937","22362","22395",
-            "",""
-        ];
-        while (infoRow1.length < TOTAL_SECTORS) infoRow1.push("");
+    // Manuelle Info-Reihen
+    const infoRow1 = [
+        '11454','11687','11836','12305','10459','5471','13068','4004',
+        '22302','22017','21967','22394','22019','19761','22364','22392',
+        '11898','21859','22396','22091','22030','21937','22362','22395',
+        '',''
+    ];
+    while (infoRow1.length < TOTAL_SECTORS) infoRow1.push('');
 
-        const infoRow2 = [
-            "3533","3706","3815","4129","2970","389","4736","51",
-            "12298","12070","12030","12389","12072","10080","12356","12387",
-            "3857","11938","12391","8941","12077","12009","12354","12390",
-            "15597","14185"
-        ];
-        while (infoRow2.length < TOTAL_SECTORS) infoRow2.push("");
+    const infoRow2 = [
+        '3533','3706','3815','4129','2970','389','4736','51',
+        '12298','12070','12030','12389','12072','10080','12356','12387',
+        '3857','11938','12391','8941','12077','12009','12354','12390',
+        '15597','14185'
+    ];
+    while (infoRow2.length < TOTAL_SECTORS) infoRow2.push('');
 
-        // =========================
-        // Grid-Berechnung
-        // =========================
-        const totalCells = TOTAL_SECTORS + 3 * BIG_SECTORS;
-        const ROWS = totalCells / COLS;
+    // Grid-Berechnung
+    const totalCells = TOTAL_SECTORS + 3 * BIG_SECTORS;
+    const ROWS = totalCells / COLS;
 
-        if (!Number.isInteger(ROWS)) {
-            console.warn('Konfiguration passt nicht exakt ins Grid!');
-        }
+    if (!Number.isInteger(ROWS)) {
+        console.warn('Konfiguration passt nicht exakt ins Grid!');
+    }
 
-        const bigBlocks = [];
+    const bigBlocks = [];
 
-        function blocksOverlap(r1, c1, r2, c2) {
-            return !(r1 + 1 < r2 || r1 > r2 + 1 || c1 + 1 < c2 || c1 > c2 + 1);
-        }
+    function blocksOverlap(r1, c1, r2, c2) {
+        return !(r1 + 1 < r2 || r1 > r2 + 1 || c1 + 1 < c2 || c1 > c2 + 1);
+    }
 
-        while (bigBlocks.length < BIG_SECTORS) {
-            const r = Math.floor(Math.random() * (ROWS - 1));
-            const c = Math.floor(Math.random() * (COLS - 1));
+    while (bigBlocks.length < BIG_SECTORS) {
+        const r = Math.floor(Math.random() * (ROWS - 1));
+        const c = Math.floor(Math.random() * (COLS - 1));
 
-            let ok = true;
-            for (const b of bigBlocks) {
-                if (blocksOverlap(r, c, b.row, b.col)) {
-                    ok = false;
-                    break;
-                }
+        let ok = true;
+        for (const b of bigBlocks) {
+            if (blocksOverlap(r, c, b.row, b.col)) {
+                ok = false;
+                break;
             }
-            if (!ok) continue;
-
-            bigBlocks.push({ row: r, col: c });
         }
+        if (!ok) continue;
 
-        function cellInBig(r, c) {
-            return bigBlocks.find(b =>
-                r >= b.row && r <= b.row + 1 &&
-                c >= b.col && c <= b.col + 1
-            );
-        }
+        bigBlocks.push({ row: r, col: c });
+    }
 
-        // =========================
-        // Sector-Konfiguration
-        // =========================
-        const sectorsConfig = [];
-        let id = 1;
+    function cellInBig(r, c) {
+        return bigBlocks.find(b =>
+            r >= b.row && r <= b.row + 1 &&
+            c >= b.col && c <= b.col + 1
+        );
+    }
 
-        for (let r = 0; r < ROWS; r++) {
-            for (let c = 0; c < COLS; c++) {
-                const block = cellInBig(r, c);
+    // Sector-Konfiguration
+    const sectorsConfig = [];
+    let id = 1;
 
-                if (block) {
-                    if (r === block.row && c === block.col) {
-                        sectorsConfig.push({
-                            id,
-                            rowStart: r + 1,
-                            colStart: c + 1,
-                            big: true
-                        });
-                        id++;
-                    }
-                } else {
+    for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+            const block = cellInBig(r, c);
+
+            if (block) {
+                if (r === block.row && c === block.col) {
                     sectorsConfig.push({
                         id,
                         rowStart: r + 1,
                         colStart: c + 1,
-                        big: false
+                        big: true
                     });
                     id++;
                 }
+            } else {
+                sectorsConfig.push({
+                    id,
+                    rowStart: r + 1,
+                    colStart: c + 1,
+                    big: false
+                });
+                id++;
             }
         }
+    }
 
-        if (sectorsConfig.length !== TOTAL_SECTORS) {
-            console.warn('Anzahl der erzeugten Sectors stimmt nicht:', sectorsConfig.length);
+    // Badges
+    function copyToClipboard(text) {
+        if (!text || text === '-----') return;
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).catch(err => {
+                console.error('Clipboard Fehler:', err);
+            });
+        } else {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+            } catch (err) {
+                console.error('Clipboard Fallback Fehler:', err);
+            }
+            document.body.removeChild(textarea);
         }
+    }
 
-        // =========================
-        // Badges
-        // =========================
-        function copyToClipboard(text) {
+    function showCopiedBubble(badgeEl) {
+        const old = badgeEl.querySelector('.copy-tooltip');
+        if (old) old.remove();
+
+        const tooltip = document.createElement('div');
+        tooltip.className = 'copy-tooltip';
+        tooltip.textContent = 'Kopiert!';
+        badgeEl.appendChild(tooltip);
+
+        setTimeout(() => {
+            if (tooltip.parentNode) {
+                tooltip.parentNode.removeChild(tooltip);
+            }
+        }, 1000);
+    }
+
+    function makeIdBadge(text) {
+        const span = document.createElement('span');
+        span.className = 'badge badge-id';
+        span.textContent = text;
+        return span;
+    }
+
+    function makeInfoBadge(text) {
+        const span = document.createElement('span');
+        span.className = 'badge badge-info';
+        span.textContent = text;
+
+        span.title = 'Klicken zum Kopieren';
+
+        span.addEventListener('mouseenter', e => {
+            e.stopPropagation();
+            playHoverSound();
+        });
+
+        span.addEventListener('click', e => {
+            e.stopPropagation();
+
             if (!text || text === '-----') return;
 
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(text).catch(err => {
-                    console.error('Clipboard Fehler:', err);
-                });
-            } else {
-                const textarea = document.createElement('textarea');
-                textarea.value = text;
-                document.body.appendChild(textarea);
-                textarea.select();
-                try {
-                    document.execCommand('copy');
-                } catch (err) {
-                    console.error('Clipboard Fallback Fehler:', err);
-                }
-                document.body.removeChild(textarea);
-            }
-        }
+            copyToClipboard(text);
+            playSound(downloadSound);
 
-        function showCopiedBubble(badgeEl) {
-            const old = badgeEl.querySelector('.copy-tooltip');
-            if (old) old.remove();
-
-            const tooltip = document.createElement('div');
-            tooltip.className = 'copy-tooltip';
-            tooltip.textContent = 'Kopiert!';
-            badgeEl.appendChild(tooltip);
-
-            setTimeout(() => {
-                if (tooltip.parentNode) {
-                    tooltip.parentNode.removeChild(tooltip);
-                }
-            }, 1000);
-        }
-
-        function makeIdBadge(text) {
-            const span = document.createElement('span');
-            span.className = 'badge badge-id';
-            span.textContent = text;
-            return span;
-        }
-
-        function makeInfoBadge(text) {
-            const span = document.createElement('span');
-            span.className = 'badge badge-info';
-            span.textContent = text;
-
-            span.title = 'Klicken zum Kopieren';
-
-            span.addEventListener('mouseenter', (e) => {
-                e.stopPropagation();
-                playHoverSound();
+            document.querySelectorAll('.badge-info.active').forEach(b => {
+                b.classList.remove('active');
             });
 
-            span.addEventListener('click', (e) => {
-                e.stopPropagation();
+            span.classList.add('active');
+            showCopiedBubble(span);
+        });
 
-                if (!text || text === '-----') return;
+        return span;
+    }
 
-                copyToClipboard(text);
-                playSound(downloadSound);
+    // Modal / Viewer
+    const modal             = document.getElementById('imageModal');
+    const modalImg          = document.getElementById('modalImage');
+    const modalIdBadge      = document.getElementById('modalIdBadge');
+    const modalPrev         = document.getElementById('modalPrev');
+    const modalNext         = document.getElementById('modalNext');
+    const modalImageWrapper = document.getElementById('modalImageWrapper');
 
-                document.querySelectorAll('.badge-info.active').forEach(b => {
-                    b.classList.remove('active');
-                });
+    let currentModalId = null;
+    let arrowHideTimeout = null;
 
-                span.classList.add('active');
-                showCopiedBubble(span);
-            });
+    function setModalImageFromId(id, existingSrc) {
+        if (!id || id < 1 || id > TOTAL_SECTORS) return;
+        currentModalId = id;
 
-            return span;
-        }
+        const idStr = String(id).padStart(2, '0');
+        modalIdBadge.textContent = idStr;
+        modalImg.alt = `Bild ${idStr}`;
 
-        // =========================
-        // Modal / Viewer
-        // =========================
-        const modal            = document.getElementById('imageModal');
-        const modalImg         = document.getElementById('modalImage');
-        const modalIdBadge     = document.getElementById('modalIdBadge');
-        const modalPrev        = document.getElementById('modalPrev');
-        const modalNext        = document.getElementById('modalNext');
-        const modalImageWrapper = document.getElementById('modalImageWrapper');
-
-        let currentModalId = null;
-        let leftPinned = false;
-        let rightPinned = false;
-
-        function setModalImageFromId(id, existingSrc) {
-            if (!id || id < 1 || id > TOTAL_SECTORS) return;
-            currentModalId = id;
-
-            const idStr = String(id).padStart(2, '0');
-            modalIdBadge.textContent = idStr;
-            modalImg.alt = `Bild ${idStr}`;
-
-            if (existingSrc) {
+        if (existingSrc) {
+            modalImg.onerror = null;
+            modalImg.src = existingSrc;
+        } else {
+            modalImg.onerror = null;
+            modalImg.src = `${IMAGE_BASE_PATH}/${idStr}.jpg`;
+            modalImg.onerror = () => {
                 modalImg.onerror = null;
-                modalImg.src = existingSrc;
-            } else {
-                modalImg.onerror = null;
-                modalImg.src = `${IMAGE_BASE_PATH}/${idStr}.jpg`;
-                modalImg.onerror = () => {
-                    modalImg.onerror = null;
-                    modalImg.src = `${IMAGE_BASE_PATH}/${idStr}.png`;
-                };
-            }
-
-            modalPrev.disabled = (id <= 1);
-            modalNext.disabled = (id >= TOTAL_SECTORS);
-
-            if (modalPrev.disabled) modalPrev.classList.remove('visible');
-            if (modalNext.disabled) modalNext.classList.remove('visible');
-        }
-
-        function openModalForId(id, existingSrc) {
-            setModalImageFromId(id, existingSrc);
-            modal.classList.add('visible');
-        }
-
-        function closeModalViewer() {
-            modal.classList.remove('visible');
-            modalImg.src = '';
-            modalImg.alt = '';
-            currentModalId = null;
-            leftPinned = false;
-            rightPinned = false;
-            modalPrev.classList.remove('visible');
-            modalNext.classList.remove('visible');
-        }
-
-        function showPrev() {
-            if (currentModalId === null || currentModalId <= 1) return;
-            const newId = currentModalId - 1;
-            setModalImageFromId(newId);
-            playSound(nextSound);
-        }
-
-        function showNext() {
-            if (currentModalId === null || currentModalId >= TOTAL_SECTORS) return;
-            const newId = currentModalId + 1;
-            setModalImageFromId(newId);
-            playSound(nextSound);
-        }
-
-        modalPrev.addEventListener('click', (e) => {
-            e.stopPropagation();
-            showPrev();
-        });
-
-        modalNext.addEventListener('click', (e) => {
-            e.stopPropagation();
-            showNext();
-        });
-
-        // Maus → Pfeile einblenden, und sichtbar lassen bis mouseleave
-        modalImageWrapper.addEventListener('mousemove', (e) => {
-            const rect = modalImageWrapper.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const threshold = rect.width * 0.2;
-
-            if (x < threshold && !modalPrev.disabled) {
-                modalPrev.classList.add('visible');
-                leftPinned = true;
-            } else if (!leftPinned) {
-                modalPrev.classList.remove('visible');
-            }
-
-            if (x > rect.width - threshold && !modalNext.disabled) {
-                modalNext.classList.add('visible');
-                rightPinned = true;
-            } else if (!rightPinned) {
-                modalNext.classList.remove('visible');
-            }
-        });
-
-        modalImageWrapper.addEventListener('mouseleave', () => {
-            leftPinned = false;
-            rightPinned = false;
-            modalPrev.classList.remove('visible');
-            modalNext.classList.remove('visible');
-        });
-
-        // Klick auf Hintergrund schließt Viewer
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                playSound(closeSound);
-                closeModalViewer();
-            }
-        });
-
-        // Keyboard: ESC / Pfeile
-        document.addEventListener('keydown', (e) => {
-            if (!modal.classList.contains('visible')) return;
-
-            if (e.key === 'Escape') {
-                e.preventDefault();
-                playSound(closeSound);
-                closeModalViewer();
-            } else if (e.key === 'ArrowLeft') {
-                e.preventDefault();
-                showPrev();
-            } else if (e.key === 'ArrowRight') {
-                e.preventDefault();
-                showNext();
-            }
-        });
-
-        // =========================
-        // Grid aufbauen
-        // =========================
-        const mainbody = document.getElementById('mainbody');
-
-        sectorsConfig.forEach(cfg => {
-            const div = document.createElement('div');
-            div.classList.add('sectors');
-            if (cfg.big) div.classList.add('big');
-
-            div.addEventListener('mouseenter', () => {
-                playHoverSound();
-            });
-
-            const idStr = String(cfg.id).padStart(2, '0');
-
-            const img = document.createElement('img');
-            img.src = `${IMAGE_BASE_PATH}/${idStr}.jpg`;
-            img.alt = `Bild ${idStr}`;
-            img.onerror = () => {
-                img.onerror = null;
-                img.src = `${IMAGE_BASE_PATH}/${idStr}.png`;
+                modalImg.src = `${IMAGE_BASE_PATH}/${idStr}.png`;
             };
+        }
 
-            img.addEventListener('click', (e) => {
-                e.stopPropagation();
-                if (cfg.big) {
-                    playSound(bigSound);
-                } else {
-                    playSound(selectSound);
-                }
-                openModalForId(cfg.id, img.src);
-            });
+        modalPrev.disabled = (id <= 1);
+        modalNext.disabled = (id >= TOTAL_SECTORS);
 
-            div.appendChild(img);
+        if (modalPrev.disabled) modalPrev.classList.remove('visible');
+        if (modalNext.disabled) modalNext.classList.remove('visible');
+    }
 
-            const overlay = document.createElement('div');
-            overlay.className = 'overlay';
+    function openModalForId(id, existingSrc) {
+        setModalImageFromId(id, existingSrc);
+        modal.classList.add('visible');
+    }
 
-            const left = document.createElement('div');
-            left.className = 'overlay-left';
+    function closeModalViewer() {
+        modal.classList.remove('visible');
+        modalImg.src = '';
+        modalImg.alt = '';
+        currentModalId = null;
 
-            const right = document.createElement('div');
-            right.className = 'overlay-right';
+        if (arrowHideTimeout) {
+            clearTimeout(arrowHideTimeout);
+            arrowHideTimeout = null;
+        }
 
-            const idx = cfg.id - 1;
+        modalPrev.classList.remove('visible');
+        modalNext.classList.remove('visible');
+    }
 
-            const badgeId    = makeIdBadge(idStr);
-            const badgeInfo1 = makeInfoBadge(infoRow1[idx] || '-----');
-            const badgeInfo2 = makeInfoBadge(infoRow2[idx] || '-----');
+    function showPrev() {
+        if (currentModalId === null || currentModalId <= 1) return;
+        const newId = currentModalId - 1;
+        setModalImageFromId(newId);
+        playSound(nextSound);
+    }
 
-            left.appendChild(badgeId);
-            right.appendChild(badgeInfo1);
-            right.appendChild(badgeInfo2);
+    function showNext() {
+        if (currentModalId === null || currentModalId >= TOTAL_SECTORS) return;
+        const newId = currentModalId + 1;
+        setModalImageFromId(newId);
+        playSound(nextSound);
+    }
 
-            overlay.appendChild(left);
-            overlay.appendChild(right);
+    modalPrev.addEventListener('click', e => {
+        e.stopPropagation();
+        showPrev();
+    });
 
-            div.appendChild(overlay);
+    modalNext.addEventListener('click', e => {
+        e.stopPropagation();
+        showNext();
+    });
 
-            div.style.gridRowStart = cfg.rowStart;
-            div.style.gridColumnStart = cfg.colStart;
+    // Neue Arrow-Logik: 3 Zonen (links / Mitte / rechts) + Auto-Hide bei Inaktivität
+    modalImageWrapper.addEventListener('mousemove', e => {
+        const rect = modalImageWrapper.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const width = rect.width;
 
-            mainbody.appendChild(div);
+        const leftZoneEnd    = width / 3;        // 0 .. 1/3
+        const rightZoneStart = (2 * width) / 3;  // 2/3 .. 1
+
+        if (x < leftZoneEnd && !modalPrev.disabled) {
+            // linkes Drittel → nur linker Pfeil
+            modalPrev.classList.add('visible');
+            modalNext.classList.remove('visible');
+        } else if (x > rightZoneStart && !modalNext.disabled) {
+            // rechtes Drittel → nur rechter Pfeil
+            modalNext.classList.add('visible');
+            modalPrev.classList.remove('visible');
+        } else {
+            // mittleres Drittel → keine Pfeile
+            modalPrev.classList.remove('visible');
+            modalNext.classList.remove('visible');
+        }
+
+        // Inaktivität: nach kurzer Zeit ohne Bewegung Pfeile ausblenden
+        if (arrowHideTimeout) {
+            clearTimeout(arrowHideTimeout);
+        }
+        arrowHideTimeout = setTimeout(() => {
+            modalPrev.classList.remove('visible');
+            modalNext.classList.remove('visible');
+            arrowHideTimeout = null;
+        }, 800); // 0,8 Sekunden nach letzter Bewegung
+    });
+
+    modalImageWrapper.addEventListener('mouseleave', () => {
+        if (arrowHideTimeout) {
+            clearTimeout(arrowHideTimeout);
+            arrowHideTimeout = null;
+        }
+        modalPrev.classList.remove('visible');
+        modalNext.classList.remove('visible');
+    });
+
+    // Klick auf Hintergrund schließt Viewer
+    modal.addEventListener('click', e => {
+        if (e.target === modal) {
+            playSound(closeSound);
+            closeModalViewer();
+        }
+    });
+
+    // Keyboard: ESC / Pfeile
+    document.addEventListener('keydown', e => {
+        if (!modal.classList.contains('visible')) return;
+
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            playSound(closeSound);
+            closeModalViewer();
+        } else if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            showPrev();
+        } else if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            showNext();
+        }
+    });
+
+    // Grid aufbauen
+    const mainbody = document.getElementById('mainbody');
+
+    sectorsConfig.forEach(cfg => {
+        const div = document.createElement('div');
+        div.classList.add('sectors');
+        if (cfg.big) div.classList.add('big');
+
+        div.addEventListener('mouseenter', () => {
+            playHoverSound();
         });
-    </script>
+
+        const idStr = String(cfg.id).padStart(2, '0');
+
+        const img = document.createElement('img');
+        img.src = `${IMAGE_BASE_PATH}/${idStr}.jpg`;
+        img.alt = `Bild ${idStr}`;
+        img.onerror = () => {
+            img.onerror = null;
+            img.src = `${IMAGE_BASE_PATH}/${idStr}.png`;
+        };
+
+        img.addEventListener('click', e => {
+            e.stopPropagation();
+            if (cfg.big) {
+                playSound(bigSound);
+            } else {
+                playSound(selectSound);
+            }
+            openModalForId(cfg.id, img.src);
+        });
+
+        div.appendChild(img);
+
+        const overlay = document.createElement('div');
+        overlay.className = 'overlay';
+
+        const left = document.createElement('div');
+        left.className = 'overlay-left';
+
+        const right = document.createElement('div');   // <-- hier war der Fehler, jetzt korrekt!
+
+        right.className = 'overlay-right';
+
+        const idx = cfg.id - 1;
+
+        const badgeId    = makeIdBadge(idStr);
+        const badgeInfo1 = makeInfoBadge(infoRow1[idx] || '-----');
+        const badgeInfo2 = makeInfoBadge(infoRow2[idx] || '-----');
+
+        left.appendChild(badgeId);
+        right.appendChild(badgeInfo1);
+        right.appendChild(badgeInfo2);
+
+        overlay.appendChild(left);
+        overlay.appendChild(right);
+
+        div.appendChild(overlay);
+
+        div.style.gridRowStart = cfg.rowStart;
+        div.style.gridColumnStart = cfg.colStart;
+
+        mainbody.appendChild(div);
+    });
+</script>
+
+
 </body>
 </html>
