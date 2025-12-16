@@ -608,30 +608,49 @@
         playSound(nextSound);
     }
 
+    function resetArrowHideTimer() {
+        if (arrowHideTimeout) {
+            clearTimeout(arrowHideTimeout);
+        }
+        arrowHideTimeout = setTimeout(() => {
+            modalPrev.classList.remove('visible');
+            modalNext.classList.remove('visible');
+            arrowHideTimeout = null;
+        }, 800); // 0,8s nach letzter Aktivität
+    }
+
     modalPrev.addEventListener('click', e => {
         e.stopPropagation();
         showPrev();
+        // Klick = Aktivität → Pfeil sichtbar halten
+        if (!modalPrev.disabled) {
+            modalPrev.classList.add('visible');
+        }
+        resetArrowHideTimer();
     });
 
     modalNext.addEventListener('click', e => {
         e.stopPropagation();
         showNext();
+        if (!modalNext.disabled) {
+            modalNext.classList.add('visible');
+        }
+        resetArrowHideTimer();
     });
 
-    // Neue Arrow-Logik: 3 Zonen (links / Mitte / rechts) + Auto-Hide bei Inaktivität
+    // Neue Arrow-Logik: 3 Zonen auf Basis window width + Auto-Hide
     modalImageWrapper.addEventListener('mousemove', e => {
-        const rect = modalImageWrapper.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const width = rect.width;
+        const totalWidth = window.innerWidth || document.documentElement.clientWidth;
+        const xScreen = e.clientX;
 
-        const leftZoneEnd    = width / 3;        // 0 .. 1/3
-        const rightZoneStart = (2 * width) / 3;  // 2/3 .. 1
+        const leftZoneEnd    = totalWidth / 3;        // 0 .. 1/3 Fensterbreite
+        const rightZoneStart = (2 * totalWidth) / 3;  // 2/3 .. 1 Fensterbreite
 
-        if (x < leftZoneEnd && !modalPrev.disabled) {
+        if (xScreen < leftZoneEnd && !modalPrev.disabled) {
             // linkes Drittel → nur linker Pfeil
             modalPrev.classList.add('visible');
             modalNext.classList.remove('visible');
-        } else if (x > rightZoneStart && !modalNext.disabled) {
+        } else if (xScreen > rightZoneStart && !modalNext.disabled) {
             // rechtes Drittel → nur rechter Pfeil
             modalNext.classList.add('visible');
             modalPrev.classList.remove('visible');
@@ -641,15 +660,7 @@
             modalNext.classList.remove('visible');
         }
 
-        // Inaktivität: nach kurzer Zeit ohne Bewegung Pfeile ausblenden
-        if (arrowHideTimeout) {
-            clearTimeout(arrowHideTimeout);
-        }
-        arrowHideTimeout = setTimeout(() => {
-            modalPrev.classList.remove('visible');
-            modalNext.classList.remove('visible');
-            arrowHideTimeout = null;
-        }, 800); // 0,8 Sekunden nach letzter Bewegung
+        resetArrowHideTimer();
     });
 
     modalImageWrapper.addEventListener('mouseleave', () => {
@@ -726,8 +737,7 @@
         const left = document.createElement('div');
         left.className = 'overlay-left';
 
-        const right = document.createElement('div');   // <-- hier war der Fehler, jetzt korrekt!
-
+        const right = document.createElement('div');
         right.className = 'overlay-right';
 
         const idx = cfg.id - 1;
@@ -751,6 +761,7 @@
         mainbody.appendChild(div);
     });
 </script>
+
 
 
 </body>
