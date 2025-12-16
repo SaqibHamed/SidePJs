@@ -340,6 +340,8 @@
     const closeSound    = new Audio('close.mp3');    // Viewer schließen
     const nextSound     = new Audio('next.mp3');     // Navigation
     const errorSound    = new Audio('error.mp3');    // Klick auf disabled Tab
+    const arrowInSound  = new Audio('arrowin.mp3');  // Pfeil erscheint
+    const arrowOutSound = new Audio('arrowout.mp3'); // Pfeil verschwindet
 
     function playSound(audio) {
         if (!audio) return;
@@ -546,6 +548,26 @@
 
     let currentModalId = null;
     let arrowHideTimeout = null;
+    let arrowHovered = false;
+
+    // Sichtbarkeit + Sounds für Pfeile zentral steuern
+    function setArrowVisible(btn, visible) {
+        const currentlyVisible = btn.classList.contains('visible') && !btn.disabled;
+
+        if (visible && !btn.disabled) {
+            if (!currentlyVisible) {
+                btn.classList.add('visible');
+                playSound(arrowInSound);
+            }
+        } else {
+            if (currentlyVisible) {
+                btn.classList.remove('visible');
+                playSound(arrowOutSound);
+            } else {
+                btn.classList.remove('visible');
+            }
+        }
+    }
 
     function setModalImageFromId(id, existingSrc) {
         if (!id || id < 1 || id > TOTAL_SECTORS) return;
@@ -570,8 +592,8 @@
         modalPrev.disabled = (id <= 1);
         modalNext.disabled = (id >= TOTAL_SECTORS);
 
-        if (modalPrev.disabled) modalPrev.classList.remove('visible');
-        if (modalNext.disabled) modalNext.classList.remove('visible');
+        if (modalPrev.disabled) setArrowVisible(modalPrev, false);
+        if (modalNext.disabled) setArrowVisible(modalNext, false);
     }
 
     function openModalForId(id, existingSrc) {
@@ -584,14 +606,15 @@
         modalImg.src = '';
         modalImg.alt = '';
         currentModalId = null;
+        arrowHovered = false;
 
         if (arrowHideTimeout) {
             clearTimeout(arrowHideTimeout);
             arrowHideTimeout = null;
         }
 
-        modalPrev.classList.remove('visible');
-        modalNext.classList.remove('visible');
+        setArrowVisible(modalPrev, false);
+        setArrowVisible(modalNext, false);
     }
 
     function showPrev() {
@@ -609,12 +632,13 @@
     }
 
     function resetArrowHideTimer() {
+        if (arrowHovered) return; // nicht ausblenden, wenn Maus auf Pfeil
         if (arrowHideTimeout) {
             clearTimeout(arrowHideTimeout);
         }
         arrowHideTimeout = setTimeout(() => {
-            modalPrev.classList.remove('visible');
-            modalNext.classList.remove('visible');
+            setArrowVisible(modalPrev, false);
+            setArrowVisible(modalNext, false);
             arrowHideTimeout = null;
         }, 800); // 0,8s nach letzter Aktivität
     }
@@ -622,9 +646,8 @@
     modalPrev.addEventListener('click', e => {
         e.stopPropagation();
         showPrev();
-        // Klick = Aktivität → Pfeil sichtbar halten
         if (!modalPrev.disabled) {
-            modalPrev.classList.add('visible');
+            setArrowVisible(modalPrev, true);
         }
         resetArrowHideTimer();
     });
@@ -633,12 +656,39 @@
         e.stopPropagation();
         showNext();
         if (!modalNext.disabled) {
-            modalNext.classList.add('visible');
+            setArrowVisible(modalNext, true);
         }
         resetArrowHideTimer();
     });
 
-    // Neue Arrow-Logik: 3 Zonen auf Basis window width + Auto-Hide
+    // Hover auf Pfeilen: nie auto-hide
+    modalPrev.addEventListener('mouseenter', () => {
+        arrowHovered = true;
+        if (!modalPrev.disabled) setArrowVisible(modalPrev, true);
+        if (arrowHideTimeout) {
+            clearTimeout(arrowHideTimeout);
+            arrowHideTimeout = null;
+        }
+    });
+    modalPrev.addEventListener('mouseleave', () => {
+        arrowHovered = false;
+        resetArrowHideTimer();
+    });
+
+    modalNext.addEventListener('mouseenter', () => {
+        arrowHovered = true;
+        if (!modalNext.disabled) setArrowVisible(modalNext, true);
+        if (arrowHideTimeout) {
+            clearTimeout(arrowHideTimeout);
+            arrowHideTimeout = null;
+        }
+    });
+    modalNext.addEventListener('mouseleave', () => {
+        arrowHovered = false;
+        resetArrowHideTimer();
+    });
+
+    // Arrow-Logik: 3 Zonen auf Basis window width + Auto-Hide
     modalImageWrapper.addEventListener('mousemove', e => {
         const totalWidth = window.innerWidth || document.documentElement.clientWidth;
         const xScreen = e.clientX;
@@ -648,28 +698,29 @@
 
         if (xScreen < leftZoneEnd && !modalPrev.disabled) {
             // linkes Drittel → nur linker Pfeil
-            modalPrev.classList.add('visible');
-            modalNext.classList.remove('visible');
+            setArrowVisible(modalPrev, true);
+            setArrowVisible(modalNext, false);
         } else if (xScreen > rightZoneStart && !modalNext.disabled) {
             // rechtes Drittel → nur rechter Pfeil
-            modalNext.classList.add('visible');
-            modalPrev.classList.remove('visible');
+            setArrowVisible(modalNext, true);
+            setArrowVisible(modalPrev, false);
         } else {
             // mittleres Drittel → keine Pfeile
-            modalPrev.classList.remove('visible');
-            modalNext.classList.remove('visible');
+            setArrowVisible(modalPrev, false);
+            setArrowVisible(modalNext, false);
         }
 
         resetArrowHideTimer();
     });
 
     modalImageWrapper.addEventListener('mouseleave', () => {
+        arrowHovered = false;
         if (arrowHideTimeout) {
             clearTimeout(arrowHideTimeout);
             arrowHideTimeout = null;
         }
-        modalPrev.classList.remove('visible');
-        modalNext.classList.remove('visible');
+        setArrowVisible(modalPrev, false);
+        setArrowVisible(modalNext, false);
     });
 
     // Klick auf Hintergrund schließt Viewer
