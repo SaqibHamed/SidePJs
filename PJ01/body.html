@@ -30,13 +30,13 @@
             padding: 4px;
             margin-bottom: 12px;
             background: #111;
-            border-radius: 999px;
+            border-radius: 6px; /* angepasst */
             align-items: center;
         }
 
         .tab {
             border: none;
-            border-radius: 999px;
+            border-radius: 6px; /* angepasst */
             padding: 6px 12px;
             background: transparent;
             color: #aaa;
@@ -45,7 +45,7 @@
             transition: background-color 0.15s ease, color 0.15s ease, transform 0.08s ease;
         }
 
-        .tab:hover:not(.disabled):not(.active)) {
+        .tab:hover:not(.disabled):not(.active) {
             background: #333;
             color: #fff;
             transform: translateY(-1px);
@@ -58,9 +58,14 @@
         }
 
         .tab.disabled {
-            opacity: 0.4;
-            cursor: default;
-        }
+    opacity: 0.4;
+    cursor: pointer; /* wir wollen Click → error.mp3 */
+}
+
+/* kurzer roter Flash beim Fehlklick */
+.tab.error-flash {
+    color: #ff4b4b !important;
+}
 
         .mainbody {
             display: grid;
@@ -99,28 +104,8 @@
             border-radius: 6px;
         }
 
-        /* Overlay oben mit ID links und Info rechts */
-        .overlay {
-            position: absolute;
-            top: 4px;
-            left: 4px;
-            right: 4px;
-            background: none;
-            padding: 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            font-size: 0.8rem;
-        }
-
-        .overlay-left,
-        .overlay-right {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .overlay .badge {
+        /* Badge-Styles global, damit sie auch im Viewer gelten */
+        .badge {
             position: relative;
             border-radius: 5px;
             border: 1px solid rgba(255, 255, 255, 0.7);
@@ -129,21 +114,17 @@
             text-align: center;
             white-space: nowrap;
             background: rgba(0, 0, 0, 0.55);
+            font-size: 0.8rem;
         }
 
-        .overlay .badge-id {
+        .badge-id {
             font-weight: 600;
             background: rgba(0, 0, 0, 0.8);
             border-color: rgba(255, 255, 255, 0.9);
             cursor: default;
         }
 
-        .overlay .badge-id:hover {
-            transform: none;
-            box-shadow: none;
-        }
-
-        .overlay .badge-info {
+        .badge-info {
             font-family: monospace;
             cursor: pointer;
             transition: background-color 0.15s ease,
@@ -151,17 +132,17 @@
                         box-shadow 0.15s ease;
         }
 
-        .overlay .badge-info:hover {
+        .badge-info:hover {
             transform: scale(1.02);
             background: rgba(0, 0, 0, 0.75);
             box-shadow: 0 0 6px rgba(0, 0, 0, 0.4);
         }
 
-        .overlay .badge-info:active {
+        .badge-info:active {
             transform: scale(0.96);
         }
 
-        .overlay .badge-info.active {
+        .badge-info.active {
             background: rgba(0, 160, 0, 0.9);
             border-color: #ffffff;
             box-shadow: 0 0 0 2px rgba(255,255,255,0.7);
@@ -192,6 +173,32 @@
             100% { opacity: 0; }
         }
 
+        /* Overlay oben im Grid */
+        .overlay {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            right: 4px;
+            background: none;
+            padding: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            font-size: 0.8rem;
+        }
+
+        .overlay-left,
+        .overlay-right {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .badge-id:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
         /* Modal / Viewer */
         .image-modal {
             position: fixed;
@@ -218,16 +225,6 @@
             gap: 8px;
         }
 
-        .modal-header {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-header .badge-id {
-            /* nutzt die gleichen Styles wie im Grid */
-        }
-
         .modal-image-wrapper {
             position: relative;
             flex: 1;
@@ -235,6 +232,15 @@
             align-items: center;
             justify-content: center;
             min-height: 200px;
+            overflow: hidden;
+        }
+
+        /* ID-Badge im Viewer: oben links im Bildbereich */
+        .modal-id {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            z-index: 6;
         }
 
         .image-modal-content img {
@@ -288,7 +294,7 @@
         }
 
         .modal-arrow:disabled {
-            opacity: 0.0;
+            opacity: 0;
             pointer-events: none;
         }
     </style>
@@ -310,10 +316,8 @@
     <!-- Modal für großes Bild -->
     <div class="image-modal" id="imageModal">
         <div class="image-modal-content">
-            <div class="modal-header">
-                <span id="modalIdBadge" class="badge badge-id">01</span>
-            </div>
             <div class="modal-image-wrapper" id="modalImageWrapper">
+                <span id="modalIdBadge" class="badge badge-id modal-id">01</span>
                 <button id="modalPrev" class="modal-arrow left">&larr;</button>
                 <img id="modalImage" src="" alt="">
                 <button id="modalNext" class="modal-arrow right">&rarr;</button>
@@ -331,12 +335,13 @@
         const IMAGE_BASE_PATH = 'img';
 
         // Sounds
-        const downloadSound = new Audio('download.mp3'); // für Kopieren
+        const downloadSound = new Audio('download.mp3'); // Kopieren
         const hoverSound    = new Audio('hover.mp3');    // Hover
-        const selectSound   = new Audio('select.mp3');   // Klick normaler Sector
-        const bigSound      = new Audio('big.mp3');      // Klick großer Sector
-        const closeSound    = new Audio('close.mp3');    // Schließen Viewer
-        const nextSound     = new Audio('next.mp3');     // Prev/Next im Viewer
+        const selectSound   = new Audio('select.mp3');   // Klick normal
+        const bigSound      = new Audio('big.mp3');      // Klick groß
+        const closeSound    = new Audio('close.mp3');    // Viewer schließen
+        const nextSound     = new Audio('next.mp3');     // Navigation
+        const errorSound    = new Audio('error.mp3');    // Klick auf disabled Tab
 
         function playSound(audio) {
             if (!audio) return;
@@ -347,6 +352,24 @@
                 console.warn('Sound konnte nicht abgespielt werden:', e);
             }
         }
+
+        // Tabs: disabled → error.mp3
+        document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        if (tab.classList.contains('disabled')) {
+            playSound(errorSound);
+
+            // roten Flash hinzufügen
+            tab.classList.add('error-flash');
+            setTimeout(() => {
+                tab.classList.remove('error-flash');
+            }, 180); // Dauer des Effekts (kannst du anpassen)
+
+            return;
+        }
+                // spätere Tab-Logik könnte hier rein
+            });
+        });
 
         // Hover-Sound mit Cooldown
         let lastHoverSoundTime = 0;
@@ -380,8 +403,8 @@
         // =========================
         // Grid-Berechnung
         // =========================
-        const totalCells = TOTAL_SECTORS + 3 * BIG_SECTORS; // 26 + 6 = 32
-        const ROWS = totalCells / COLS; // 32 / 4 = 8
+        const totalCells = TOTAL_SECTORS + 3 * BIG_SECTORS;
+        const ROWS = totalCells / COLS;
 
         if (!Number.isInteger(ROWS)) {
             console.warn('Konfiguration passt nicht exakt ins Grid!');
@@ -533,14 +556,16 @@
         // =========================
         // Modal / Viewer
         // =========================
-        const modal           = document.getElementById('imageModal');
-        const modalImg        = document.getElementById('modalImage');
-        const modalIdBadge    = document.getElementById('modalIdBadge');
-        const modalPrev       = document.getElementById('modalPrev');
-        const modalNext       = document.getElementById('modalNext');
+        const modal            = document.getElementById('imageModal');
+        const modalImg         = document.getElementById('modalImage');
+        const modalIdBadge     = document.getElementById('modalIdBadge');
+        const modalPrev        = document.getElementById('modalPrev');
+        const modalNext        = document.getElementById('modalNext');
         const modalImageWrapper = document.getElementById('modalImageWrapper');
 
         let currentModalId = null;
+        let leftPinned = false;
+        let rightPinned = false;
 
         function setModalImageFromId(id, existingSrc) {
             if (!id || id < 1 || id > TOTAL_SECTORS) return;
@@ -564,6 +589,9 @@
 
             modalPrev.disabled = (id <= 1);
             modalNext.disabled = (id >= TOTAL_SECTORS);
+
+            if (modalPrev.disabled) modalPrev.classList.remove('visible');
+            if (modalNext.disabled) modalNext.classList.remove('visible');
         }
 
         function openModalForId(id, existingSrc) {
@@ -576,6 +604,10 @@
             modalImg.src = '';
             modalImg.alt = '';
             currentModalId = null;
+            leftPinned = false;
+            rightPinned = false;
+            modalPrev.classList.remove('visible');
+            modalNext.classList.remove('visible');
         }
 
         function showPrev() {
@@ -592,7 +624,6 @@
             playSound(nextSound);
         }
 
-        // Klick auf Pfeile
         modalPrev.addEventListener('click', (e) => {
             e.stopPropagation();
             showPrev();
@@ -603,26 +634,30 @@
             showNext();
         });
 
-        // Mausbewegung: Pfeile ein-/ausblenden je nach Nähe zum Rand
+        // Maus → Pfeile einblenden, und sichtbar lassen bis mouseleave
         modalImageWrapper.addEventListener('mousemove', (e) => {
             const rect = modalImageWrapper.getBoundingClientRect();
             const x = e.clientX - rect.left;
-            const threshold = rect.width * 0.2; // 20% vom Rand
+            const threshold = rect.width * 0.2;
 
             if (x < threshold && !modalPrev.disabled) {
                 modalPrev.classList.add('visible');
-            } else {
+                leftPinned = true;
+            } else if (!leftPinned) {
                 modalPrev.classList.remove('visible');
             }
 
             if (x > rect.width - threshold && !modalNext.disabled) {
                 modalNext.classList.add('visible');
-            } else {
+                rightPinned = true;
+            } else if (!rightPinned) {
                 modalNext.classList.remove('visible');
             }
         });
 
         modalImageWrapper.addEventListener('mouseleave', () => {
+            leftPinned = false;
+            rightPinned = false;
             modalPrev.classList.remove('visible');
             modalNext.classList.remove('visible');
         });
