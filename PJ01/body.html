@@ -25,6 +25,7 @@
             padding: 0 20px 20px;
         }
 
+        /* im Equal-Mode volle Breite nutzen */
         .page.equal-fullwidth {
             max-width: none;
             padding-left: 0;
@@ -91,23 +92,18 @@
         }
 
         .layout-toggle {
-    border: none;
-    border-radius: 6px;
-    padding: 4px 8px; /* etwas kompakter, da jetzt Icon */
-    background: #333;
-    color: #fff;
-    cursor: pointer;
-    font-size: 1.1rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background-color 0.15s ease, transform 0.08s ease;
-}
-.layout-toggle img {
-    width: 20px;
-    height: 20px;
-    display: block;
-}
+            border: none;
+            border-radius: 6px;
+            padding: 4px 8px;
+            background: #333;
+            color: #fff;
+            cursor: pointer;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.15s ease, transform 0.08s ease;
+        }
 
         .layout-toggle:hover {
             background: #555;
@@ -117,6 +113,12 @@
         .layout-toggle.equal-active {
             background: #f5f5f5;
             color: #111;
+        }
+
+        .layout-toggle img {
+            width: 20px;
+            height: 20px;
+            display: block;
         }
 
         .layout-slider-wrapper {
@@ -156,6 +158,12 @@
             position: relative;
             overflow: hidden;
             transition: transform 0.15s ease, box-shadow 0.15s ease;
+            padding: 0;
+        }
+
+        /* im Equal-Mode innen kleine horizontale Abstände */
+        .mainbody.equal-mode .sectors {
+            padding: 0 3px;
         }
 
         .sectors:hover {
@@ -212,6 +220,7 @@
             font-weight: 600;
             background: rgba(0, 0, 0, 0.8);
             border-color: rgba(255, 255, 255, 0.9);
+            color: #fff; /* neu: ID immer weiss */
             pointer-events: none; /* reine Info */
         }
 
@@ -422,13 +431,13 @@
         const IMAGE_BASE_PATH = 'img';
 
         // ========= DOM-Grundelemente =========
-        const pageEl             = document.querySelector('.page');
-        const mainbody           = document.getElementById('mainbody');
-        const layoutToggleBtn    = document.getElementById('layoutToggleBtn');
-        const layoutToggleIcon   = document.getElementById('layoutToggleIcon');
-        const layoutSliderWrapper= document.getElementById('layoutSliderWrapper');
-        const columnsSlider      = document.getElementById('columnsSlider');
-        const columnsLabel       = document.getElementById('columnsLabel');
+        const pageEl              = document.querySelector('.page');
+        const mainbody            = document.getElementById('mainbody');
+        const layoutToggleBtn     = document.getElementById('layoutToggleBtn');
+        const layoutToggleIcon    = document.getElementById('layoutToggleIcon');
+        const layoutSliderWrapper = document.getElementById('layoutSliderWrapper');
+        const columnsSlider       = document.getElementById('columnsSlider');
+        const columnsLabel        = document.getElementById('columnsLabel');
 
         let equalMode = false;                // false = OG (Big-Sectors), true = Equal-Mode
         const sectorElements = [];            // DOM-Referenzen für alle Sectors
@@ -439,15 +448,18 @@
         const EGG_SOUNDS_COUNT = 3;         // egg1.mp3 .. eggN.mp3
 
         // ========= Sounds =========
-        const downloadSound = new Audio('download.mp3');
-        const hoverSound    = new Audio('hover.mp3');
-        const selectSound   = new Audio('select.mp3');
-        const bigSound      = new Audio('big.mp3');
-        const closeSound    = new Audio('close.mp3');
-        const nextSound     = new Audio('next.mp3');
-        const errorSound    = new Audio('error.mp3');
-        const arrowInSound  = new Audio('arrowin.mp3');
-        const arrowOutSound = new Audio('arrowout.mp3');
+        const downloadSound     = new Audio('download.mp3');
+        const hoverSound        = new Audio('hover.mp3');
+        const selectSound       = new Audio('select.mp3');
+        const bigSound          = new Audio('big.mp3');
+        const closeSound        = new Audio('close.mp3');
+        const nextSound         = new Audio('next.mp3');
+        const errorSound        = new Audio('error.mp3');
+        const arrowInSound      = new Audio('arrowin.mp3');
+        const arrowOutSound     = new Audio('arrowout.mp3');
+        const slideSound        = new Audio('slide.mp3');
+        const holdSliderSound   = new Audio('holdslider.mp3');
+        const switchSound       = new Audio('switch.mp3');
 
         const eggSounds = [];
         for (let i = 1; i <= EGG_SOUNDS_COUNT; i++) {
@@ -485,7 +497,14 @@
             if (extraAudioPrimed) return;
             extraAudioPrimed = true;
 
-            const allToPrime = [arrowInSound, arrowOutSound, ...eggSounds];
+            const allToPrime = [
+                arrowInSound,
+                arrowOutSound,
+                slideSound,
+                holdSliderSound,
+                switchSound,
+                ...eggSounds
+            ];
 
             allToPrime.forEach(audio => {
                 if (!audio) return;
@@ -529,6 +548,18 @@
             if (now - lastHoverSoundTime < HOVER_SOUND_COOLDOWN) return;
             lastHoverSoundTime = now;
             playSound(hoverSound);
+        }
+
+        // Hover-Sound auch auf Layout-Switch und Slider
+        if (layoutToggleBtn) {
+            layoutToggleBtn.addEventListener('mouseenter', () => {
+                playHoverSound();
+            });
+        }
+        if (columnsSlider) {
+            columnsSlider.addEventListener('mouseenter', () => {
+                playHoverSound();
+            });
         }
 
         // Info-Reihen
@@ -899,6 +930,8 @@
             mainbody.classList.remove('equal-mode');
             mainbody.style.gridTemplateColumns = 'repeat(4, 1fr)';
             mainbody.style.flexWrap = '';
+            mainbody.style.justifyContent = '';
+            mainbody.style.alignContent = '';
 
             if (pageEl) {
                 pageEl.classList.remove('equal-fullwidth');
@@ -914,80 +947,85 @@
         }
 
         function applyEqualLayout() {
-    const cols = parseInt(columnsSlider.value, 10) || 4;
-    const widthPercent = 100 / cols;
+            const cols = parseInt(columnsSlider.value, 10) || 4;
+            const widthPercent = 98 / cols;
 
-    columnsLabel.textContent = cols;
+            columnsLabel.textContent = cols;
 
-    mainbody.style.display = 'flex';
-    mainbody.classList.add('equal-mode');
-    mainbody.style.flexWrap = 'wrap';
-    mainbody.style.gridTemplateColumns = '';
+            mainbody.style.display = 'flex';
+            mainbody.classList.add('equal-mode');
+            mainbody.style.flexWrap = 'wrap';
+            mainbody.style.gridTemplateColumns = '';
+            //mainbody.style.justifyContent = 'center';
+            mainbody.style.alignContent = 'flex-start';
 
-    // NEU: Gap für Equal-Mode
-    mainbody.style.gap = '0';
-    mainbody.style.rowGap = '10px';   // kannst du auch auf '0' setzen, wenn du gar keine Abstände willst
-    mainbody.style.columnGap = '0';
+            if (pageEl) {
+                pageEl.classList.add('equal-fullwidth');
+            }
 
-    if (pageEl) {
-        pageEl.classList.add('equal-fullwidth');
-    }
-
-    sectorElements.forEach(el => {
-        el.style.gridRowStart = '';
-        el.style.gridColumnStart = '';
-        el.style.flex     = `0 0 ${widthPercent}%`;
-        el.style.maxWidth = `${widthPercent}%`;
-    });
-}
-
+            sectorElements.forEach(el => {
+                el.style.gridRowStart = '';
+                el.style.gridColumnStart = '';
+                el.style.flex     = `0 0 ${widthPercent}%`;
+                el.style.maxWidth = `${widthPercent}%`;
+            });
+        }
 
         // Slider initial verstecken
         if (layoutSliderWrapper) {
             layoutSliderWrapper.style.display = 'none';
         }
 
-        // Slider ändert im Equal-Mode die Spaltenanzahl
+        // Slider Hold-Sound
+        if (columnsSlider) {
+            columnsSlider.addEventListener('mousedown', () => {
+                playSound(holdSliderSound);
+            });
+        }
+
+        // Slider ändert im Equal-Mode die Spaltenanzahl + Slide-Sound
         if (columnsSlider) {
             columnsSlider.addEventListener('input', () => {
                 if (!equalMode) return;
+                playSound(slideSound);
                 applyEqualLayout();
             });
         }
 
-        // Button: OG ↔ Equal
+        // Button: OG ↔ Equal, mit Switch-Sound
         if (layoutToggleBtn) {
             layoutToggleBtn.addEventListener('click', () => {
+                playSound(switchSound);
+
                 equalMode = !equalMode;
 
                 if (equalMode) {
-    layoutToggleBtn.classList.add('equal-active');
-    if (layoutSliderWrapper) layoutSliderWrapper.style.display = 'flex';
+                    layoutToggleBtn.classList.add('equal-active');
+                    if (layoutSliderWrapper) layoutSliderWrapper.style.display = 'flex';
 
-    if (layoutToggleIcon) {
-        layoutToggleIcon.src = 'equal.svg';
-        layoutToggleIcon.alt = 'Layout: Equal';
-    }
+                    if (layoutToggleIcon) {
+                        layoutToggleIcon.src = 'equal.svg';
+                        layoutToggleIcon.alt = 'Layout: Equal';
+                    }
 
-    applyEqualLayout();
-} else {
-    layoutToggleBtn.classList.remove('equal-active');
-    if (layoutSliderWrapper) layoutSliderWrapper.style.display = 'none';
+                    applyEqualLayout();
+                } else {
+                    layoutToggleBtn.classList.remove('equal-active');
+                    if (layoutSliderWrapper) layoutSliderWrapper.style.display = 'none';
 
-    const defaultCols = 4;
-    if (columnsSlider) {
-        columnsSlider.value = defaultCols;
-        columnsLabel.textContent = defaultCols;
-    }
+                    const defaultCols = 4;
+                    if (columnsSlider) {
+                        columnsSlider.value = defaultCols;
+                        columnsLabel.textContent = defaultCols;
+                    }
 
-    if (layoutToggleIcon) {
-        layoutToggleIcon.src = 'og.svg';
-        layoutToggleIcon.alt = 'Layout: Original';
-    }
+                    if (layoutToggleIcon) {
+                        layoutToggleIcon.src = 'og.svg';
+                        layoutToggleIcon.alt = 'Layout: Original';
+                    }
 
-    applyOriginalLayout();
-}
-
+                    applyOriginalLayout();
+                }
             });
         }
 
