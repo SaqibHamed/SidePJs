@@ -332,16 +332,31 @@
     const BIG_SECTORS = 2;
     const IMAGE_BASE_PATH = 'img';
 
+    // =========================
+    // Easter-Egg Einstellungen
+    // =========================
+    const EGG_ENABLED       = true;     // bei Bedarf auf false stellen
+    const EGG_CHANCE        = 0.1;    // 0.001 = 1/1000
+    const EGG_SOUNDS_COUNT  = 3;        // Anzahl eggX.mp3 (egg1.mp3 .. eggN.mp3)
+
+    // =========================
     // Sounds
+    // =========================
     const downloadSound = new Audio('download.mp3'); // Kopieren
     const hoverSound    = new Audio('hover.mp3');    // Hover
-    const selectSound   = new Audio('select.mp3');   // Klick normal
-    const bigSound      = new Audio('big.mp3');      // Klick groß
+    const selectSound   = new Audio('select.mp3');   // Klick normal / Bild öffnen
+    const bigSound      = new Audio('big.mp3');      // Klick groß / Bild öffnen
     const closeSound    = new Audio('close.mp3');    // Viewer schließen
-    const nextSound     = new Audio('next.mp3');     // Navigation
+    const nextSound     = new Audio('next.mp3');     // Navigation (links/rechts)
     const errorSound    = new Audio('error.mp3');    // Klick auf disabled Tab
     const arrowInSound  = new Audio('arrowin.mp3');  // Pfeil erscheint
     const arrowOutSound = new Audio('arrowout.mp3'); // Pfeil verschwindet
+
+    // Egg-Sounds dynamisch laden
+    const eggSounds = [];
+    for (let i = 1; i <= EGG_SOUNDS_COUNT; i++) {
+        eggSounds.push(new Audio(`egg${i}.mp3`));
+    }
 
     function playSound(audio) {
         if (!audio) return;
@@ -353,11 +368,64 @@
         }
     }
 
-    // Tabs: disabled → error.mp3 + roter Flash
+    // Spielt normalen Sound oder mit bestimmter Wahrscheinlichkeit einen Egg-Sound
+    function playWithEgg(baseAudio) {
+        const useEgg = (
+            EGG_ENABLED &&
+            eggSounds.length > 0 &&
+            Math.random() < EGG_CHANCE
+        );
+
+        if (useEgg) {
+            const index = Math.floor(Math.random() * eggSounds.length);
+            const egg = eggSounds[index];
+            playSound(egg);
+        } else {
+            playSound(baseAudio);
+        }
+    }
+
+    // =========================
+    // Extra-Sounds primen (Autoplay-Policy)
+    // =========================
+    let extraAudioPrimed = false;
+    function primeExtraAudio() {
+        if (extraAudioPrimed) return;
+        extraAudioPrimed = true;
+
+        const allToPrime = [arrowInSound, arrowOutSound, ...eggSounds];
+
+        allToPrime.forEach(audio => {
+            if (!audio) return;
+            try {
+                const oldVolume = audio.volume ?? 1;
+                audio.volume = 0;
+                audio.play().then(() => {
+                    audio.pause();
+                    audio.currentTime = 0;
+                    audio.volume = oldVolume;
+                }).catch(() => {
+                    // Browser blockt evtl. – dann egal, ist nur Komfort
+                });
+            } catch (e) {
+                console.warn('Audio-Priming fehlgeschlagen:', e);
+            }
+        });
+    }
+
+    // Beim ersten Klick / Keydown primen
+    document.addEventListener('click', primeExtraAudio,  { once: true });
+    document.addEventListener('keydown', primeExtraAudio, { once: true });
+
+    // =========================
+    // Tabs: disabled → error + Egg-Chance
+    // =========================
     document.querySelectorAll('.tab').forEach(tab => {
         tab.addEventListener('click', () => {
             if (tab.classList.contains('disabled')) {
-                playSound(errorSound);
+                // HIER: Easter-Egg möglich
+                playWithEgg(errorSound);
+
                 tab.classList.add('error-flash');
                 setTimeout(() => {
                     tab.classList.remove('error-flash');
@@ -368,7 +436,9 @@
         });
     });
 
+    // =========================
     // Hover-Sound mit Cooldown
+    // =========================
     let lastHoverSoundTime = 0;
     const HOVER_SOUND_COOLDOWN = 200;
     function playHoverSound() {
@@ -378,7 +448,9 @@
         playSound(hoverSound);
     }
 
+    // =========================
     // Manuelle Info-Reihen
+    // =========================
     const infoRow1 = [
         '11454','11687','11836','12305','10459','5471','13068','4004',
         '22302','22017','21967','22394','22019','19761','22364','22392',
@@ -395,8 +467,10 @@
     ];
     while (infoRow2.length < TOTAL_SECTORS) infoRow2.push('');
 
+    // =========================
     // Grid-Berechnung
-    const totalCells = TOTAL_SECTORS + 3 * BIG_SECTORS;
+    // =========================
+    const totalCells = TOTAL_SECTORS + 3 * BIG_SECTORS; // 26 + 6 = 32
     const ROWS = totalCells / COLS;
 
     if (!Number.isInteger(ROWS)) {
@@ -432,7 +506,9 @@
         );
     }
 
+    // =========================
     // Sector-Konfiguration
+    // =========================
     const sectorsConfig = [];
     let id = 1;
 
@@ -462,7 +538,9 @@
         }
     }
 
-    // Badges
+    // =========================
+    // Badge-Helper
+    // =========================
     function copyToClipboard(text) {
         if (!text || text === '-----') return;
 
@@ -525,7 +603,7 @@
             if (!text || text === '-----') return;
 
             copyToClipboard(text);
-            playSound(downloadSound);
+            playSound(downloadSound); // hier kein Egg – Copy sollte konsistent sein
 
             document.querySelectorAll('.badge-info.active').forEach(b => {
                 b.classList.remove('active');
@@ -538,7 +616,9 @@
         return span;
     }
 
+    // =========================
     // Modal / Viewer
+    // =========================
     const modal             = document.getElementById('imageModal');
     const modalImg          = document.getElementById('modalImage');
     const modalIdBadge      = document.getElementById('modalIdBadge');
@@ -546,23 +626,22 @@
     const modalNext         = document.getElementById('modalNext');
     const modalImageWrapper = document.getElementById('modalImageWrapper');
 
-    let currentModalId = null;
+    let currentModalId   = null;
     let arrowHideTimeout = null;
-    let arrowHovered = false;
+    let arrowHovered     = false;
 
-    // Sichtbarkeit + Sounds für Pfeile zentral steuern
     function setArrowVisible(btn, visible) {
         const currentlyVisible = btn.classList.contains('visible') && !btn.disabled;
 
         if (visible && !btn.disabled) {
             if (!currentlyVisible) {
                 btn.classList.add('visible');
-                playSound(arrowInSound);
+                playSound(arrowInSound);   // Arrow-In hat bewusst KEIN Egg
             }
         } else {
             if (currentlyVisible) {
                 btn.classList.remove('visible');
-                playSound(arrowOutSound);
+                playSound(arrowOutSound);  // Arrow-Out ebenfalls normal
             } else {
                 btn.classList.remove('visible');
             }
@@ -621,18 +700,20 @@
         if (currentModalId === null || currentModalId <= 1) return;
         const newId = currentModalId - 1;
         setModalImageFromId(newId);
-        playSound(nextSound);
+        // HIER: Navigation → Egg möglich
+        playWithEgg(nextSound);
     }
 
     function showNext() {
         if (currentModalId === null || currentModalId >= TOTAL_SECTORS) return;
         const newId = currentModalId + 1;
         setModalImageFromId(newId);
-        playSound(nextSound);
+        // HIER: Navigation → Egg möglich
+        playWithEgg(nextSound);
     }
 
     function resetArrowHideTimer() {
-        if (arrowHovered) return; // nicht ausblenden, wenn Maus auf Pfeil
+        if (arrowHovered) return;
         if (arrowHideTimeout) {
             clearTimeout(arrowHideTimeout);
         }
@@ -640,7 +721,7 @@
             setArrowVisible(modalPrev, false);
             setArrowVisible(modalNext, false);
             arrowHideTimeout = null;
-        }, 800); // 0,8s nach letzter Aktivität
+        }, 800);
     }
 
     modalPrev.addEventListener('click', e => {
@@ -661,7 +742,7 @@
         resetArrowHideTimer();
     });
 
-    // Hover auf Pfeilen: nie auto-hide
+    // Hover auf Pfeilen: nicht auto-hiden
     modalPrev.addEventListener('mouseenter', () => {
         arrowHovered = true;
         if (!modalPrev.disabled) setArrowVisible(modalPrev, true);
@@ -688,24 +769,21 @@
         resetArrowHideTimer();
     });
 
-    // Arrow-Logik: 3 Zonen auf Basis window width + Auto-Hide
+    // Arrow-Logik: 3 Zonen basierend auf Fensterbreite
     modalImageWrapper.addEventListener('mousemove', e => {
         const totalWidth = window.innerWidth || document.documentElement.clientWidth;
         const xScreen = e.clientX;
 
-        const leftZoneEnd    = totalWidth / 3;        // 0 .. 1/3 Fensterbreite
-        const rightZoneStart = (2 * totalWidth) / 3;  // 2/3 .. 1 Fensterbreite
+        const leftZoneEnd    = totalWidth / 3;
+        const rightZoneStart = (2 * totalWidth) / 3;
 
         if (xScreen < leftZoneEnd && !modalPrev.disabled) {
-            // linkes Drittel → nur linker Pfeil
             setArrowVisible(modalPrev, true);
             setArrowVisible(modalNext, false);
         } else if (xScreen > rightZoneStart && !modalNext.disabled) {
-            // rechtes Drittel → nur rechter Pfeil
             setArrowVisible(modalNext, true);
             setArrowVisible(modalPrev, false);
         } else {
-            // mittleres Drittel → keine Pfeile
             setArrowVisible(modalPrev, false);
             setArrowVisible(modalNext, false);
         }
@@ -726,7 +804,8 @@
     // Klick auf Hintergrund schließt Viewer
     modal.addEventListener('click', e => {
         if (e.target === modal) {
-            playSound(closeSound);
+            // HIER: Viewer schließen → Egg möglich
+            playWithEgg(closeSound);
             closeModalViewer();
         }
     });
@@ -737,7 +816,8 @@
 
         if (e.key === 'Escape') {
             e.preventDefault();
-            playSound(closeSound);
+            // HIER: Viewer schließen (ESC) → Egg möglich
+            playWithEgg(closeSound);
             closeModalViewer();
         } else if (e.key === 'ArrowLeft') {
             e.preventDefault();
@@ -748,7 +828,9 @@
         }
     });
 
+    // =========================
     // Grid aufbauen
+    // =========================
     const mainbody = document.getElementById('mainbody');
 
     sectorsConfig.forEach(cfg => {
@@ -772,10 +854,11 @@
 
         img.addEventListener('click', e => {
             e.stopPropagation();
+            // HIER: Bild öffnen → Egg möglich
             if (cfg.big) {
-                playSound(bigSound);
+                playWithEgg(bigSound);
             } else {
-                playSound(selectSound);
+                playWithEgg(selectSound);
             }
             openModalForId(cfg.id, img.src);
         });
@@ -812,6 +895,7 @@
         mainbody.appendChild(div);
     });
 </script>
+
 
 
 
