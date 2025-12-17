@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sectors mit Bildern</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>autofox 2025 Theme Viewer</title>
     <style>
         * {
             box-sizing: border-box;
@@ -19,30 +19,54 @@
         }
 
         .page {
-            width: 80%;
-            max-width: 900px;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px 20px;
+        }
+
+        .page.equal-fullwidth {
+            max-width: none;
+            padding-left: 0;
+            padding-right: 0;
         }
 
         /* Tabs / Register oben */
         .tabbar {
             display: flex;
+            justify-content: space-between;
             gap: 6px;
-            padding: 4px;
+            padding: 4px 8px;
             margin-bottom: 12px;
             background: #111;
-            border-radius: 6px; /* angepasst */
+            border-radius: 6px;
             align-items: center;
+        }
+
+        .tabbar-left {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tabbar-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .tab {
             border: none;
-            border-radius: 6px; /* angepasst */
+            border-radius: 6px;
             padding: 6px 12px;
             background: transparent;
             color: #aaa;
             font-size: 0.85rem;
             cursor: pointer;
-            transition: background-color 0.15s ease, color 0.15s ease, transform 0.08s ease;
+            transition:
+                background-color 0.15s ease,
+                color 0.15s ease,
+                transform 0.08s ease;
         }
 
         .tab:hover:not(.disabled):not(.active) {
@@ -58,15 +82,50 @@
         }
 
         .tab.disabled {
-    opacity: 0.4;
-    cursor: pointer; /* wir wollen Click → error.mp3 */
-}
+            opacity: 0.4;
+            cursor: pointer;
+        }
 
-/* kurzer roter Flash beim Fehlklick */
-.tab.error-flash {
-    color: #ff4b4b !important;
-}
+        .tab.error-flash {
+            color: #ff4b4b !important;
+        }
 
+        .layout-toggle {
+            border: none;
+            border-radius: 6px;
+            padding: 6px 10px;
+            background: #333;
+            color: #fff;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: background-color 0.15s ease, transform 0.08s ease;
+        }
+
+        .layout-toggle:hover {
+            background: #555;
+            transform: translateY(-1px);
+        }
+
+        .layout-toggle.equal-active {
+            background: #f5f5f5;
+            color: #111;
+        }
+
+        .layout-slider-wrapper {
+            display: none; /* nur im Equal-Mode sichtbar */
+            align-items: center;
+            gap: 6px;
+            color: #eee;
+            font-size: 0.8rem;
+        }
+
+        .layout-slider-wrapper label {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Grid-Container */
         .mainbody {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -76,11 +135,18 @@
             padding: 10px;
         }
 
+        /* Big-Sectors nur im OG-Mode 2x2 */
+        .mainbody:not(.equal-mode) .sectors.big {
+            grid-column-end: span 2;
+            grid-row-end: span 2;
+        }
+
         .sectors {
             border-radius: 6px;
             color: white;
             aspect-ratio: 5 / 4;
             position: relative;
+            overflow: hidden;
             transition: transform 0.15s ease, box-shadow 0.15s ease;
         }
 
@@ -88,11 +154,6 @@
             transform: scale(1.03);
             box-shadow: 0 8px 18px rgba(0, 0, 0, 0.35);
             z-index: 5;
-        }
-
-        .sectors.big {
-            grid-column-end: span 2;
-            grid-row-end: span 2;
         }
 
         .sectors img {
@@ -104,7 +165,29 @@
             border-radius: 6px;
         }
 
-        /* Badge-Styles global, damit sie auch im Viewer gelten */
+        /* Overlay oben im Sector (ID + Infos) */
+        .overlay {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            right: 4px;
+            background: none;
+            padding: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            font-size: 0.8rem;
+            pointer-events: none; /* blockiert Klicks NICHT */
+        }
+
+        .overlay-left,
+        .overlay-right {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Badges (auch im Modal verwendet) */
         .badge {
             position: relative;
             border-radius: 5px;
@@ -118,19 +201,20 @@
         }
 
         .badge-id {
-            color: white;
             font-weight: 600;
             background: rgba(0, 0, 0, 0.8);
             border-color: rgba(255, 255, 255, 0.9);
-            cursor: default;
+            pointer-events: none; /* reine Info */
         }
 
         .badge-info {
             font-family: monospace;
             cursor: pointer;
-            transition: background-color 0.15s ease,
-                        transform 0.1s ease,
-                        box-shadow 0.15s ease;
+            pointer-events: auto;  /* klickbar */
+            transition:
+                background-color 0.15s ease,
+                transform 0.1s ease,
+                box-shadow 0.15s ease;
         }
 
         .badge-info:hover {
@@ -146,7 +230,7 @@
         .badge-info.active {
             background: rgba(0, 160, 0, 0.9);
             border-color: #ffffff;
-            box-shadow: 0 0 0 2px rgba(255,255,255,0.7);
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.7);
         }
 
         .copy-tooltip {
@@ -172,32 +256,6 @@
             15%  { opacity: 1; }
             85%  { opacity: 1; }
             100% { opacity: 0; }
-        }
-
-        /* Overlay oben im Grid */
-        .overlay {
-            position: absolute;
-            top: 4px;
-            left: 4px;
-            right: 4px;
-            background: none;
-            padding: 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            font-size: 0.8rem;
-        }
-
-        .overlay-left,
-        .overlay-right {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .badge-id:hover {
-            transform: none;
-            box-shadow: none;
         }
 
         /* Modal / Viewer */
@@ -236,14 +294,6 @@
             overflow: hidden;
         }
 
-        /* ID-Badge im Viewer: oben links im Bildbereich */
-        .modal-id {
-            position: absolute;
-            top: 8px;
-            left: 8px;
-            z-index: 6;
-        }
-
         .image-modal-content img {
             width: 100%;
             height: 100%;
@@ -251,6 +301,14 @@
             display: block;
             border-radius: 8px;
             background: #000;
+        }
+
+        /* ID-Badge im Viewer */
+        .modal-id {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            z-index: 6;
         }
 
         /* Seitliche Pfeile im Bildbereich */
@@ -271,7 +329,11 @@
             justify-content: center;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.15s ease, transform 0.1s ease, border-color 0.15s ease, background-color 0.15s ease;
+            transition:
+                opacity 0.15s ease,
+                transform 0.1s ease,
+                border-color 0.15s ease,
+                background-color 0.15s ease;
             z-index: 5;
         }
 
@@ -302,12 +364,31 @@
 </head>
 <body>
     <div class="page">
-        <!-- Tabs / Register -->
+        <!-- Tabs / Register + Layout Controls -->
         <div class="tabbar">
-            <button class="tab disabled">Legacy Theme</button>
-            <button class="tab active">autofox 2025</button>
-            <button class="tab disabled">Vorlage PDF</button>
-            <button class="tab disabled">Alternative Variante</button>
+            <div class="tabbar-left">
+                <button class="tab disabled">Legacy Theme</button>
+                <button class="tab active">autofox 2025</button>
+                <button class="tab disabled">Vorlage PDF</button>
+                <button class="tab disabled">Alternative Variante</button>
+            </div>
+            <div class="tabbar-right">
+                <div id="layoutSliderWrapper" class="layout-slider-wrapper">
+                    <label for="columnsSlider">
+                        Spalten: <span id="columnsLabel">4</span>
+                    </label>
+                    <input
+                        type="range"
+                        id="columnsSlider"
+                        min="3"
+                        max="8"
+                        value="4"
+                    >
+                </div>
+                <button id="layoutToggleBtn" class="layout-toggle" title="Layout umschalten">
+                    🧩
+                </button>
+            </div>
         </div>
 
         <!-- Grid -->
@@ -320,585 +401,652 @@
             <div class="modal-image-wrapper" id="modalImageWrapper">
                 <span id="modalIdBadge" class="badge badge-id modal-id">01</span>
                 <button id="modalPrev" class="modal-arrow left">&larr;</button>
-                <img id="modalImage" src="" alt="">
+                <img id="modalImage" src="" alt="" />
                 <button id="modalNext" class="modal-arrow right">&rarr;</button>
             </div>
         </div>
     </div>
 
     <script>
-    const COLS = 4;
-    const TOTAL_SECTORS = 26;
-    const BIG_SECTORS = 2;
-    const IMAGE_BASE_PATH = 'img';
+        const COLS = 4;
+        const TOTAL_SECTORS = 26;
+        const BIG_SECTORS = 2;
+        const IMAGE_BASE_PATH = 'img';
 
-    // =========================
-    // Easter-Egg Einstellungen
-    // =========================
-    const EGG_ENABLED       = true;     // bei Bedarf auf false stellen
-    const EGG_CHANCE        = 0.001;    // 0.001 = 1/1000
-    const EGG_SOUNDS_COUNT  = 3;        // Anzahl eggX.mp3 (egg1.mp3 .. eggN.mp3)
+        // ========= DOM-Grundelemente =========
+        const pageEl             = document.querySelector('.page');
+        const mainbody           = document.getElementById('mainbody');
+        const layoutToggleBtn    = document.getElementById('layoutToggleBtn');
+        const layoutSliderWrapper = document.getElementById('layoutSliderWrapper');
+        const columnsSlider      = document.getElementById('columnsSlider');
+        const columnsLabel       = document.getElementById('columnsLabel');
 
-    // =========================
-    // Sounds
-    // =========================
-    const downloadSound = new Audio('download.mp3'); // Kopieren
-    const hoverSound    = new Audio('hover.mp3');    // Hover
-    const selectSound   = new Audio('select.mp3');   // Klick normal / Bild öffnen
-    const bigSound      = new Audio('big.mp3');      // Klick groß / Bild öffnen
-    const closeSound    = new Audio('close.mp3');    // Viewer schließen
-    const nextSound     = new Audio('next.mp3');     // Navigation (links/rechts)
-    const errorSound    = new Audio('error.mp3');    // Klick auf disabled Tab
-    const arrowInSound  = new Audio('arrowin.mp3');  // Pfeil erscheint
-    const arrowOutSound = new Audio('arrowout.mp3'); // Pfeil verschwindet
+        let equalMode = false;                // false = OG (Big-Sectors), true = Equal-Mode
+        const sectorElements = [];            // DOM-Referenzen für alle Sectors
 
-    // Egg-Sounds dynamisch laden
-    const eggSounds = [];
-    for (let i = 1; i <= EGG_SOUNDS_COUNT; i++) {
-        eggSounds.push(new Audio(`egg${i}.mp3`));
-    }
+        // ========= Easter-Egg Einstellungen =========
+        const EGG_ENABLED      = true;      // bei Bedarf auf false
+        const EGG_CHANCE       = 0.001;     // 1/1000
+        const EGG_SOUNDS_COUNT = 3;         // egg1.mp3 .. eggN.mp3
 
-    function playSound(audio) {
-        if (!audio) return;
-        try {
-            audio.currentTime = 0;
-            audio.play();
-        } catch (e) {
-            console.warn('Sound konnte nicht abgespielt werden:', e);
+        // ========= Sounds =========
+        const downloadSound = new Audio('download.mp3');
+        const hoverSound    = new Audio('hover.mp3');
+        const selectSound   = new Audio('select.mp3');
+        const bigSound      = new Audio('big.mp3');
+        const closeSound    = new Audio('close.mp3');
+        const nextSound     = new Audio('next.mp3');
+        const errorSound    = new Audio('error.mp3');
+        const arrowInSound  = new Audio('arrowin.mp3');
+        const arrowOutSound = new Audio('arrowout.mp3');
+
+        const eggSounds = [];
+        for (let i = 1; i <= EGG_SOUNDS_COUNT; i++) {
+            eggSounds.push(new Audio(`egg${i}.mp3`));
         }
-    }
 
-    // Spielt normalen Sound oder mit bestimmter Wahrscheinlichkeit einen Egg-Sound
-    function playWithEgg(baseAudio) {
-        const useEgg = (
-            EGG_ENABLED &&
-            eggSounds.length > 0 &&
-            Math.random() < EGG_CHANCE
-        );
-
-        if (useEgg) {
-            const index = Math.floor(Math.random() * eggSounds.length);
-            const egg = eggSounds[index];
-            playSound(egg);
-        } else {
-            playSound(baseAudio);
-        }
-    }
-
-    // =========================
-    // Extra-Sounds primen (Autoplay-Policy)
-    // =========================
-    let extraAudioPrimed = false;
-    function primeExtraAudio() {
-        if (extraAudioPrimed) return;
-        extraAudioPrimed = true;
-
-        const allToPrime = [arrowInSound, arrowOutSound, ...eggSounds];
-
-        allToPrime.forEach(audio => {
+        function playSound(audio) {
             if (!audio) return;
             try {
-                const oldVolume = audio.volume ?? 1;
-                audio.volume = 0;
-                audio.play().then(() => {
-                    audio.pause();
-                    audio.currentTime = 0;
-                    audio.volume = oldVolume;
-                }).catch(() => {
-                    // Browser blockt evtl. – dann egal, ist nur Komfort
-                });
+                audio.currentTime = 0;
+                audio.play();
             } catch (e) {
-                console.warn('Audio-Priming fehlgeschlagen:', e);
-            }
-        });
-    }
-
-    // Beim ersten Klick / Keydown primen
-    document.addEventListener('click', primeExtraAudio,  { once: true });
-    document.addEventListener('keydown', primeExtraAudio, { once: true });
-
-    // =========================
-    // Tabs: disabled → error + Egg-Chance
-    // =========================
-    document.querySelectorAll('.tab').forEach(tab => {
-        tab.addEventListener('click', () => {
-            if (tab.classList.contains('disabled')) {
-                // HIER: Easter-Egg möglich
-                playWithEgg(errorSound);
-
-                tab.classList.add('error-flash');
-                setTimeout(() => {
-                    tab.classList.remove('error-flash');
-                }, 180);
-                return;
-            }
-            // spätere Tab-Logik für aktive Tabs
-        });
-    });
-
-    // =========================
-    // Hover-Sound mit Cooldown
-    // =========================
-    let lastHoverSoundTime = 0;
-    const HOVER_SOUND_COOLDOWN = 200;
-    function playHoverSound() {
-        const now = (window.performance && performance.now) ? performance.now() : Date.now();
-        if (now - lastHoverSoundTime < HOVER_SOUND_COOLDOWN) return;
-        lastHoverSoundTime = now;
-        playSound(hoverSound);
-    }
-
-    // =========================
-    // Manuelle Info-Reihen
-    // =========================
-    const infoRow1 = [
-        '11454','11687','11836','12305','10459','5471','13068','4004',
-        '22302','22017','21967','22394','22019','19761','22364','22392',
-        '11898','21859','22396','22091','22030','21937','22362','22395',
-        '',''
-    ];
-    while (infoRow1.length < TOTAL_SECTORS) infoRow1.push('');
-
-    const infoRow2 = [
-        '3533','3706','3815','4129','2970','389','4736','51',
-        '12298','12070','12030','12389','12072','10080','12356','12387',
-        '3857','11938','12391','8941','12077','12009','12354','12390',
-        '15597','14185'
-    ];
-    while (infoRow2.length < TOTAL_SECTORS) infoRow2.push('');
-
-    // =========================
-    // Grid-Berechnung
-    // =========================
-    const totalCells = TOTAL_SECTORS + 3 * BIG_SECTORS; // 26 + 6 = 32
-    const ROWS = totalCells / COLS;
-
-    if (!Number.isInteger(ROWS)) {
-        console.warn('Konfiguration passt nicht exakt ins Grid!');
-    }
-
-    const bigBlocks = [];
-
-    function blocksOverlap(r1, c1, r2, c2) {
-        return !(r1 + 1 < r2 || r1 > r2 + 1 || c1 + 1 < c2 || c1 > c2 + 1);
-    }
-
-    while (bigBlocks.length < BIG_SECTORS) {
-        const r = Math.floor(Math.random() * (ROWS - 1));
-        const c = Math.floor(Math.random() * (COLS - 1));
-
-        let ok = true;
-        for (const b of bigBlocks) {
-            if (blocksOverlap(r, c, b.row, b.col)) {
-                ok = false;
-                break;
+                console.warn('Sound konnte nicht abgespielt werden:', e);
             }
         }
-        if (!ok) continue;
 
-        bigBlocks.push({ row: r, col: c });
-    }
+        function playWithEgg(baseAudio) {
+            const useEgg = (
+                EGG_ENABLED &&
+                eggSounds.length > 0 &&
+                Math.random() < EGG_CHANCE
+            );
 
-    function cellInBig(r, c) {
-        return bigBlocks.find(b =>
-            r >= b.row && r <= b.row + 1 &&
-            c >= b.col && c <= b.col + 1
-        );
-    }
+            if (useEgg) {
+                const idx = Math.floor(Math.random() * eggSounds.length);
+                playSound(eggSounds[idx]);
+            } else {
+                playSound(baseAudio);
+            }
+        }
 
-    // =========================
-    // Sector-Konfiguration
-    // =========================
-    const sectorsConfig = [];
-    let id = 1;
+        // Extra-Sounds & Eggs primen (Autoplay)
+        let extraAudioPrimed = false;
+        function primeExtraAudio() {
+            if (extraAudioPrimed) return;
+            extraAudioPrimed = true;
 
-    for (let r = 0; r < ROWS; r++) {
-        for (let c = 0; c < COLS; c++) {
-            const block = cellInBig(r, c);
+            const allToPrime = [arrowInSound, arrowOutSound, ...eggSounds];
 
-            if (block) {
-                if (r === block.row && c === block.col) {
+            allToPrime.forEach(audio => {
+                if (!audio) return;
+                try {
+                    const oldVolume = audio.volume ?? 1;
+                    audio.volume = 0;
+                    audio.play().then(() => {
+                        audio.pause();
+                        audio.currentTime = 0;
+                        audio.volume = oldVolume;
+                    }).catch(() => {});
+                } catch (e) {
+                    console.warn('Audio-Priming fehlgeschlagen:', e);
+                }
+            });
+        }
+
+        document.addEventListener('click',  primeExtraAudio, { once: true });
+        document.addEventListener('keydown', primeExtraAudio, { once: true });
+
+        // Tabs: disabled → error + Egg + roter Flash
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                if (tab.classList.contains('disabled')) {
+                    playWithEgg(errorSound);
+                    tab.classList.add('error-flash');
+                    setTimeout(() => {
+                        tab.classList.remove('error-flash');
+                    }, 180);
+                    return;
+                }
+                // spätere Logik für aktive Tabs
+            });
+        });
+
+        // Hover-Sound mit Cooldown
+        let lastHoverSoundTime = 0;
+        const HOVER_SOUND_COOLDOWN = 200;
+        function playHoverSound() {
+            const now = (window.performance && performance.now) ? performance.now() : Date.now();
+            if (now - lastHoverSoundTime < HOVER_SOUND_COOLDOWN) return;
+            lastHoverSoundTime = now;
+            playSound(hoverSound);
+        }
+
+        // Info-Reihen
+        const infoRow1 = [
+            '11454','11687','11836','12305','10459','5471','13068','4004',
+            '22302','22017','21967','22394','22019','19761','22364','22392',
+            '11898','21859','22396','22091','22030','21937','22362','22395',
+            '',''
+        ];
+        while (infoRow1.length < TOTAL_SECTORS) infoRow1.push('');
+
+        const infoRow2 = [
+            '3533','3706','3815','4129','2970','389','4736','51',
+            '12298','12070','12030','12389','12072','10080','12356','12387',
+            '3857','11938','12391','8941','12077','12009','12354','12390',
+            '15597','14185'
+        ];
+        while (infoRow2.length < TOTAL_SECTORS) infoRow2.push('');
+
+        // Grid-Berechnung (OG-Mode mit 2 großen Sektoren)
+        const totalCells = TOTAL_SECTORS + 3 * BIG_SECTORS; // 26 + 6 = 32
+        const ROWS = totalCells / COLS;                     // 8
+
+        if (!Number.isInteger(ROWS)) {
+            console.warn('Konfiguration passt nicht exakt ins Grid!');
+        }
+
+        const bigBlocks = [];
+
+        function blocksOverlap(r1, c1, r2, c2) {
+            return !(r1 + 1 < r2 || r1 > r2 + 1 || c1 + 1 < c2 || c1 > c2 + 1);
+        }
+
+        while (bigBlocks.length < BIG_SECTORS) {
+            const r = Math.floor(Math.random() * (ROWS - 1));
+            const c = Math.floor(Math.random() * (COLS - 1));
+
+            let ok = true;
+            for (const b of bigBlocks) {
+                if (blocksOverlap(r, c, b.row, b.col)) {
+                    ok = false;
+                    break;
+                }
+            }
+            if (!ok) continue;
+
+            bigBlocks.push({ row: r, col: c });
+        }
+
+        function cellInBig(r, c) {
+            return bigBlocks.find(b =>
+                r >= b.row && r <= b.row + 1 &&
+                c >= b.col && c <= b.col + 1
+            );
+        }
+
+        const sectorsConfig = [];
+        let id = 1;
+
+        for (let r = 0; r < ROWS; r++) {
+            for (let c = 0; c < COLS; c++) {
+                const block = cellInBig(r, c);
+
+                if (block) {
+                    if (r === block.row && c === block.col) {
+                        sectorsConfig.push({
+                            id,
+                            rowStart: r + 1,
+                            colStart: c + 1,
+                            big: true
+                        });
+                        id++;
+                    }
+                } else {
                     sectorsConfig.push({
                         id,
                         rowStart: r + 1,
                         colStart: c + 1,
-                        big: true
+                        big: false
                     });
                     id++;
                 }
-            } else {
-                sectorsConfig.push({
-                    id,
-                    rowStart: r + 1,
-                    colStart: c + 1,
-                    big: false
-                });
-                id++;
             }
         }
-    }
 
-    // =========================
-    // Badge-Helper
-    // =========================
-    function copyToClipboard(text) {
-        if (!text || text === '-----') return;
-
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(text).catch(err => {
-                console.error('Clipboard Fehler:', err);
-            });
-        } else {
-            const textarea = document.createElement('textarea');
-            textarea.value = text;
-            document.body.appendChild(textarea);
-            textarea.select();
-            try {
-                document.execCommand('copy');
-            } catch (err) {
-                console.error('Clipboard Fallback Fehler:', err);
-            }
-            document.body.removeChild(textarea);
-        }
-    }
-
-    function showCopiedBubble(badgeEl) {
-        const old = badgeEl.querySelector('.copy-tooltip');
-        if (old) old.remove();
-
-        const tooltip = document.createElement('div');
-        tooltip.className = 'copy-tooltip';
-        tooltip.textContent = 'Kopiert!';
-        badgeEl.appendChild(tooltip);
-
-        setTimeout(() => {
-            if (tooltip.parentNode) {
-                tooltip.parentNode.removeChild(tooltip);
-            }
-        }, 1000);
-    }
-
-    function makeIdBadge(text) {
-        const span = document.createElement('span');
-        span.className = 'badge badge-id';
-        span.textContent = text;
-        return span;
-    }
-
-    function makeInfoBadge(text) {
-        const span = document.createElement('span');
-        span.className = 'badge badge-info';
-        span.textContent = text;
-
-        span.title = 'Klicken zum Kopieren';
-
-        span.addEventListener('mouseenter', e => {
-            e.stopPropagation();
-            playHoverSound();
-        });
-
-        span.addEventListener('click', e => {
-            e.stopPropagation();
-
+        // Badge-Helper
+        function copyToClipboard(text) {
             if (!text || text === '-----') return;
 
-            copyToClipboard(text);
-            playSound(downloadSound); // hier kein Egg – Copy sollte konsistent sein
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).catch(err => {
+                    console.error('Clipboard Fehler:', err);
+                });
+            } else {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                try {
+                    document.execCommand('copy');
+                } catch (err) {
+                    console.error('Clipboard Fallback Fehler:', err);
+                }
+                document.body.removeChild(textarea);
+            }
+        }
 
-            document.querySelectorAll('.badge-info.active').forEach(b => {
-                b.classList.remove('active');
+        function showCopiedBubble(badgeEl) {
+            const old = badgeEl.querySelector('.copy-tooltip');
+            if (old) old.remove();
+
+            const tooltip = document.createElement('div');
+            tooltip.className = 'copy-tooltip';
+            tooltip.textContent = 'Kopiert!';
+            badgeEl.appendChild(tooltip);
+
+            setTimeout(() => {
+                if (tooltip.parentNode) {
+                    tooltip.parentNode.removeChild(tooltip);
+                }
+            }, 1000);
+        }
+
+        function makeIdBadge(text) {
+            const span = document.createElement('span');
+            span.className = 'badge badge-id';
+            span.textContent = text;
+            return span;
+        }
+
+        function makeInfoBadge(text) {
+            const span = document.createElement('span');
+            span.className = 'badge badge-info';
+            span.textContent = text;
+
+            span.title = 'Klicken zum Kopieren';
+
+            span.addEventListener('mouseenter', e => {
+                e.stopPropagation();
+                playHoverSound();
             });
 
-            span.classList.add('active');
-            showCopiedBubble(span);
-        });
+            span.addEventListener('click', e => {
+                e.stopPropagation();
 
-        return span;
-    }
+                if (!text || text === '-----') return;
 
-    // =========================
-    // Modal / Viewer
-    // =========================
-    const modal             = document.getElementById('imageModal');
-    const modalImg          = document.getElementById('modalImage');
-    const modalIdBadge      = document.getElementById('modalIdBadge');
-    const modalPrev         = document.getElementById('modalPrev');
-    const modalNext         = document.getElementById('modalNext');
-    const modalImageWrapper = document.getElementById('modalImageWrapper');
+                copyToClipboard(text);
+                playSound(downloadSound);
 
-    let currentModalId   = null;
-    let arrowHideTimeout = null;
-    let arrowHovered     = false;
+                document.querySelectorAll('.badge-info.active').forEach(b => {
+                    b.classList.remove('active');
+                });
 
-    function setArrowVisible(btn, visible) {
-        const currentlyVisible = btn.classList.contains('visible') && !btn.disabled;
+                span.classList.add('active');
+                showCopiedBubble(span);
+            });
 
-        if (visible && !btn.disabled) {
-            if (!currentlyVisible) {
-                btn.classList.add('visible');
-                playSound(arrowInSound);   // Arrow-In hat bewusst KEIN Egg
-            }
-        } else {
-            if (currentlyVisible) {
-                btn.classList.remove('visible');
-                playSound(arrowOutSound);  // Arrow-Out ebenfalls normal
+            return span;
+        }
+
+        // Modal / Viewer
+        const modal             = document.getElementById('imageModal');
+        const modalImg          = document.getElementById('modalImage');
+        const modalIdBadge      = document.getElementById('modalIdBadge');
+        const modalPrev         = document.getElementById('modalPrev');
+        const modalNext         = document.getElementById('modalNext');
+        const modalImageWrapper = document.getElementById('modalImageWrapper');
+
+        let currentModalId   = null;
+        let arrowHideTimeout = null;
+        let arrowHovered     = false;
+
+        function setArrowVisible(btn, visible) {
+            const currentlyVisible = btn.classList.contains('visible') && !btn.disabled;
+
+            if (visible && !btn.disabled) {
+                if (!currentlyVisible) {
+                    btn.classList.add('visible');
+                    playSound(arrowInSound);
+                }
             } else {
-                btn.classList.remove('visible');
+                if (currentlyVisible) {
+                    btn.classList.remove('visible');
+                    playSound(arrowOutSound);
+                } else {
+                    btn.classList.remove('visible');
+                }
             }
         }
-    }
 
-    function setModalImageFromId(id, existingSrc) {
-        if (!id || id < 1 || id > TOTAL_SECTORS) return;
-        currentModalId = id;
+        function setModalImageFromId(id, existingSrc) {
+            if (!id || id < 1 || id > TOTAL_SECTORS) return;
+            currentModalId = id;
 
-        const idStr = String(id).padStart(2, '0');
-        modalIdBadge.textContent = idStr;
-        modalImg.alt = `Bild ${idStr}`;
+            const idStr = String(id).padStart(2, '0');
+            modalIdBadge.textContent = idStr;
+            modalImg.alt = `Bild ${idStr}`;
 
-        if (existingSrc) {
-            modalImg.onerror = null;
-            modalImg.src = existingSrc;
-        } else {
-            modalImg.onerror = null;
-            modalImg.src = `${IMAGE_BASE_PATH}/${idStr}.jpg`;
-            modalImg.onerror = () => {
+            if (existingSrc) {
                 modalImg.onerror = null;
-                modalImg.src = `${IMAGE_BASE_PATH}/${idStr}.png`;
-            };
-        }
-
-        modalPrev.disabled = (id <= 1);
-        modalNext.disabled = (id >= TOTAL_SECTORS);
-
-        if (modalPrev.disabled) setArrowVisible(modalPrev, false);
-        if (modalNext.disabled) setArrowVisible(modalNext, false);
-    }
-
-    function openModalForId(id, existingSrc) {
-        setModalImageFromId(id, existingSrc);
-        modal.classList.add('visible');
-    }
-
-    function closeModalViewer() {
-        modal.classList.remove('visible');
-        modalImg.src = '';
-        modalImg.alt = '';
-        currentModalId = null;
-        arrowHovered = false;
-
-        if (arrowHideTimeout) {
-            clearTimeout(arrowHideTimeout);
-            arrowHideTimeout = null;
-        }
-
-        setArrowVisible(modalPrev, false);
-        setArrowVisible(modalNext, false);
-    }
-
-    function showPrev() {
-        if (currentModalId === null || currentModalId <= 1) return;
-        const newId = currentModalId - 1;
-        setModalImageFromId(newId);
-        // HIER: Navigation → Egg möglich
-        playWithEgg(nextSound);
-    }
-
-    function showNext() {
-        if (currentModalId === null || currentModalId >= TOTAL_SECTORS) return;
-        const newId = currentModalId + 1;
-        setModalImageFromId(newId);
-        // HIER: Navigation → Egg möglich
-        playWithEgg(nextSound);
-    }
-
-    function resetArrowHideTimer() {
-        if (arrowHovered) return;
-        if (arrowHideTimeout) {
-            clearTimeout(arrowHideTimeout);
-        }
-        arrowHideTimeout = setTimeout(() => {
-            setArrowVisible(modalPrev, false);
-            setArrowVisible(modalNext, false);
-            arrowHideTimeout = null;
-        }, 800);
-    }
-
-    modalPrev.addEventListener('click', e => {
-        e.stopPropagation();
-        showPrev();
-        if (!modalPrev.disabled) {
-            setArrowVisible(modalPrev, true);
-        }
-        resetArrowHideTimer();
-    });
-
-    modalNext.addEventListener('click', e => {
-        e.stopPropagation();
-        showNext();
-        if (!modalNext.disabled) {
-            setArrowVisible(modalNext, true);
-        }
-        resetArrowHideTimer();
-    });
-
-    // Hover auf Pfeilen: nicht auto-hiden
-    modalPrev.addEventListener('mouseenter', () => {
-        arrowHovered = true;
-        if (!modalPrev.disabled) setArrowVisible(modalPrev, true);
-        if (arrowHideTimeout) {
-            clearTimeout(arrowHideTimeout);
-            arrowHideTimeout = null;
-        }
-    });
-    modalPrev.addEventListener('mouseleave', () => {
-        arrowHovered = false;
-        resetArrowHideTimer();
-    });
-
-    modalNext.addEventListener('mouseenter', () => {
-        arrowHovered = true;
-        if (!modalNext.disabled) setArrowVisible(modalNext, true);
-        if (arrowHideTimeout) {
-            clearTimeout(arrowHideTimeout);
-            arrowHideTimeout = null;
-        }
-    });
-    modalNext.addEventListener('mouseleave', () => {
-        arrowHovered = false;
-        resetArrowHideTimer();
-    });
-
-    // Arrow-Logik: 3 Zonen basierend auf Fensterbreite
-    modalImageWrapper.addEventListener('mousemove', e => {
-        const totalWidth = window.innerWidth || document.documentElement.clientWidth;
-        const xScreen = e.clientX;
-
-        const leftZoneEnd    = totalWidth / 3;
-        const rightZoneStart = (2 * totalWidth) / 3;
-
-        if (xScreen < leftZoneEnd && !modalPrev.disabled) {
-            setArrowVisible(modalPrev, true);
-            setArrowVisible(modalNext, false);
-        } else if (xScreen > rightZoneStart && !modalNext.disabled) {
-            setArrowVisible(modalNext, true);
-            setArrowVisible(modalPrev, false);
-        } else {
-            setArrowVisible(modalPrev, false);
-            setArrowVisible(modalNext, false);
-        }
-
-        resetArrowHideTimer();
-    });
-
-    modalImageWrapper.addEventListener('mouseleave', () => {
-        arrowHovered = false;
-        if (arrowHideTimeout) {
-            clearTimeout(arrowHideTimeout);
-            arrowHideTimeout = null;
-        }
-        setArrowVisible(modalPrev, false);
-        setArrowVisible(modalNext, false);
-    });
-
-    // Klick auf Hintergrund schließt Viewer
-    modal.addEventListener('click', e => {
-        if (e.target === modal) {
-            // HIER: Viewer schließen → Egg möglich
-            playWithEgg(closeSound);
-            closeModalViewer();
-        }
-    });
-
-    // Keyboard: ESC / Pfeile
-    document.addEventListener('keydown', e => {
-        if (!modal.classList.contains('visible')) return;
-
-        if (e.key === 'Escape') {
-            e.preventDefault();
-            // HIER: Viewer schließen (ESC) → Egg möglich
-            playWithEgg(closeSound);
-            closeModalViewer();
-        } else if (e.key === 'ArrowLeft') {
-            e.preventDefault();
-            showPrev();
-        } else if (e.key === 'ArrowRight') {
-            e.preventDefault();
-            showNext();
-        }
-    });
-
-    // =========================
-    // Grid aufbauen
-    // =========================
-    const mainbody = document.getElementById('mainbody');
-
-    sectorsConfig.forEach(cfg => {
-        const div = document.createElement('div');
-        div.classList.add('sectors');
-        if (cfg.big) div.classList.add('big');
-
-        div.addEventListener('mouseenter', () => {
-            playHoverSound();
-        });
-
-        const idStr = String(cfg.id).padStart(2, '0');
-
-        const img = document.createElement('img');
-        img.src = `${IMAGE_BASE_PATH}/${idStr}.jpg`;
-        img.alt = `Bild ${idStr}`;
-        img.onerror = () => {
-            img.onerror = null;
-            img.src = `${IMAGE_BASE_PATH}/${idStr}.png`;
-        };
-
-        img.addEventListener('click', e => {
-            e.stopPropagation();
-            // HIER: Bild öffnen → Egg möglich
-            if (cfg.big) {
-                playWithEgg(bigSound);
+                modalImg.src = existingSrc;
             } else {
-                playWithEgg(selectSound);
+                modalImg.onerror = null;
+                modalImg.src = `${IMAGE_BASE_PATH}/${idStr}.jpg`;
+                modalImg.onerror = () => {
+                    modalImg.onerror = null;
+                    modalImg.src = `${IMAGE_BASE_PATH}/${idStr}.png`;
+                };
             }
-            openModalForId(cfg.id, img.src);
+
+            modalPrev.disabled = (id <= 1);
+            modalNext.disabled = (id >= TOTAL_SECTORS);
+
+            if (modalPrev.disabled) setArrowVisible(modalPrev, false);
+            if (modalNext.disabled) setArrowVisible(modalNext, false);
+        }
+
+        function openModalForId(id, existingSrc) {
+            setModalImageFromId(id, existingSrc);
+            modal.classList.add('visible');
+        }
+
+        function closeModalViewer() {
+            modal.classList.remove('visible');
+            modalImg.src = '';
+            modalImg.alt = '';
+            currentModalId = null;
+            arrowHovered = false;
+
+            if (arrowHideTimeout) {
+                clearTimeout(arrowHideTimeout);
+                arrowHideTimeout = null;
+            }
+
+            setArrowVisible(modalPrev, false);
+            setArrowVisible(modalNext, false);
+        }
+
+        function showPrev() {
+            if (currentModalId === null || currentModalId <= 1) return;
+            const newId = currentModalId - 1;
+            setModalImageFromId(newId);
+            playWithEgg(nextSound);
+        }
+
+        function showNext() {
+            if (currentModalId === null || currentModalId >= TOTAL_SECTORS) return;
+            const newId = currentModalId + 1;
+            setModalImageFromId(newId);
+            playWithEgg(nextSound);
+        }
+
+        function resetArrowHideTimer() {
+            if (arrowHovered) return;
+            if (arrowHideTimeout) {
+                clearTimeout(arrowHideTimeout);
+            }
+            arrowHideTimeout = setTimeout(() => {
+                setArrowVisible(modalPrev, false);
+                setArrowVisible(modalNext, false);
+                arrowHideTimeout = null;
+            }, 800);
+        }
+
+        modalPrev.addEventListener('click', e => {
+            e.stopPropagation();
+            showPrev();
+            if (!modalPrev.disabled) {
+                setArrowVisible(modalPrev, true);
+            }
+            resetArrowHideTimer();
         });
 
-        div.appendChild(img);
+        modalNext.addEventListener('click', e => {
+            e.stopPropagation();
+            showNext();
+            if (!modalNext.disabled) {
+                setArrowVisible(modalNext, true);
+            }
+            resetArrowHideTimer();
+        });
 
-        const overlay = document.createElement('div');
-        overlay.className = 'overlay';
+        modalPrev.addEventListener('mouseenter', () => {
+            arrowHovered = true;
+            if (!modalPrev.disabled) setArrowVisible(modalPrev, true);
+            if (arrowHideTimeout) {
+                clearTimeout(arrowHideTimeout);
+                arrowHideTimeout = null;
+            }
+        });
+        modalPrev.addEventListener('mouseleave', () => {
+            arrowHovered = false;
+            resetArrowHideTimer();
+        });
 
-        const left = document.createElement('div');
-        left.className = 'overlay-left';
+        modalNext.addEventListener('mouseenter', () => {
+            arrowHovered = true;
+            if (!modalNext.disabled) setArrowVisible(modalNext, true);
+            if (arrowHideTimeout) {
+                clearTimeout(arrowHideTimeout);
+                arrowHideTimeout = null;
+            }
+        });
+        modalNext.addEventListener('mouseleave', () => {
+            arrowHovered = false;
+            resetArrowHideTimer();
+        });
 
-        const right = document.createElement('div');
-        right.className = 'overlay-right';
+        // 3-Zonen-Logik auf Basis Fensterbreite
+        modalImageWrapper.addEventListener('mousemove', e => {
+            const totalWidth = window.innerWidth || document.documentElement.clientWidth;
+            const xScreen = e.clientX;
 
-        const idx = cfg.id - 1;
+            const leftZoneEnd    = totalWidth / 3;
+            const rightZoneStart = (2 * totalWidth) / 3;
 
-        const badgeId    = makeIdBadge(idStr);
-        const badgeInfo1 = makeInfoBadge(infoRow1[idx] || '-----');
-        const badgeInfo2 = makeInfoBadge(infoRow2[idx] || '-----');
+            if (xScreen < leftZoneEnd && !modalPrev.disabled) {
+                setArrowVisible(modalPrev, true);
+                setArrowVisible(modalNext, false);
+            } else if (xScreen > rightZoneStart && !modalNext.disabled) {
+                setArrowVisible(modalNext, true);
+                setArrowVisible(modalPrev, false);
+            } else {
+                setArrowVisible(modalPrev, false);
+                setArrowVisible(modalNext, false);
+            }
 
-        left.appendChild(badgeId);
-        right.appendChild(badgeInfo1);
-        right.appendChild(badgeInfo2);
+            resetArrowHideTimer();
+        });
 
-        overlay.appendChild(left);
-        overlay.appendChild(right);
+        modalImageWrapper.addEventListener('mouseleave', () => {
+            arrowHovered = false;
+            if (arrowHideTimeout) {
+                clearTimeout(arrowHideTimeout);
+                arrowHideTimeout = null;
+            }
+            setArrowVisible(modalPrev, false);
+            setArrowVisible(modalNext, false);
+        });
 
-        div.appendChild(overlay);
+        modal.addEventListener('click', e => {
+            if (e.target === modal) {
+                playWithEgg(closeSound);
+                closeModalViewer();
+            }
+        });
 
-        div.style.gridRowStart = cfg.rowStart;
-        div.style.gridColumnStart = cfg.colStart;
+        document.addEventListener('keydown', e => {
+            if (!modal.classList.contains('visible')) return;
 
-        mainbody.appendChild(div);
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                playWithEgg(closeSound);
+                closeModalViewer();
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                showPrev();
+            } else if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                showNext();
+            }
+        });
+
+        // Layout-Helper für OG / Equal
+        function applyOriginalLayout() {
+    mainbody.style.display = 'grid';
+    mainbody.classList.remove('equal-mode');
+    mainbody.style.gridTemplateColumns = 'repeat(4, 1fr)';
+    mainbody.style.flexWrap = '';
+
+    // NEU: Grid-Gap wieder aktiv
+    mainbody.style.gap = '10px';
+    mainbody.style.rowGap = '';
+    mainbody.style.columnGap = '';
+
+    if (pageEl) {
+        pageEl.classList.remove('equal-fullwidth');
+    }
+
+    sectorElements.forEach((el, index) => {
+        const cfg = sectorsConfig[index];
+        el.style.flex = '';
+        el.style.maxWidth = '';
+        el.style.gridRowStart = cfg.rowStart;
+        el.style.gridColumnStart = cfg.colStart;
     });
-</script>
+}
+
+        function applyEqualLayout() {
+    const cols = parseInt(columnsSlider.value, 10) || 4;
+    const widthPercent = 100 / cols;
+
+    columnsLabel.textContent = cols;
+
+    mainbody.style.display = 'flex';
+    mainbody.classList.add('equal-mode');
+    mainbody.style.flexWrap = 'wrap';
+    mainbody.style.gridTemplateColumns = '';
+
+    // NEU: Gap für Equal-Mode
+    mainbody.style.gap = '0';
+    mainbody.style.rowGap = '10px';   // kannst du auch auf '0' setzen, wenn du gar keine Abstände willst
+    mainbody.style.columnGap = '0';
+
+    if (pageEl) {
+        pageEl.classList.add('equal-fullwidth');
+    }
+
+    sectorElements.forEach(el => {
+        el.style.gridRowStart = '';
+        el.style.gridColumnStart = '';
+        el.style.flex     = `0 0 ${widthPercent}%`;
+        el.style.maxWidth = `${widthPercent}%`;
+    });
+}
 
 
+        // Slider initial verstecken
+        if (layoutSliderWrapper) {
+            layoutSliderWrapper.style.display = 'none';
+        }
 
+        // Slider ändert im Equal-Mode die Spaltenanzahl
+        if (columnsSlider) {
+            columnsSlider.addEventListener('input', () => {
+                if (!equalMode) return;
+                applyEqualLayout();
+            });
+        }
 
+        // Button: OG ↔ Equal
+        if (layoutToggleBtn) {
+            layoutToggleBtn.addEventListener('click', () => {
+                equalMode = !equalMode;
+
+                if (equalMode) {
+                    layoutToggleBtn.classList.add('equal-active');
+                    layoutToggleBtn.textContent = '🔲';
+                    if (layoutSliderWrapper) layoutSliderWrapper.style.display = 'flex';
+                    applyEqualLayout();
+                } else {
+                    layoutToggleBtn.classList.remove('equal-active');
+                    layoutToggleBtn.textContent = '🧩';
+                    if (layoutSliderWrapper) layoutSliderWrapper.style.display = 'none';
+
+                    const defaultCols = 4;
+                    if (columnsSlider) {
+                        columnsSlider.value = defaultCols;
+                        columnsLabel.textContent = defaultCols;
+                    }
+                    applyOriginalLayout();
+                }
+            });
+        }
+
+        // Grid / Sectors aufbauen
+        sectorsConfig.forEach(cfg => {
+            const div = document.createElement('div');
+            div.classList.add('sectors');
+            if (cfg.big) div.classList.add('big');
+
+            // DOM-Referenz für Layout-Umstellung merken
+            sectorElements.push(div);
+
+            div.addEventListener('mouseenter', () => {
+                playHoverSound();
+            });
+
+            const idStr = String(cfg.id).padStart(2, '0');
+
+            const img = document.createElement('img');
+            img.src = `${IMAGE_BASE_PATH}/${idStr}.jpg`;
+            img.alt = `Bild ${idStr}`;
+            img.onerror = () => {
+                img.onerror = null;
+                img.src = `${IMAGE_BASE_PATH}/${idStr}.png`;
+            };
+
+            img.addEventListener('click', e => {
+                e.stopPropagation();
+
+                // Nur im OG-Mode ist der "Big"-Sound speziell
+                if (!equalMode && cfg.big) {
+                    playWithEgg(bigSound);
+                } else {
+                    playWithEgg(selectSound);
+                }
+
+                openModalForId(cfg.id, img.src);
+            });
+
+            div.appendChild(img);
+
+            const overlay = document.createElement('div');
+            overlay.className = 'overlay';
+
+            const left = document.createElement('div');
+            left.className = 'overlay-left';
+
+            const right = document.createElement('div');
+            right.className = 'overlay-right';
+
+            const idx = cfg.id - 1;
+
+            const badgeId    = makeIdBadge(idStr);
+            const badgeInfo1 = makeInfoBadge(infoRow1[idx] || '-----');
+            const badgeInfo2 = makeInfoBadge(infoRow2[idx] || '-----');
+
+            left.appendChild(badgeId);
+            right.appendChild(badgeInfo1);
+            right.appendChild(badgeInfo2);
+
+            overlay.appendChild(left);
+            overlay.appendChild(right);
+
+            div.appendChild(overlay);
+
+            // OG-Grid-Position
+            div.style.gridRowStart = cfg.rowStart;
+            div.style.gridColumnStart = cfg.colStart;
+
+            mainbody.appendChild(div);
+        });
+
+        // Start im OG-Layout
+        applyOriginalLayout();
+    </script>
 </body>
 </html>
-
