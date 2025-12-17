@@ -91,15 +91,23 @@
         }
 
         .layout-toggle {
-            border: none;
-            border-radius: 6px;
-            padding: 6px 10px;
-            background: #333;
-            color: #fff;
-            cursor: pointer;
-            font-size: 1.1rem;
-            transition: background-color 0.15s ease, transform 0.08s ease;
-        }
+    border: none;
+    border-radius: 6px;
+    padding: 4px 8px; /* etwas kompakter, da jetzt Icon */
+    background: #333;
+    color: #fff;
+    cursor: pointer;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.15s ease, transform 0.08s ease;
+}
+.layout-toggle img {
+    width: 20px;
+    height: 20px;
+    display: block;
+}
 
         .layout-toggle:hover {
             background: #555;
@@ -386,7 +394,7 @@
                     >
                 </div>
                 <button id="layoutToggleBtn" class="layout-toggle" title="Layout umschalten">
-                    🧩
+                    <img id="layoutToggleIcon" src="og.svg" alt="Layout: Original" />
                 </button>
             </div>
         </div>
@@ -417,7 +425,8 @@
         const pageEl             = document.querySelector('.page');
         const mainbody           = document.getElementById('mainbody');
         const layoutToggleBtn    = document.getElementById('layoutToggleBtn');
-        const layoutSliderWrapper = document.getElementById('layoutSliderWrapper');
+        const layoutToggleIcon   = document.getElementById('layoutToggleIcon');
+        const layoutSliderWrapper= document.getElementById('layoutSliderWrapper');
         const columnsSlider      = document.getElementById('columnsSlider');
         const columnsLabel       = document.getElementById('columnsLabel');
 
@@ -886,28 +895,23 @@
 
         // Layout-Helper für OG / Equal
         function applyOriginalLayout() {
-    mainbody.style.display = 'grid';
-    mainbody.classList.remove('equal-mode');
-    mainbody.style.gridTemplateColumns = 'repeat(4, 1fr)';
-    mainbody.style.flexWrap = '';
+            mainbody.style.display = 'grid';
+            mainbody.classList.remove('equal-mode');
+            mainbody.style.gridTemplateColumns = 'repeat(4, 1fr)';
+            mainbody.style.flexWrap = '';
 
-    // NEU: Grid-Gap wieder aktiv
-    mainbody.style.gap = '10px';
-    mainbody.style.rowGap = '';
-    mainbody.style.columnGap = '';
+            if (pageEl) {
+                pageEl.classList.remove('equal-fullwidth');
+            }
 
-    if (pageEl) {
-        pageEl.classList.remove('equal-fullwidth');
-    }
-
-    sectorElements.forEach((el, index) => {
-        const cfg = sectorsConfig[index];
-        el.style.flex = '';
-        el.style.maxWidth = '';
-        el.style.gridRowStart = cfg.rowStart;
-        el.style.gridColumnStart = cfg.colStart;
-    });
-}
+            sectorElements.forEach((el, index) => {
+                const cfg = sectorsConfig[index];
+                el.style.flex = '';
+                el.style.maxWidth = '';
+                el.style.gridRowStart = cfg.rowStart;
+                el.style.gridColumnStart = cfg.colStart;
+            });
+        }
 
         function applyEqualLayout() {
     const cols = parseInt(columnsSlider.value, 10) || 4;
@@ -957,22 +961,33 @@
                 equalMode = !equalMode;
 
                 if (equalMode) {
-                    layoutToggleBtn.classList.add('equal-active');
-                    layoutToggleBtn.textContent = '🔲';
-                    if (layoutSliderWrapper) layoutSliderWrapper.style.display = 'flex';
-                    applyEqualLayout();
-                } else {
-                    layoutToggleBtn.classList.remove('equal-active');
-                    layoutToggleBtn.textContent = '🧩';
-                    if (layoutSliderWrapper) layoutSliderWrapper.style.display = 'none';
+    layoutToggleBtn.classList.add('equal-active');
+    if (layoutSliderWrapper) layoutSliderWrapper.style.display = 'flex';
 
-                    const defaultCols = 4;
-                    if (columnsSlider) {
-                        columnsSlider.value = defaultCols;
-                        columnsLabel.textContent = defaultCols;
-                    }
-                    applyOriginalLayout();
-                }
+    if (layoutToggleIcon) {
+        layoutToggleIcon.src = 'equal.svg';
+        layoutToggleIcon.alt = 'Layout: Equal';
+    }
+
+    applyEqualLayout();
+} else {
+    layoutToggleBtn.classList.remove('equal-active');
+    if (layoutSliderWrapper) layoutSliderWrapper.style.display = 'none';
+
+    const defaultCols = 4;
+    if (columnsSlider) {
+        columnsSlider.value = defaultCols;
+        columnsLabel.textContent = defaultCols;
+    }
+
+    if (layoutToggleIcon) {
+        layoutToggleIcon.src = 'og.svg';
+        layoutToggleIcon.alt = 'Layout: Original';
+    }
+
+    applyOriginalLayout();
+}
+
             });
         }
 
