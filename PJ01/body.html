@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>autofox 2025 Theme Viewer</title>
+    <title>Theme Viewer</title>
     <style>
         * {
             box-sizing: border-box;
@@ -25,14 +25,12 @@
             padding: 0 20px 20px;
         }
 
-        /* im Equal-Mode volle Breite nutzen */
         .page.equal-fullwidth {
             max-width: none;
             padding-left: 0;
             padding-right: 0;
         }
 
-        /* Tabs / Register oben */
         .tabbar {
             display: flex;
             justify-content: space-between;
@@ -70,7 +68,7 @@
                 transform 0.08s ease;
         }
 
-        .tab:hover:not(.disabled):not(.active) {
+        .tab:hover:not(.active) {
             background: #333;
             color: #fff;
             transform: translateY(-1px);
@@ -84,7 +82,6 @@
 
         .tab.disabled {
             opacity: 0.4;
-            cursor: pointer;
         }
 
         .tab.error-flash {
@@ -122,7 +119,7 @@
         }
 
         .layout-slider-wrapper {
-            display: none; /* nur im Equal-Mode sichtbar */
+            display: none;
             align-items: center;
             gap: 6px;
             color: #eee;
@@ -135,7 +132,6 @@
             gap: 4px;
         }
 
-        /* Grid-Container */
         .mainbody {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -145,7 +141,6 @@
             padding: 10px;
         }
 
-        /* Big-Sectors nur im OG-Mode 2x2 */
         .mainbody:not(.equal-mode) .sectors.big {
             grid-column-end: span 2;
             grid-row-end: span 2;
@@ -161,7 +156,6 @@
             padding: 0;
         }
 
-        /* im Equal-Mode innen kleine horizontale Abstände */
         .mainbody.equal-mode .sectors {
             padding: 0 3px;
         }
@@ -181,7 +175,6 @@
             border-radius: 6px;
         }
 
-        /* Overlay oben im Sector (ID + Infos) */
         .overlay {
             position: absolute;
             top: 4px;
@@ -193,7 +186,7 @@
             justify-content: space-between;
             align-items: flex-start;
             font-size: 0.8rem;
-            pointer-events: none; /* blockiert Klicks NICHT */
+            pointer-events: none;
         }
 
         .overlay-left,
@@ -203,7 +196,6 @@
             gap: 4px;
         }
 
-        /* Badges (auch im Modal verwendet) */
         .badge {
             position: relative;
             border-radius: 5px;
@@ -220,14 +212,14 @@
             font-weight: 600;
             background: rgba(0, 0, 0, 0.8);
             border-color: rgba(255, 255, 255, 0.9);
-            color: #fff; /* neu: ID immer weiss */
-            pointer-events: none; /* reine Info */
+            color: #fff;
+            pointer-events: none;
         }
 
         .badge-info {
             font-family: monospace;
             cursor: pointer;
-            pointer-events: auto;  /* klickbar */
+            pointer-events: auto;
             transition:
                 background-color 0.15s ease,
                 transform 0.1s ease,
@@ -275,7 +267,6 @@
             100% { opacity: 0; }
         }
 
-        /* Modal / Viewer */
         .image-modal {
             position: fixed;
             inset: 0;
@@ -320,7 +311,6 @@
             background: #000;
         }
 
-        /* ID-Badge im Viewer */
         .modal-id {
             position: absolute;
             top: 8px;
@@ -328,7 +318,6 @@
             z-index: 6;
         }
 
-        /* Seitliche Pfeile im Bildbereich */
         .modal-arrow {
             position: absolute;
             top: 50%;
@@ -381,14 +370,8 @@
 </head>
 <body>
     <div class="page">
-        <!-- Tabs / Register + Layout Controls -->
         <div class="tabbar">
-            <div class="tabbar-left">
-                <button class="tab disabled">Legacy Theme</button>
-                <button class="tab active">autofox 2025</button>
-                <button class="tab disabled">Vorlage PDF</button>
-                <button class="tab disabled">Alternative Variante</button>
-            </div>
+            <div class="tabbar-left" id="tabbarLeft"></div>
             <div class="tabbar-right">
                 <div id="layoutSliderWrapper" class="layout-slider-wrapper">
                     <label for="columnsSlider">
@@ -397,7 +380,7 @@
                     <input
                         type="range"
                         id="columnsSlider"
-                        min="3"
+                        min="1"
                         max="8"
                         value="4"
                     >
@@ -408,11 +391,9 @@
             </div>
         </div>
 
-        <!-- Grid -->
         <div class="mainbody" id="mainbody"></div>
     </div>
 
-    <!-- Modal für großes Bild -->
     <div class="image-modal" id="imageModal">
         <div class="image-modal-content">
             <div class="modal-image-wrapper" id="modalImageWrapper">
@@ -426,40 +407,49 @@
 
     <script>
         const COLS = 4;
-        const TOTAL_SECTORS = 26;
         const BIG_SECTORS = 2;
-        const IMAGE_BASE_PATH = 'img';
+        const MAX_LISTS = 10;
 
-        // ========= DOM-Grundelemente =========
+        let TOTAL_SECTORS = 0;
+        let IMAGE_BASE_PATH = 'img';
+        let sectorsData = [];
+        let sectorsConfig = [];
+        const sectorElements = [];
+
         const pageEl              = document.querySelector('.page');
         const mainbody            = document.getElementById('mainbody');
+        const tabbarLeft          = document.getElementById('tabbarLeft');
         const layoutToggleBtn     = document.getElementById('layoutToggleBtn');
         const layoutToggleIcon    = document.getElementById('layoutToggleIcon');
         const layoutSliderWrapper = document.getElementById('layoutSliderWrapper');
         const columnsSlider       = document.getElementById('columnsSlider');
         const columnsLabel        = document.getElementById('columnsLabel');
 
-        let equalMode = false;                // false = OG (Big-Sectors), true = Equal-Mode
-        const sectorElements = [];            // DOM-Referenzen für alle Sectors
+        let equalMode     = false;
+        let currentListId = null;
 
-        // ========= Easter-Egg Einstellungen =========
-        const EGG_ENABLED      = true;      // bei Bedarf auf false
-        const EGG_CHANCE       = 0.001;     // 1/1000
-        const EGG_SOUNDS_COUNT = 3;         // egg1.mp3 .. eggN.mp3
+        const lists = {};
+        const tabButtons = [];
 
-        // ========= Sounds =========
-        const downloadSound     = new Audio('download.mp3');
-        const hoverSound        = new Audio('hover.mp3');
-        const selectSound       = new Audio('select.mp3');
-        const bigSound          = new Audio('big.mp3');
-        const closeSound        = new Audio('close.mp3');
-        const nextSound         = new Audio('next.mp3');
-        const errorSound        = new Audio('error.mp3');
-        const arrowInSound      = new Audio('arrowin.mp3');
-        const arrowOutSound     = new Audio('arrowout.mp3');
-        const slideSound        = new Audio('slide.mp3');
-        const holdSliderSound   = new Audio('holdslider.mp3');
-        const switchSound       = new Audio('switch.mp3');
+        // ===== Sounds & Eggs =====
+        const EGG_ENABLED      = true;
+        const EGG_CHANCE       = 0.001;
+        const EGG_SOUNDS_COUNT = 3;
+
+        const downloadSound      = new Audio('download.mp3');
+        const hoverSound         = new Audio('hover.mp3');
+        const selectSound        = new Audio('select.mp3');
+        const bigSound           = new Audio('big.mp3');
+        const closeSound         = new Audio('close.mp3');
+        const nextSound          = new Audio('next.mp3');
+        const errorSound         = new Audio('error.mp3');
+        const arrowInSound       = new Audio('arrowin.mp3');
+        const arrowOutSound      = new Audio('arrowout.mp3');
+        const slideSound         = new Audio('slide.mp3');
+        const holdSliderSound    = new Audio('holdslider.mp3');
+        const releaseSliderSound = new Audio('releaseslider.mp3');
+        const switchSound        = new Audio('switch.mp3');
+        const registerSound      = new Audio('register.mp3');
 
         const eggSounds = [];
         for (let i = 1; i <= EGG_SOUNDS_COUNT; i++) {
@@ -471,9 +461,7 @@
             try {
                 audio.currentTime = 0;
                 audio.play();
-            } catch (e) {
-                console.warn('Sound konnte nicht abgespielt werden:', e);
-            }
+            } catch (e) {}
         }
 
         function playWithEgg(baseAudio) {
@@ -482,7 +470,6 @@
                 eggSounds.length > 0 &&
                 Math.random() < EGG_CHANCE
             );
-
             if (useEgg) {
                 const idx = Math.floor(Math.random() * eggSounds.length);
                 playSound(eggSounds[idx]);
@@ -491,7 +478,6 @@
             }
         }
 
-        // Extra-Sounds & Eggs primen (Autoplay)
         let extraAudioPrimed = false;
         function primeExtraAudio() {
             if (extraAudioPrimed) return;
@@ -502,7 +488,9 @@
                 arrowOutSound,
                 slideSound,
                 holdSliderSound,
+                releaseSliderSound,
                 switchSound,
+                registerSound,
                 ...eggSounds
             ];
 
@@ -516,31 +504,14 @@
                         audio.currentTime = 0;
                         audio.volume = oldVolume;
                     }).catch(() => {});
-                } catch (e) {
-                    console.warn('Audio-Priming fehlgeschlagen:', e);
-                }
+                } catch (e) {}
             });
         }
 
         document.addEventListener('click',  primeExtraAudio, { once: true });
         document.addEventListener('keydown', primeExtraAudio, { once: true });
 
-        // Tabs: disabled → error + Egg + roter Flash
-        document.querySelectorAll('.tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                if (tab.classList.contains('disabled')) {
-                    playWithEgg(errorSound);
-                    tab.classList.add('error-flash');
-                    setTimeout(() => {
-                        tab.classList.remove('error-flash');
-                    }, 180);
-                    return;
-                }
-                // spätere Logik für aktive Tabs
-            });
-        });
-
-        // Hover-Sound mit Cooldown
+        // ===== Hover-Sound =====
         let lastHoverSoundTime = 0;
         const HOVER_SOUND_COOLDOWN = 200;
         function playHoverSound() {
@@ -550,7 +521,6 @@
             playSound(hoverSound);
         }
 
-        // Hover-Sound auch auf Layout-Switch und Slider
         if (layoutToggleBtn) {
             layoutToggleBtn.addEventListener('mouseenter', () => {
                 playHoverSound();
@@ -562,97 +532,12 @@
             });
         }
 
-        // Info-Reihen
-        const infoRow1 = [
-            '11454','11687','11836','12305','10459','5471','13068','4004',
-            '22302','22017','21967','22394','22019','19761','22364','22392',
-            '11898','21859','22396','22091','22030','21937','22362','22395',
-            '',''
-        ];
-        while (infoRow1.length < TOTAL_SECTORS) infoRow1.push('');
-
-        const infoRow2 = [
-            '3533','3706','3815','4129','2970','389','4736','51',
-            '12298','12070','12030','12389','12072','10080','12356','12387',
-            '3857','11938','12391','8941','12077','12009','12354','12390',
-            '15597','14185'
-        ];
-        while (infoRow2.length < TOTAL_SECTORS) infoRow2.push('');
-
-        // Grid-Berechnung (OG-Mode mit 2 großen Sektoren)
-        const totalCells = TOTAL_SECTORS + 3 * BIG_SECTORS; // 26 + 6 = 32
-        const ROWS = totalCells / COLS;                     // 8
-
-        if (!Number.isInteger(ROWS)) {
-            console.warn('Konfiguration passt nicht exakt ins Grid!');
-        }
-
-        const bigBlocks = [];
-
-        function blocksOverlap(r1, c1, r2, c2) {
-            return !(r1 + 1 < r2 || r1 > r2 + 1 || c1 + 1 < c2 || c1 > c2 + 1);
-        }
-
-        while (bigBlocks.length < BIG_SECTORS) {
-            const r = Math.floor(Math.random() * (ROWS - 1));
-            const c = Math.floor(Math.random() * (COLS - 1));
-
-            let ok = true;
-            for (const b of bigBlocks) {
-                if (blocksOverlap(r, c, b.row, b.col)) {
-                    ok = false;
-                    break;
-                }
-            }
-            if (!ok) continue;
-
-            bigBlocks.push({ row: r, col: c });
-        }
-
-        function cellInBig(r, c) {
-            return bigBlocks.find(b =>
-                r >= b.row && r <= b.row + 1 &&
-                c >= b.col && c <= b.col + 1
-            );
-        }
-
-        const sectorsConfig = [];
-        let id = 1;
-
-        for (let r = 0; r < ROWS; r++) {
-            for (let c = 0; c < COLS; c++) {
-                const block = cellInBig(r, c);
-
-                if (block) {
-                    if (r === block.row && c === block.col) {
-                        sectorsConfig.push({
-                            id,
-                            rowStart: r + 1,
-                            colStart: c + 1,
-                            big: true
-                        });
-                        id++;
-                    }
-                } else {
-                    sectorsConfig.push({
-                        id,
-                        rowStart: r + 1,
-                        colStart: c + 1,
-                        big: false
-                    });
-                    id++;
-                }
-            }
-        }
-
-        // Badge-Helper
+        // ===== Badge-Helper =====
         function copyToClipboard(text) {
             if (!text || text === '-----') return;
 
             if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(text).catch(err => {
-                    console.error('Clipboard Fehler:', err);
-                });
+                navigator.clipboard.writeText(text).catch(() => {});
             } else {
                 const textarea = document.createElement('textarea');
                 textarea.value = text;
@@ -660,9 +545,7 @@
                 textarea.select();
                 try {
                     document.execCommand('copy');
-                } catch (err) {
-                    console.error('Clipboard Fallback Fehler:', err);
-                }
+                } catch (err) {}
                 document.body.removeChild(textarea);
             }
         }
@@ -693,7 +576,7 @@
         function makeInfoBadge(text) {
             const span = document.createElement('span');
             span.className = 'badge badge-info';
-            span.textContent = text;
+            span.textContent = text || '-----';
 
             span.title = 'Klicken zum Kopieren';
 
@@ -721,7 +604,7 @@
             return span;
         }
 
-        // Modal / Viewer
+        // ===== Modal / Viewer =====
         const modal             = document.getElementById('imageModal');
         const modalImg          = document.getElementById('modalImage');
         const modalIdBadge      = document.getElementById('modalIdBadge');
@@ -729,7 +612,7 @@
         const modalNext         = document.getElementById('modalNext');
         const modalImageWrapper = document.getElementById('modalImageWrapper');
 
-        let currentModalId   = null;
+        let currentIndex    = null;
         let arrowHideTimeout = null;
         let arrowHovered     = false;
 
@@ -751,11 +634,13 @@
             }
         }
 
-        function setModalImageFromId(id, existingSrc) {
-            if (!id || id < 1 || id > TOTAL_SECTORS) return;
-            currentModalId = id;
+        function setModalImageFromIndex(index, existingSrc) {
+            if (index == null || index < 0 || index >= TOTAL_SECTORS) return;
+            currentIndex = index;
+            const data = sectorsData[index];
+            if (!data) return;
 
-            const idStr = String(id).padStart(2, '0');
+            const idStr = data.imgId;
             modalIdBadge.textContent = idStr;
             modalImg.alt = `Bild ${idStr}`;
 
@@ -771,15 +656,15 @@
                 };
             }
 
-            modalPrev.disabled = (id <= 1);
-            modalNext.disabled = (id >= TOTAL_SECTORS);
+            modalPrev.disabled = (index <= 0);
+            modalNext.disabled = (index >= TOTAL_SECTORS - 1);
 
             if (modalPrev.disabled) setArrowVisible(modalPrev, false);
             if (modalNext.disabled) setArrowVisible(modalNext, false);
         }
 
-        function openModalForId(id, existingSrc) {
-            setModalImageFromId(id, existingSrc);
+        function openModalForIndex(index, existingSrc) {
+            setModalImageFromIndex(index, existingSrc);
             modal.classList.add('visible');
         }
 
@@ -787,7 +672,7 @@
             modal.classList.remove('visible');
             modalImg.src = '';
             modalImg.alt = '';
-            currentModalId = null;
+            currentIndex = null;
             arrowHovered = false;
 
             if (arrowHideTimeout) {
@@ -800,16 +685,16 @@
         }
 
         function showPrev() {
-            if (currentModalId === null || currentModalId <= 1) return;
-            const newId = currentModalId - 1;
-            setModalImageFromId(newId);
+            if (currentIndex === null || currentIndex <= 0) return;
+            const newIndex = currentIndex - 1;
+            setModalImageFromIndex(newIndex);
             playWithEgg(nextSound);
         }
 
         function showNext() {
-            if (currentModalId === null || currentModalId >= TOTAL_SECTORS) return;
-            const newId = currentModalId + 1;
-            setModalImageFromId(newId);
+            if (currentIndex === null || currentIndex >= TOTAL_SECTORS - 1) return;
+            const newIndex = currentIndex + 1;
+            setModalImageFromIndex(newIndex);
             playWithEgg(nextSound);
         }
 
@@ -869,7 +754,6 @@
             resetArrowHideTimer();
         });
 
-        // 3-Zonen-Logik auf Basis Fensterbreite
         modalImageWrapper.addEventListener('mousemove', e => {
             const totalWidth = window.innerWidth || document.documentElement.clientWidth;
             const xScreen = e.clientX;
@@ -924,7 +808,7 @@
             }
         });
 
-        // Layout-Helper für OG / Equal
+        // ===== Layout (OG / Equal) =====
         function applyOriginalLayout() {
             mainbody.style.display = 'grid';
             mainbody.classList.remove('equal-mode');
@@ -937,8 +821,9 @@
                 pageEl.classList.remove('equal-fullwidth');
             }
 
-            sectorElements.forEach((el, index) => {
-                const cfg = sectorsConfig[index];
+            sectorsConfig.forEach((cfg, index) => {
+                const el = sectorElements[index];
+                if (!el) return;
                 el.style.flex = '';
                 el.style.maxWidth = '';
                 el.style.gridRowStart = cfg.rowStart;
@@ -947,52 +832,83 @@
         }
 
         function applyEqualLayout() {
-            const cols = parseInt(columnsSlider.value, 10) || 4;
-            const widthPercent = 93 / cols;
+    const cols = parseInt(columnsSlider.value, 10) || 1;
 
-            columnsLabel.textContent = cols;
+    // feste Breiten pro Spalten-Anzahl
+    const widthByCols = {
+        1: 100,
+        2: 49,
+        3: 32,
+        4: 24,
+        5: 19,
+        6: 15.3,
+        7: 13,
+        8: 11
+    };
 
-            mainbody.style.display = 'flex';
-            mainbody.classList.add('equal-mode');
-            mainbody.style.flexWrap = 'wrap';
-            mainbody.style.gridTemplateColumns = '';
-            mainbody.style.justifyContent = 'center'; //Zentrierter Inhaltgliederung
-            mainbody.style.alignContent = 'flex-start';
+    const widthPercent = widthByCols[cols] !== undefined
+        ? widthByCols[cols]
+        : (100 / cols); // Fallback, falls Slider mal größer geht
 
-            if (pageEl) {
-                pageEl.classList.add('equal-fullwidth');
-            }
+    columnsLabel.textContent = cols;
 
-            sectorElements.forEach(el => {
-                el.style.gridRowStart = '';
-                el.style.gridColumnStart = '';
-                el.style.flex     = `0 0 ${widthPercent}%`;
-                el.style.maxWidth = `${widthPercent}%`;
-            });
-        }
+    mainbody.style.display = 'flex';
+    mainbody.classList.add('equal-mode');
+    mainbody.style.flexWrap = 'wrap';
+    mainbody.style.gridTemplateColumns = '';
+    mainbody.style.justifyContent = 'center';
+    mainbody.style.alignContent = 'flex-start';
 
-        // Slider initial verstecken
+    if (pageEl) {
+        pageEl.classList.add('equal-fullwidth');
+    }
+
+    sectorElements.forEach(el => {
+        el.style.gridRowStart = '';
+        el.style.gridColumnStart = '';
+        el.style.flex     = `0 0 ${widthPercent}%`;
+        el.style.maxWidth = `${widthPercent}%`;
+    });
+}
+
+
         if (layoutSliderWrapper) {
             layoutSliderWrapper.style.display = 'none';
         }
 
-        // Slider Hold-Sound
-        if (columnsSlider) {
-            columnsSlider.addEventListener('mousedown', () => {
-                playSound(holdSliderSound);
-            });
-        }
+        // ===== Slider-Events (Equal-Mode) =====
+if (columnsSlider) {
+    // Beim Draufklicken -> Hold-Sound
+    columnsSlider.addEventListener('mousedown', () => {
+        playSound(holdSliderSound);
+    });
 
-        // Slider ändert im Equal-Mode die Spaltenanzahl + Slide-Sound
-        if (columnsSlider) {
-            columnsSlider.addEventListener('input', () => {
-                if (!equalMode) return;
-                playSound(slideSound);
-                applyEqualLayout();
-            });
-        }
+    // Beim Bewegen -> nur Label + Slide-Sound, KEIN Layout-Update
+    columnsSlider.addEventListener('input', () => {
+        if (!equalMode) return;
 
-        // Button: OG ↔ Equal, mit Switch-Sound
+        const cols = parseInt(columnsSlider.value, 10) || 1;
+        columnsLabel.textContent = cols;
+
+        playSound(slideSound);
+        // KEIN applyEqualLayout() hier, um das Glitching zu vermeiden
+    });
+
+    // Beim Loslassen -> Layout wirklich anpassen + Release-Sound
+    columnsSlider.addEventListener('change', () => {
+        if (!equalMode) return;
+
+        applyEqualLayout();
+        playSound(releaseSliderSound);
+    });
+
+    // Optional: Hover-Sound bleibt
+    columnsSlider.addEventListener('mouseenter', () => {
+        playHoverSound();
+    });
+}
+
+
         if (layoutToggleBtn) {
             layoutToggleBtn.addEventListener('click', () => {
                 playSound(switchSound);
@@ -1029,79 +945,359 @@
             });
         }
 
-        // Grid / Sectors aufbauen
-        sectorsConfig.forEach(cfg => {
-            const div = document.createElement('div');
-            div.classList.add('sectors');
-            if (cfg.big) div.classList.add('big');
+        // ===== CSV-Parsing =====
+        function parseCsv(text) {
+            const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+            if (!lines.length) {
+                return { active: false, title: '', basePath: 'img', data: [] };
+            }
 
-            // DOM-Referenz für Layout-Umstellung merken
-            sectorElements.push(div);
+            const firstLine = lines[0];
+            let delimiter = ';';
+            if (firstLine.includes(',') && !firstLine.includes(';')) {
+                delimiter = ',';
+            }
 
-            div.addEventListener('mouseenter', () => {
-                playHoverSound();
+            const rows = lines.map(line =>
+                line.split(delimiter).map(cell => cell.trim())
+            );
+
+            let active   = false;
+            let title    = '';
+            let basePath = 'img';
+
+            let rowInfo0 = null;
+            let rowInfo1 = null;
+            let rowInfo2 = null;
+
+            rows.forEach(row => {
+                const key = (row[0] || '').toLowerCase();
+                if (key === 'active') {
+                    const val = (row[1] || '').toLowerCase();
+                    active = (val === 'yes' || val === 'true' || val === '1');
+                } else if (key === 'titel') {
+                    title = row[1] || '';
+                    if (title) basePath = title;
+                } else if (key === 'inforow0') {
+                    rowInfo0 = row;
+                } else if (key === 'inforow1') {
+                    rowInfo1 = row;
+                } else if (key === 'inforow2') {
+                    rowInfo2 = row;
+                }
             });
 
-            const idStr = String(cfg.id).padStart(2, '0');
+            if (!rowInfo0) {
+                return { active, title, basePath, data: [] };
+            }
 
-            const img = document.createElement('img');
-            img.src = `${IMAGE_BASE_PATH}/${idStr}.jpg`;
-            img.alt = `Bild ${idStr}`;
-            img.onerror = () => {
-                img.onerror = null;
-                img.src = `${IMAGE_BASE_PATH}/${idStr}.png`;
-            };
+            const data = [];
+            const maxCols = rowInfo0.length;
 
-            img.addEventListener('click', e => {
-                e.stopPropagation();
+            for (let col = 1; col < maxCols; col++) {
+                const rawImg = rowInfo0[col] != null ? rowInfo0[col].trim() : '';
+                if (!rawImg) continue;
 
-                // Nur im OG-Mode ist der "Big"-Sound speziell
-                if (!equalMode && cfg.big) {
-                    playWithEgg(bigSound);
-                } else {
-                    playWithEgg(selectSound);
+                let imgId = rawImg;
+                if (/^\d+$/.test(rawImg) && rawImg.length < 2) {
+                    imgId = rawImg.padStart(2, '0');
                 }
 
-                openModalForId(cfg.id, img.src);
+                const info1 = rowInfo1 && rowInfo1[col] != null ? rowInfo1[col].trim() : '';
+                const info2 = rowInfo2 && rowInfo2[col] != null ? rowInfo2[col].trim() : '';
+
+                data.push({
+                    imgId,
+                    info1: info1 || '',
+                    info2: info2 || ''
+                });
+            }
+
+            return { active, title, basePath, data };
+        }
+
+        // ===== Layout-Konfiguration =====
+        function buildLayoutConfig() {
+            sectorsConfig = [];
+            if (TOTAL_SECTORS === 0) return;
+
+            const totalCells = TOTAL_SECTORS + 3 * BIG_SECTORS;
+            const ROWS = Math.ceil(totalCells / COLS);
+
+            const possible = [];
+            if (ROWS >= 2 && COLS >= 2 && BIG_SECTORS > 0) {
+                for (let r = 0; r < ROWS - 1; r++) {
+                    for (let c = 0; c < COLS - 1; c++) {
+                        possible.push({ row: r, col: c });
+                    }
+                }
+            }
+
+            for (let i = possible.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [possible[i], possible[j]] = [possible[j], possible[i]];
+            }
+
+            const bigBlocks = [];
+
+            function blocksOverlap(b1, b2) {
+                return !(
+                    b1.row + 1 < b2.row ||
+                    b1.row     > b2.row + 1 ||
+                    b1.col + 1 < b2.col ||
+                    b1.col     > b2.col + 1
+                );
+            }
+
+            for (const p of possible) {
+                if (bigBlocks.length >= BIG_SECTORS) break;
+                let ok = true;
+                for (const b of bigBlocks) {
+                    if (blocksOverlap(p, b)) {
+                        ok = false;
+                        break;
+                    }
+                }
+                if (ok) bigBlocks.push(p);
+            }
+
+            function cellInBig(r, c) {
+                return bigBlocks.find(b =>
+                    r >= b.row && r <= b.row + 1 &&
+                    c >= b.col && c <= b.col + 1
+                );
+            }
+
+            let dataIndex = 0;
+
+            for (let r = 0; r < ROWS && dataIndex < TOTAL_SECTORS; r++) {
+                for (let c = 0; c < COLS && dataIndex < TOTAL_SECTORS; c++) {
+                    const block = cellInBig(r, c);
+
+                    if (block) {
+                        if (r === block.row && c === block.col) {
+                            sectorsConfig.push({
+                                dataIndex,
+                                rowStart: r + 1,
+                                colStart: c + 1,
+                                big: true
+                            });
+                            dataIndex++;
+                        }
+                    } else {
+                        sectorsConfig.push({
+                            dataIndex,
+                            rowStart: r + 1,
+                            colStart: c + 1,
+                            big: false
+                        });
+                        dataIndex++;
+                    }
+                }
+            }
+        }
+
+        function buildSectorsDom() {
+            mainbody.innerHTML = '';
+            sectorElements.length = 0;
+
+            sectorsConfig.forEach(cfg => {
+                const data = sectorsData[cfg.dataIndex];
+                if (!data) return;
+
+                const div = document.createElement('div');
+                div.classList.add('sectors');
+                if (cfg.big) div.classList.add('big');
+
+                sectorElements.push(div);
+
+                div.addEventListener('mouseenter', () => {
+                    playHoverSound();
+                });
+
+                const idStr = data.imgId;
+
+                const img = document.createElement('img');
+                img.src = `${IMAGE_BASE_PATH}/${idStr}.jpg`;
+                img.alt = `Bild ${idStr}`;
+                img.onerror = () => {
+                    img.onerror = null;
+                    img.src = `${IMAGE_BASE_PATH}/${idStr}.png`;
+                };
+
+                img.addEventListener('click', e => {
+                    e.stopPropagation();
+
+                    if (!equalMode && cfg.big) {
+                        playWithEgg(bigSound);
+                    } else {
+                        playWithEgg(selectSound);
+                    }
+
+                    openModalForIndex(cfg.dataIndex, img.src);
+                });
+
+                div.appendChild(img);
+
+                const overlay = document.createElement('div');
+                overlay.className = 'overlay';
+
+                const left = document.createElement('div');
+                left.className = 'overlay-left';
+
+                const right = document.createElement('div');
+                right.className = 'overlay-right';
+
+                const badgeId    = makeIdBadge(idStr);
+                const badgeInfo1 = makeInfoBadge(data.info1);
+                const badgeInfo2 = makeInfoBadge(data.info2);
+
+                left.appendChild(badgeId);
+                right.appendChild(badgeInfo1);
+                right.appendChild(badgeInfo2);
+
+                overlay.appendChild(left);
+                overlay.appendChild(right);
+
+                div.appendChild(overlay);
+
+                div.style.gridRowStart = cfg.rowStart;
+                div.style.gridColumnStart = cfg.colStart;
+
+                mainbody.appendChild(div);
+            });
+        }
+
+        // ===== Tabs dynamisch erzeugen =====
+        function createTabForList(list) {
+            const btn = document.createElement('button');
+            btn.className = 'tab';
+            btn.dataset.list = list.id;
+
+            const label = list.title || list.id;
+            btn.textContent = label;
+            btn.title = list.title ? `${list.title} (${list.id})` : list.id;
+
+            if (!list.activeFlag) {
+                btn.classList.add('disabled');
+            }
+
+            btn.addEventListener('click', () => {
+                if (!list.activeFlag) {
+                    playWithEgg(errorSound);
+                    btn.classList.add('error-flash');
+                    setTimeout(() => {
+                        btn.classList.remove('error-flash');
+                    }, 180);
+                    return;
+                }
+
+                if (currentListId === list.id) return;
+
+                playWithEgg(registerSound);
+
+                tabButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                activateList(list.id);
             });
 
-            div.appendChild(img);
+            tabbarLeft.appendChild(btn);
+            tabButtons.push(btn);
+            list.tabElement = btn;
+        }
 
-            const overlay = document.createElement('div');
-            overlay.className = 'overlay';
+        function activateList(listId) {
+            const list = lists[listId];
+            if (!list || !list.csvLoaded || !list.activeFlag) return;
 
-            const left = document.createElement('div');
-            left.className = 'overlay-left';
+            currentListId   = listId;
+            IMAGE_BASE_PATH = list.basePath;
+            sectorsData     = list.data;
+            TOTAL_SECTORS   = sectorsData.length;
 
-            const right = document.createElement('div');
-            right.className = 'overlay-right';
+            if (list.title) {
+                document.title = `${list.title} Theme Viewer`;
+            }
 
-            const idx = cfg.id - 1;
+            // Layout-Button in OG-Zustand resetten
+            equalMode = false;
+            if (layoutToggleBtn) {
+                layoutToggleBtn.classList.remove('equal-active');
+                layoutToggleBtn.style.backgroundColor = '';
+                layoutToggleBtn.style.color = '';
+            }
+            if (layoutSliderWrapper) {
+                layoutSliderWrapper.style.display = 'none';
+            }
 
-            const badgeId    = makeIdBadge(idStr);
-            const badgeInfo1 = makeInfoBadge(infoRow1[idx] || '-----');
-            const badgeInfo2 = makeInfoBadge(infoRow2[idx] || '-----');
+            const defaultCols = 4;
+            if (columnsSlider) {
+                columnsSlider.value = defaultCols;
+                columnsLabel.textContent = defaultCols;
+            }
 
-            left.appendChild(badgeId);
-            right.appendChild(badgeInfo1);
-            right.appendChild(badgeInfo2);
+            if (layoutToggleIcon) {
+                layoutToggleIcon.src = 'og.svg';
+                layoutToggleIcon.alt = 'Layout: Original';
+            }
 
-            overlay.appendChild(left);
-            overlay.appendChild(right);
+            buildLayoutConfig();
+            buildSectorsDom();
+            applyOriginalLayout();
+        }
 
-            div.appendChild(overlay);
+        function loadList(list) {
+            fetch(list.file)
+                .then(resp => {
+                    if (!resp.ok) {
+                        return null;
+                    }
+                    return resp.text();
+                })
+                .then(text => {
+                    if (text == null) return;
 
-            // OG-Grid-Position
-            div.style.gridRowStart = cfg.rowStart;
-            div.style.gridColumnStart = cfg.colStart;
+                    const parsed = parseCsv(text);
+                    list.csvLoaded  = true;
+                    list.activeFlag = parsed.active;
+                    list.title      = parsed.title || list.id;
+                    list.basePath   = parsed.basePath || list.id;
+                    list.data       = parsed.data || [];
 
-            mainbody.appendChild(div);
-        });
+                    createTabForList(list);
 
-        // Start im OG-Layout
-        applyOriginalLayout();
+                    if (list.activeFlag && !currentListId) {
+                        tabButtons.forEach(b => b.classList.remove('active'));
+                        list.tabElement.classList.add('active');
+                        activateList(list.id);
+                    }
+                })
+                .catch(err => {
+                    console.error('Fehler beim Laden von', list.file, err);
+                });
+        }
+
+        function loadAllLists() {
+            for (let i = 1; i <= MAX_LISTS; i++) {
+                const id   = `liste${i}`;
+                const file = `${id}.csv`;
+
+                lists[id] = {
+                    id,
+                    file,
+                    tabElement: null,
+                    csvLoaded: false,
+                    activeFlag: false,
+                    title: '',
+                    basePath: 'img',
+                    data: []
+                };
+
+                loadList(lists[id]);
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', loadAllLists);
     </script>
 </body>
 </html>
-
-
