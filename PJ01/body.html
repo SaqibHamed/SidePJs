@@ -386,7 +386,7 @@
                     >
                 </div>
                 <button id="layoutToggleBtn" class="layout-toggle" title="Layout umschalten">
-                    <img id="layoutToggleIcon" src="og.svg" alt="Layout: Original" />
+                    <img id="layoutToggleIcon" src="ico/og.svg" alt="Layout: Original" />
                 </button>
             </div>
         </div>
@@ -408,9 +408,13 @@
     <script>
         const COLS = 4;
         const BIG_SECTORS = 2;
-        const MAX_LISTS = 10;
+        const MAX_LISTS = 10; // Max. erwartete listeX.csv Dateien
 
-        let TOTAL_SECTORS = 0;
+// Feste Reihenfolge der möglichen Listen
+const orderedListIds = Array.from({ length: MAX_LISTS }, (_, i) => `liste${i + 1}`);
+
+let TOTAL_SECTORS = 0;
+
         let IMAGE_BASE_PATH = 'img';
         let sectorsData = [];
         let sectorsConfig = [];
@@ -436,20 +440,20 @@
         const EGG_CHANCE       = 0.001;
         const EGG_SOUNDS_COUNT = 3;
 
-        const downloadSound      = new Audio('download.mp3');
-        const hoverSound         = new Audio('hover.mp3');
-        const selectSound        = new Audio('select.mp3');
-        const bigSound           = new Audio('big.mp3');
-        const closeSound         = new Audio('close.mp3');
-        const nextSound          = new Audio('next.mp3');
-        const errorSound         = new Audio('error.mp3');
-        const arrowInSound       = new Audio('arrowin.mp3');
-        const arrowOutSound      = new Audio('arrowout.mp3');
-        const slideSound         = new Audio('slide.mp3');
-        const holdSliderSound    = new Audio('holdslider.mp3');
-        const releaseSliderSound = new Audio('releaseslider.mp3');
-        const switchSound        = new Audio('switch.mp3');
-        const registerSound      = new Audio('register.mp3');
+        const downloadSound      = new Audio('sfx/download.mp3');
+        const hoverSound         = new Audio('sfx/hover.mp3');
+        const selectSound        = new Audio('sfx/select.mp3');
+        const bigSound           = new Audio('sfx/big.mp3');
+        const closeSound         = new Audio('sfx/close.mp3');
+        const nextSound          = new Audio('sfx/next.mp3');
+        const errorSound         = new Audio('sfx/error.mp3');
+        const arrowInSound       = new Audio('sfx/arrowin.mp3');
+        const arrowOutSound      = new Audio('sfx/arrowout.mp3');
+        const slideSound         = new Audio('sfx/slide.mp3');
+        const holdSliderSound    = new Audio('sfx/holdslider.mp3');
+        const releaseSliderSound = new Audio('sfx/releaseslider.mp3');
+        const switchSound        = new Audio('sfx/switch.mp3');
+        const registerSound      = new Audio('sfx/register.mp3');
 
         const eggSounds = [];
         for (let i = 1; i <= EGG_SOUNDS_COUNT; i++) {
@@ -638,23 +642,26 @@
             if (index == null || index < 0 || index >= TOTAL_SECTORS) return;
             currentIndex = index;
             const data = sectorsData[index];
-            if (!data) return;
+if (!data) return;
 
-            const idStr = data.imgId;
-            modalIdBadge.textContent = idStr;
-            modalImg.alt = `Bild ${idStr}`;
+const displayId = data.rawId || data.imgId; // z.B. "JUF14"
+const fileId    = data.imgId;               // z.B. "14"
 
-            if (existingSrc) {
-                modalImg.onerror = null;
-                modalImg.src = existingSrc;
-            } else {
-                modalImg.onerror = null;
-                modalImg.src = `${IMAGE_BASE_PATH}/${idStr}.jpg`;
-                modalImg.onerror = () => {
-                    modalImg.onerror = null;
-                    modalImg.src = `${IMAGE_BASE_PATH}/${idStr}.png`;
-                };
-            }
+modalIdBadge.textContent = displayId;
+modalImg.alt = `Bild ${displayId}`;
+
+if (existingSrc) {
+    modalImg.onerror = null;
+    modalImg.src = existingSrc;
+} else {
+    modalImg.onerror = null;
+    modalImg.src = `${IMAGE_BASE_PATH}/${fileId}.jpg`;
+    modalImg.onerror = () => {
+        modalImg.onerror = null;
+        modalImg.src = `${IMAGE_BASE_PATH}/${fileId}.png`;
+    };
+}
+
 
             modalPrev.disabled = (index <= 0);
             modalNext.disabled = (index >= TOTAL_SECTORS - 1);
@@ -839,11 +846,11 @@
         1: 100,
         2: 49,
         3: 32,
-        4: 24,
-        5: 19,
-        6: 15.3,
-        7: 13,
-        8: 11
+        4: 23,
+        5: 18,
+        6: 15,
+        7: 12,
+        8: 10
     };
 
     const widthPercent = widthByCols[cols] !== undefined
@@ -920,7 +927,7 @@ if (columnsSlider) {
                     if (layoutSliderWrapper) layoutSliderWrapper.style.display = 'flex';
 
                     if (layoutToggleIcon) {
-                        layoutToggleIcon.src = 'equal.svg';
+                        layoutToggleIcon.src = 'ico/equal.svg';
                         layoutToggleIcon.alt = 'Layout: Equal';
                     }
 
@@ -936,7 +943,7 @@ if (columnsSlider) {
                     }
 
                     if (layoutToggleIcon) {
-                        layoutToggleIcon.src = 'og.svg';
+                        layoutToggleIcon.src = 'ico/og.svg';
                         layoutToggleIcon.alt = 'Layout: Original';
                     }
 
@@ -947,74 +954,81 @@ if (columnsSlider) {
 
         // ===== CSV-Parsing =====
         function parseCsv(text) {
-            const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
-            if (!lines.length) {
-                return { active: false, title: '', basePath: 'img', data: [] };
-            }
+    const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+    if (!lines.length) {
+        return { active: false, title: '', basePath: 'img', data: [] };
+    }
 
-            const firstLine = lines[0];
-            let delimiter = ';';
-            if (firstLine.includes(',') && !firstLine.includes(';')) {
-                delimiter = ',';
-            }
+    const firstLine = lines[0];
+    let delimiter = ';';
+    if (firstLine.includes(',') && !firstLine.includes(';')) {
+        delimiter = ',';
+    }
 
-            const rows = lines.map(line =>
-                line.split(delimiter).map(cell => cell.trim())
-            );
+    const rows = lines.map(line =>
+        line.split(delimiter).map(cell => cell.trim())
+    );
 
-            let active   = false;
-            let title    = '';
-            let basePath = 'img';
+    let active   = false;
+    let title    = '';
+    let basePath = 'img';
 
-            let rowInfo0 = null;
-            let rowInfo1 = null;
-            let rowInfo2 = null;
+    let rowInfo0 = null;
+    let rowInfo1 = null;
+    let rowInfo2 = null;
 
-            rows.forEach(row => {
-                const key = (row[0] || '').toLowerCase();
-                if (key === 'active') {
-                    const val = (row[1] || '').toLowerCase();
-                    active = (val === 'yes' || val === 'true' || val === '1');
-                } else if (key === 'titel') {
-                    title = row[1] || '';
-                    if (title) basePath = title;
-                } else if (key === 'inforow0') {
-                    rowInfo0 = row;
-                } else if (key === 'inforow1') {
-                    rowInfo1 = row;
-                } else if (key === 'inforow2') {
-                    rowInfo2 = row;
-                }
-            });
-
-            if (!rowInfo0) {
-                return { active, title, basePath, data: [] };
-            }
-
-            const data = [];
-            const maxCols = rowInfo0.length;
-
-            for (let col = 1; col < maxCols; col++) {
-                const rawImg = rowInfo0[col] != null ? rowInfo0[col].trim() : '';
-                if (!rawImg) continue;
-
-                let imgId = rawImg;
-                if (/^\d+$/.test(rawImg) && rawImg.length < 2) {
-                    imgId = rawImg.padStart(2, '0');
-                }
-
-                const info1 = rowInfo1 && rowInfo1[col] != null ? rowInfo1[col].trim() : '';
-                const info2 = rowInfo2 && rowInfo2[col] != null ? rowInfo2[col].trim() : '';
-
-                data.push({
-                    imgId,
-                    info1: info1 || '',
-                    info2: info2 || ''
-                });
-            }
-
-            return { active, title, basePath, data };
+    rows.forEach(row => {
+        const key = (row[0] || '').toLowerCase();
+        if (key === 'active') {
+            const val = (row[1] || '').toLowerCase();
+            active = (val === 'yes' || val === 'true' || val === '1');
+        } else if (key === 'titel') {
+            title = row[1] || '';
+            if (title) basePath = title;
+        } else if (key === 'inforow0') {
+            rowInfo0 = row;
+        } else if (key === 'inforow1') {
+            rowInfo1 = row;
+        } else if (key === 'inforow2') {
+            rowInfo2 = row;
         }
+    });
+
+    if (!rowInfo0) {
+        return { active, title, basePath, data: [] };
+    }
+
+    const data = [];
+    const maxCols = rowInfo0.length;
+
+    for (let col = 1; col < maxCols; col++) {
+        const rawImg = rowInfo0[col] != null ? rowInfo0[col].trim() : '';
+        if (!rawImg) continue;
+
+        // NEU: Zahl aus A1 / JUF14 / 03 etc. extrahieren
+        const m = rawImg.match(/(\d+)/);
+        if (!m) continue; // falls gar keine Zahl drin ist
+
+        let numeric = m[1]; // nur der Zahlenanteil
+
+        // wie gehabt: 1 → 01, 2 → 02 usw., aber 11454 bleibt 11454
+        if (numeric.length < 2) {
+            numeric = numeric.padStart(2, '0');
+        }
+
+        const info1 = rowInfo1 && rowInfo1[col] != null ? rowInfo1[col].trim() : '';
+        const info2 = rowInfo2 && rowInfo2[col] != null ? rowInfo2[col].trim() : '';
+
+        data.push({
+            rawId: rawImg,   // z.B. "JUF14" (Anzeige im UI)
+            imgId: numeric,  // z.B. "14" (Dateiname 14.jpg)
+            info1: info1 || '',
+            info2: info2 || ''
+        });
+    }
+
+    return { active, title, basePath, data };
+}
 
         // ===== Layout-Konfiguration =====
         function buildLayoutConfig() {
@@ -1115,15 +1129,18 @@ if (columnsSlider) {
                     playHoverSound();
                 });
 
-                const idStr = data.imgId;
+                const displayId = data.rawId || data.imgId; // z.B. "JUF14" oder "03"
+const fileId    = data.imgId;               // nur Zahl, z.B. "14"
 
-                const img = document.createElement('img');
-                img.src = `${IMAGE_BASE_PATH}/${idStr}.jpg`;
-                img.alt = `Bild ${idStr}`;
-                img.onerror = () => {
-                    img.onerror = null;
-                    img.src = `${IMAGE_BASE_PATH}/${idStr}.png`;
-                };
+// Bild laden über den numerischen Teil
+const img = document.createElement('img');
+img.src = `${IMAGE_BASE_PATH}/${fileId}.jpg`;
+img.alt = `Bild ${displayId}`;
+img.onerror = () => {
+    img.onerror = null;
+    img.src = `${IMAGE_BASE_PATH}/${fileId}.png`;
+};
+
 
                 img.addEventListener('click', e => {
                     e.stopPropagation();
@@ -1148,7 +1165,7 @@ if (columnsSlider) {
                 const right = document.createElement('div');
                 right.className = 'overlay-right';
 
-                const badgeId    = makeIdBadge(idStr);
+                const badgeId    = makeIdBadge(displayId);
                 const badgeInfo1 = makeInfoBadge(data.info1);
                 const badgeInfo2 = makeInfoBadge(data.info2);
 
@@ -1170,41 +1187,61 @@ if (columnsSlider) {
 
         // ===== Tabs dynamisch erzeugen =====
         function createTabForList(list) {
-            const btn = document.createElement('button');
-            btn.className = 'tab';
-            btn.dataset.list = list.id;
+    const btn = document.createElement('button');
+    btn.className = 'tab';
+    btn.dataset.list = list.id;
 
-            const label = list.title || list.id;
-            btn.textContent = label;
-            btn.title = list.title ? `${list.title} (${list.id})` : list.id;
+    const label = list.title || list.id;
+    btn.textContent = label;
+    btn.title = list.title ? `${list.title} (${list.id})` : list.id;
 
-            if (!list.activeFlag) {
-                btn.classList.add('disabled');
-            }
+    if (!list.activeFlag) {
+        btn.classList.add('disabled');
+    }
 
-            btn.addEventListener('click', () => {
-                if (!list.activeFlag) {
-                    playWithEgg(errorSound);
-                    btn.classList.add('error-flash');
-                    setTimeout(() => {
-                        btn.classList.remove('error-flash');
-                    }, 180);
-                    return;
-                }
-
-                if (currentListId === list.id) return;
-
-                playWithEgg(registerSound);
-
-                tabButtons.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                activateList(list.id);
-            });
-
-            tabbarLeft.appendChild(btn);
-            tabButtons.push(btn);
-            list.tabElement = btn;
+    btn.addEventListener('click', () => {
+        if (!list.activeFlag) {
+            playWithEgg(errorSound);
+            btn.classList.add('error-flash');
+            setTimeout(() => {
+                btn.classList.remove('error-flash');
+            }, 180);
+            return;
         }
+
+        if (currentListId === list.id) return;
+
+        playWithEgg(registerSound);
+
+        tabButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        activateList(list.id);
+    });
+
+    // ---- NEU: an korrekter Position einfügen ----
+    const myIndex = orderedListIds.indexOf(list.id);
+    let insertBefore = null;
+
+    for (const existingBtn of tabButtons) {
+        const existingId = existingBtn.dataset.list;
+        const existingIndex = orderedListIds.indexOf(existingId);
+
+        if (existingIndex > myIndex) {
+            insertBefore = existingBtn;
+            break;
+        }
+    }
+
+    if (insertBefore) {
+        tabbarLeft.insertBefore(btn, insertBefore);
+    } else {
+        tabbarLeft.appendChild(btn);
+    }
+
+    tabButtons.push(btn);
+    list.tabElement = btn;
+}
+
 
         function activateList(listId) {
             const list = lists[listId];
@@ -1237,7 +1274,7 @@ if (columnsSlider) {
             }
 
             if (layoutToggleIcon) {
-                layoutToggleIcon.src = 'og.svg';
+                layoutToggleIcon.src = 'ico/og.svg';
                 layoutToggleIcon.alt = 'Layout: Original';
             }
 
