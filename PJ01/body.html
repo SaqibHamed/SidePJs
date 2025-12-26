@@ -1250,7 +1250,7 @@ img.onerror = () => {
             const list = lists[listId];
             if (!list || !list.csvLoaded || !list.activeFlag) return;
 
-            currentListId   = listId;
+            currentListId   = list.id;
             IMAGE_BASE_PATH = list.basePath;
             sectorsData     = list.data;
             TOTAL_SECTORS   = sectorsData.length;
@@ -1259,32 +1259,18 @@ img.onerror = () => {
                 document.title = `${list.title} Theme Viewer`;
             }
 
-            // Layout-Button in OG-Zustand resetten
-            equalMode = false;
-            if (layoutToggleBtn) {
-                layoutToggleBtn.classList.remove('equal-active');
-                layoutToggleBtn.style.backgroundColor = '';
-                layoutToggleBtn.style.color = '';
-            }
-            if (layoutSliderWrapper) {
-                layoutSliderWrapper.style.display = 'none';
-            }
-
-            const defaultCols = 4;
-            if (columnsSlider) {
-                columnsSlider.value = defaultCols;
-                columnsLabel.textContent = defaultCols;
-            }
-
-            if (layoutToggleIcon) {
-                layoutToggleIcon.src = 'ico/og.svg';
-                layoutToggleIcon.alt = 'Layout: Original';
-            }
-
+            // Grid-Konfiguration und DOM neu aufbauen
             buildLayoutConfig();
             buildSectorsDom();
-            applyOriginalLayout();
+
+            // WICHTIG: aktuellen Modus beibehalten
+            if (equalMode) {
+                applyEqualLayout();
+            } else {
+                applyOriginalLayout();
+            }
         }
+
 
         function loadList(list) {
             fetch(list.file)
@@ -1341,4 +1327,5 @@ img.onerror = () => {
     </script>
 </body>
 </html>
+
 
