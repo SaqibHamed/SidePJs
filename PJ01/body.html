@@ -154,10 +154,11 @@
             overflow: hidden;
             transition: transform 0.15s ease, box-shadow 0.15s ease;
             padding: 0;
+            background-color: white;
         }
 
         .mainbody.equal-mode .sectors {
-            padding: 0 3px;
+            padding: 0;
         }
 
         .sectors:hover {
@@ -173,6 +174,7 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+            object-position: center center;
             display: block;
             cursor: pointer;
             border-radius: 6px;
@@ -388,8 +390,8 @@
                         value="4"
                     >
                 </div>
-                <button id="layoutToggleBtn" class="layout-toggle" title="Layout umschalten">
-                    <img id="layoutToggleIcon" src="ico/og.svg" alt="Layout: Original" />
+                <button id="layoutToggleBtn" class="layout-toggle equal-active" title="Layout umschalten">
+                    <img id="layoutToggleIcon" src="ico/equal.svg" alt="Layout: Equal" />
                 </button>
             </div>
         </div>
@@ -432,7 +434,7 @@ let TOTAL_SECTORS = 0;
         const columnsSlider       = document.getElementById('columnsSlider');
         const columnsLabel        = document.getElementById('columnsLabel');
 
-        let equalMode     = false;
+        let equalMode     = true;
         let currentListId = null;
 
         const lists = {};
@@ -883,7 +885,7 @@ if (existingSrc) {
 
 
         if (layoutSliderWrapper) {
-            layoutSliderWrapper.style.display = 'none';
+            layoutSliderWrapper.style.display = equalMode ? 'flex' : 'none';
         }
 
         // ===== Slider-Events (Equal-Mode) =====
