@@ -688,8 +688,8 @@ function updateStatus(){
     document.getElementById('statusSize').textContent=kb;
     const chars=generatedHTML.length;
     charEl.textContent=chars.toLocaleString('de-CH');
-    const overLimit=chars>62000;
-    const nearLimit=chars>50000;
+    const overLimit=chars>200000;
+    const nearLimit=chars>170000;
     charEl.style.color=overLimit?'var(--red)':nearLimit?'var(--yellow)':'var(--text)';
     dotEl.className='status-dot'+(kb>300?' error':kb>150?' warning':'');
   } else {
