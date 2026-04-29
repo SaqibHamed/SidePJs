@@ -426,7 +426,7 @@ function renderImageList() {
     const rLabel = img.radiusMode==='pill' ? '💊' : img.radiusPx+'px';
 
     return `
-    <div class="image-card" data-id="${img.id}">
+    <div class="image-card" data-id="${img.id}" style="${img.mime==='image/gif'&&img.b64&&img.b64.length>200000?'border-color:#ef4444;box-shadow:0 0 0 2px rgba(239,68,68,0.15);':img.mime==='image/gif'&&img.b64&&img.b64.length>150000?'border-color:#f59e0b;box-shadow:0 0 0 2px rgba(245,158,11,0.15);':''}">
       <div class="card-header" draggable="true"
         ondragstart="dragStart(event,${img.id})" ondragover="dragOver(event,${img.id})"
         ondrop="dragDrop(event,${img.id})" ondragleave="dragLeave(event)">
@@ -434,6 +434,7 @@ function renderImageList() {
         <img class="card-thumb" src="${img.dataURL}" alt="">
         <span class="card-name" title="${img.name}">${img.name}</span>
         <span class="card-pxdensity">@${density}x</span>
+        ${img.mime==='image/gif'&&img.b64&&img.b64.length>200000?'<span style="font-size:9px;font-weight:700;color:#ef4444;flex-shrink:0;">zu gross</span>':img.mime==='image/gif'&&img.b64&&img.b64.length>150000?'<span style="font-size:9px;font-weight:700;color:#f59e0b;flex-shrink:0;">gross</span>':''}
         <button class="card-remove" onclick="removeImage(${img.id})">×</button>
       </div>
       <div class="card-body">
