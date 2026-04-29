@@ -361,7 +361,7 @@ function handleFiles(files) {
           dataURL: ev.target.result, b64: null, mime: file.type,
           naturalW: tmp.naturalWidth, naturalH: tmp.naturalHeight,
           urlType:'none', urlHref:'', urlTitle:'', emailSubject:'Anfrage', telNumber:'',
-          quality: 85, alpha: file.type === 'image/jpeg',
+          quality: 85, resolution: 100, alpha: file.type === 'image/png',
           radiusPx: 0,   // 0 = off, >0 = corner px, 9999 = pill
           radiusMode: 'off', // 'off' | 'corner' | 'pill'
           row: images.length > 0 ? images[images.length-1].row : 1,
@@ -389,20 +389,36 @@ function compressImage(img, cb) {
     const canvas = document.createElement('canvas');
     const maxW = parseInt(document.getElementById('sigWidth').value) * 1.5;
     let w = el.naturalWidth, h = el.naturalHeight;
-    if (w > maxW) { h = Math.round(h*maxW/w); w = Math.round(maxW); }
+    if (w > maxW) { h = Math.round(h * maxW / w); w = Math.round(maxW); }
     canvas.width = w; canvas.height = h;
     const ctx = canvas.getContext('2d');
-    ctx.clearRect(0,0,w,h);
+    ctx.clearRect(0, 0, w, h);
+    // JPG mode: fill white background before drawing
     if (!img.alpha) {
       ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0,0,w,h);
+      ctx.fillRect(0, 0, w, h);
     }
-    ctx.drawImage(el, 0,0,w,h);
-    const q = img.quality / 100;
-    const mime = img.alpha ? 'image/png' : 'image/jpeg';
-    const dataUrl = canvas.toDataURL(mime, q);
-    img.b64 = dataUrl.split(',')[1];
-    img.compressedMime = mime;
+    // Always draw the image onto canvas
+    ctx.drawImage(el, 0, 0, w, h);
+    // Export
+    if (img.alpha) {
+      // PNG: use resolution slider to downscale
+      const resScale = (img.resolution || 100) / 100;
+      if (resScale < 0.99) {
+        const qCanvas = document.createElement('canvas');
+        qCanvas.width = Math.max(1, Math.round(w * resScale));
+        qCanvas.height = Math.max(1, Math.round(h * resScale));
+        const qCtx = qCanvas.getContext('2d');
+        qCtx.drawImage(canvas, 0, 0, qCanvas.width, qCanvas.height);
+        img.b64 = qCanvas.toDataURL('image/png').split(',')[1];
+      } else {
+        img.b64 = canvas.toDataURL('image/png').split(',')[1];
+      }
+      img.compressedMime = 'image/png';
+    } else {
+      img.b64 = canvas.toDataURL('image/jpeg', img.quality / 100).split(',')[1];
+      img.compressedMime = 'image/jpeg';
+    }
     if (cb) cb();
   };
   el.src = img.dataURL;
@@ -439,12 +455,20 @@ function renderImageList() {
       </div>
       <div class="card-body">
 
-        <div class="control-row" style="${img.mime==='image/gif'?'opacity:0.35;pointer-events:none;':''}" title="${img.mime==='image/gif'?'Nicht verfügbar für GIF':''}">
+        <div class="control-row" style="${img.mime==='image/gif'||img.alpha?'display:none;':''}" title="${img.mime==='image/gif'?'Nicht verfügbar für GIF':''}">
           <span class="control-label">${T.lQuality}</span>
           <input type="range" min="1" max="100" value="${img.quality}" style="--pct:${qPct}%" id="qslider${img.id}" ${img.mime==='image/gif'?'disabled':''}
             oninput="updateSliderFill(this);setImgVal(${img.id},'quality',+this.value);document.getElementById('qnum${img.id}').value=this.value;recompressAndUpdate(${img.id})">
           <input type="number" id="qnum${img.id}" class="val-input" min="1" max="100" value="${img.quality}" ${img.mime==='image/gif'?'disabled':''}
             onchange="const v=Math.min(100,Math.max(1,+this.value||1));this.value=v;setImgVal(${img.id},'quality',v);const s=document.getElementById('qslider${img.id}');s.value=v;updateSliderFill(s);recompressAndUpdate(${img.id})">
+        </div>
+
+        <div class="control-row" id="resrow${img.id}" style="${img.alpha?'':'display:none;'}">
+          <span class="control-label">Auflösung</span>
+          <input type="range" min="10" max="100" value="${img.resolution||100}" style="--pct:${((img.resolution||100)-10)/90*100}%" id="reslider${img.id}"
+            oninput="updateSliderFill(this);setImgVal(${img.id},'resolution',+this.value);document.getElementById('resnum${img.id}').value=this.value;recompressAndUpdate(${img.id})">
+          <input type="number" id="resnum${img.id}" class="val-input" min="10" max="100" value="${img.resolution||100}"
+            onchange="const v=Math.min(100,Math.max(10,+this.value||100));this.value=v;setImgVal(${img.id},'resolution',v);const s=document.getElementById('reslider${img.id}');s.value=v;updateSliderFill(s);recompressAndUpdate(${img.id})">
         </div>
 
         <div class="toggle-row" style="align-items:center;gap:6px;${img.mime==='image/gif'?'opacity:0.35;pointer-events:none;':''}" title="${img.mime==='image/gif'?'Nicht verfügbar für GIF':''}">
