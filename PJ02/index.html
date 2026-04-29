@@ -377,6 +377,13 @@ function handleFiles(files) {
 }
 
 function compressImage(img, cb) {
+  // GIF: embed directly without canvas to preserve animation
+  if (img.mime === 'image/gif') {
+    img.b64 = img.dataURL.split(',')[1];
+    img.compressedMime = 'image/gif';
+    if (cb) cb();
+    return;
+  }
   const el = new Image();
   el.onload = () => {
     const canvas = document.createElement('canvas');
@@ -387,14 +394,11 @@ function compressImage(img, cb) {
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0,0,w,h);
     if (!img.alpha) {
-      // JPG mode (alpha=false): fill white so transparent pixels become white
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0,0,w,h);
     }
     ctx.drawImage(el, 0,0,w,h);
-    // Always PNG to preserve quality slider correctly; white fill handles alpha=OFF
     const q = img.quality / 100;
-    // Use JPEG only when alpha is OFF (smaller file, no transparency needed)
     const mime = img.alpha ? 'image/png' : 'image/jpeg';
     const dataUrl = canvas.toDataURL(mime, q);
     img.b64 = dataUrl.split(',')[1];
@@ -434,15 +438,15 @@ function renderImageList() {
       </div>
       <div class="card-body">
 
-        <div class="control-row">
+        <div class="control-row" style="${img.mime==='image/gif'?'opacity:0.35;pointer-events:none;':''}" title="${img.mime==='image/gif'?'Nicht verfügbar für GIF':''}">
           <span class="control-label">${T.lQuality}</span>
-          <input type="range" min="1" max="100" value="${img.quality}" style="--pct:${qPct}%" id="qslider${img.id}"
+          <input type="range" min="1" max="100" value="${img.quality}" style="--pct:${qPct}%" id="qslider${img.id}" ${img.mime==='image/gif'?'disabled':''}
             oninput="updateSliderFill(this);setImgVal(${img.id},'quality',+this.value);document.getElementById('qnum${img.id}').value=this.value;recompressAndUpdate(${img.id})">
-          <input type="number" id="qnum${img.id}" class="val-input" min="1" max="100" value="${img.quality}"
+          <input type="number" id="qnum${img.id}" class="val-input" min="1" max="100" value="${img.quality}" ${img.mime==='image/gif'?'disabled':''}
             onchange="const v=Math.min(100,Math.max(1,+this.value||1));this.value=v;setImgVal(${img.id},'quality',v);const s=document.getElementById('qslider${img.id}');s.value=v;updateSliderFill(s);recompressAndUpdate(${img.id})">
         </div>
 
-        <div class="toggle-row" style="align-items:center;gap:6px;">
+        <div class="toggle-row" style="align-items:center;gap:6px;${img.mime==='image/gif'?'opacity:0.35;pointer-events:none;':''}" title="${img.mime==='image/gif'?'Nicht verfügbar für GIF':''}">
           <span class="control-label">Modus</span>
           <span style="font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;background:#f59e0b;color:#fff;flex-shrink:0;opacity:${img.alpha?'0.3':'1'};">JPG</span>
           <label class="toggle-switch" style="flex-shrink:0;cursor:pointer;">
@@ -451,6 +455,7 @@ function renderImageList() {
             <div class="toggle-thumb" style="transform:${img.alpha?'translateX(13px)':'none'};"></div>
           </label>
           <span style="font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;background:#10b981;color:#fff;flex-shrink:0;opacity:${img.alpha?'1':'0.3'};">PNG</span>
+          ${img.mime==='image/gif'?'<span style="font-size:9px;color:var(--text3);margin-left:4px;">GIF</span>':''}
         </div>
 
         <div class="control-row">
