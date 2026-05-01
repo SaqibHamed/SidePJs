@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Image Converter</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&family=Roboto+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; font-family: 'Roboto', sans-serif; background: #f2f2f2; color: #1a1a1a; overflow: hidden; }
+
+/* ── TOPBAR ── */
+.topbar {
+  height: 44px; background: #fff; border-bottom: 1px solid #ddd;
+  display: flex; align-items: center; padding: 0 10px; gap: 5px;
+  flex-shrink: 0; z-index: 10; position: relative;
+}
+.tb-btn {
+  height: 30px; padding: 0 10px; border: 1px solid #ccc; border-radius: 4px;
+  background: #fff; font-family: 'Roboto', sans-serif; font-size: 13px; color: #333;
+  cursor: pointer; display: flex; align-items: center; gap: 5px; white-space: nowrap;
+  transition: background .1s; position: relative;
+}
+.tb-btn:hover { background: #f5f5f5; border-color: #aaa; }
+.tb-btn input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
+.tb-sep { width: 1px; height: 20px; background: #ddd; margin: 0 2px; }
+.spacer { flex: 1; }
+
+.dl-all-btn {
+  height: 30px; padding: 0 12px; border: 1px solid #1a73e8; border-radius: 4px;
+  background: #fff; font-family: 'Roboto', sans-serif; font-size: 13px; color: #1a73e8;
+  cursor: pointer; align-items: center; gap: 5px; white-space: nowrap;
+  transition: background .1s; display: none;
+}
+.dl-all-btn:hover { background: #e8f0fe; }
+.dl-all-btn.show { display: flex; }
+
+/* lang toggle */
+.lang-btn {
+  height: 30px; padding: 0 10px; border: 1px solid #ccc; border-radius: 4px;
+  background: #fff; font-family: 'Roboto Mono', monospace; font-size: 12px; color: #555;
+  cursor: pointer; display: flex; align-items: center; gap: 4px;
+  transition: background .1s;
+}
+.lang-btn:hover { background: #f5f5f5; }
+.lang-toggle { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+.lang-opt {
+  height: 30px; padding: 0 10px;
+  background: #fff; font-family: 'Roboto', sans-serif; font-size: 12px; color: #888;
+  cursor: pointer; border: none; transition: background .1s, color .1s;
+}
+.lang-opt.active { background: #1a73e8; color: #fff; }
+.lang-opt:not(.active):hover { background: #f5f5f5; color: #333; }
+
+/* modal buttons */
+.modal-trigger {
+  height: 30px; padding: 0 10px; border: 1px solid #ccc; border-radius: 4px;
+  background: #fff; font-family: 'Roboto', sans-serif; font-size: 13px; color: #333;
+  cursor: pointer; display: flex; align-items: center; gap: 5px;
+  transition: background .1s;
+}
+.modal-trigger:hover { background: #f5f5f5; }
+
+/* ── MODAL ── */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 200;
+  display: none; align-items: center; justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: #fff; border-radius: 8px; max-width: 480px; width: 90%;
+  box-shadow: 0 8px 32px rgba(0,0,0,.18); padding: 28px 28px 24px;
+  position: relative; animation: mIn .15s ease;
+}
+@keyframes mIn { from { opacity:0; transform: scale(.96) translateY(6px); } to { opacity:1; transform: none; } }
+.modal h2 { font-size: 16px; font-weight: 500; color: #1a1a1a; margin-bottom: 12px; }
+.modal p, .modal li { font-size: 13px; color: #444; line-height: 1.7; }
+.modal ol { padding-left: 18px; margin-top: 8px; }
+.modal ol li { margin-bottom: 4px; }
+.modal-close {
+  position: absolute; top: 12px; right: 14px;
+  background: none; border: none; font-size: 18px; color: #999; cursor: pointer;
+}
+.modal-close:hover { color: #333; }
+
+/* ── WORKSPACE ── */
+.workspace { display: grid; grid-template-columns: 1fr 1fr 1fr; height: calc(100vh - 44px - 26px); }
+
+/* ── COLUMNS ── */
+.col { display: flex; flex-direction: column; background: #fff; overflow: hidden; }
+.col-1 { border-right: 1px solid #ddd; }
+.col-2 { border-right: 1px solid #ddd; min-width: 0; position: relative; overflow: visible; }
+.col-3 { }
+
+.col-head {
+  height: 34px; padding: 0 10px; border-bottom: 1px solid #eee; background: #fafafa;
+  display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+  font-size: 11px; font-weight: 500; color: #888; text-transform: uppercase; letter-spacing: 0.5px;
+  gap: 6px;
+}
+.col-head-actions { display: flex; gap: 4px; align-items: center; }
+
+/* ── SELECT ALL / DESEL ── */
+.sel-btn {
+  height: 22px; padding: 0 7px; border: 1px solid #ddd; border-radius: 3px;
+  background: #fff; font-family: 'Roboto', sans-serif; font-size: 11px; color: #666;
+  cursor: pointer; transition: background .1s;
+  display: none;
+}
+.sel-btn:hover { background: #f0f0f0; }
+.sel-btn.visible { display: block; }
+
+/* ── FLOATING "LET IT RIP" BUTTON ── */
+#ripBtn {
+  position: fixed;
+  z-index: 100;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .2s;
+}
+#ripBtn.ready { pointer-events: auto; opacity: 1; }
+.rip-inner {
+  width: 68px; height: 68px; border-radius: 50%;
+  background: #1a73e8; border: 3px solid #fff;
+  box-shadow: 0 2px 12px rgba(26,115,232,.45);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  cursor: pointer; color: #fff;
+  transition: background .15s, box-shadow .15s, transform .1s;
+  user-select: none;
+}
+.rip-inner:hover { background: #1557b0; box-shadow: 0 4px 20px rgba(26,115,232,.6); }
+.rip-inner:active { transform: scale(.92); }
+.rip-inner.disabled { background: #aac4f0; box-shadow: none; cursor: not-allowed; }
+.rip-text {
+  font-family: 'Roboto', sans-serif;
+  font-size: 9px; font-weight: 500;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  line-height: 1.2;
+  text-align: center;
+  transition: letter-spacing .15s, font-size .15s;
+}
+.rip-inner:hover .rip-text { letter-spacing: 1.5px; font-size: 8.5px; }
+.rip-sub { font-size: 7px; opacity: .7; margin-top: 1px; }
+
+/* ── COL BODY ── */
+.col-body {
+  flex: 1; overflow-y: auto; padding: 8px;
+  display: flex; flex-direction: column; gap: 3px;
+}
+
+/* ── DROP ZONE ── */
+.drop-zone {
+  height: 80px; flex-shrink: 0;
+  border: 1.5px dashed #ccc; border-radius: 5px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 4px; cursor: pointer; color: #aaa; font-size: 12px; position: relative;
+  transition: border-color .15s, background .15s, color .15s;
+}
+.drop-zone:hover, .drop-zone.over { border-color: #1a73e8; background: #f0f5ff; color: #1a73e8; }
+.drop-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+/* ── FILE ITEM ── */
+.file-item {
+  height: 40px; flex-shrink: 0;
+  display: grid; grid-template-columns: 16px 36px 1fr 20px;
+  align-items: center; gap: 7px; padding: 0 5px;
+  border-radius: 4px; border: 1px solid transparent;
+  cursor: pointer; user-select: none; transition: background .1s;
+}
+.file-item:hover { background: #f5f5f5; }
+.file-item.sel { background: #e8f0fe; border-color: #c5d8fb; }
+
+.chk {
+  width: 14px; height: 14px; border: 1.5px solid #bbb; border-radius: 3px;
+  flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  transition: background .1s, border-color .1s;
+}
+.file-item.sel .chk { background: #1a73e8; border-color: #1a73e8; }
+.chk::after {
+  content: ''; display: none;
+  width: 3px; height: 6px;
+  border-right: 1.5px solid #fff; border-bottom: 1.5px solid #fff;
+  transform: rotate(45deg) translate(-0.5px,-1px);
+}
+.file-item.sel .chk::after { display: block; }
+
+.thumb {
+  width: 36px; height: 36px; border-radius: 3px; border: 1px solid #e8e8e8;
+  background: #f5f5f5; display: flex; align-items: center; justify-content: center;
+  font-size: 8px; font-weight: 500; color: #999; overflow: hidden; flex-shrink: 0;
+  font-family: 'Roboto Mono', monospace;
+}
+.thumb img { width: 100%; height: 100%; object-fit: cover; border-radius: 2px; }
+
+.fi-info { min-width: 0; }
+.fi-name { font-size: 12px; color: #1a1a1a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fi-size { font-size: 10px; color: #999; font-family: 'Roboto Mono', monospace; margin-top: 1px; }
+
+.rm-btn {
+  width: 20px; height: 20px; border: none; background: none; border-radius: 3px;
+  cursor: pointer; color: #ccc; font-size: 12px; display: flex; align-items: center;
+  justify-content: center; opacity: 0; transition: opacity .1s, color .1s, background .1s;
+}
+.file-item:hover .rm-btn { opacity: 1; }
+.rm-btn:hover { color: #c00; background: #fde8e8; }
+
+/* ── SETTINGS ── */
+.settings-empty {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  font-size: 12px; color: #ccc; text-align: center; line-height: 1.9; padding: 20px;
+}
+.settings-body { flex: 1; overflow-y: auto; padding: 10px 12px; display: none; flex-direction: column; gap: 12px; }
+.sg { display: flex; flex-direction: column; gap: 7px; }
+.sg-title {
+  font-size: 10px; font-weight: 500; color: #aaa; text-transform: uppercase;
+  letter-spacing: 0.6px; padding-bottom: 4px; border-bottom: 1px solid #f0f0f0;
+}
+.field { display: flex; flex-direction: column; gap: 4px; }
+.fl { font-size: 12px; color: #555; display: flex; justify-content: space-between; align-items: center; }
+.fv { font-family: 'Roboto Mono', monospace; color: #1a73e8; font-size: 11px; }
+
+select, input[type=number] {
+  font-family: 'Roboto', sans-serif; font-size: 13px; padding: 5px 8px;
+  border: 1px solid #ccc; border-radius: 4px; background: #fff; color: #1a1a1a; outline: none; width: 100%;
+}
+select:focus, input[type=number]:focus { border-color: #1a73e8; }
+
+input[type=range] {
+  -webkit-appearance: none; appearance: none; width: 100%; height: 3px;
+  background: #e0e0e0; border-radius: 2px; outline: none; cursor: pointer; border: none; padding: 0;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 13px; height: 13px; border-radius: 50%;
+  background: #1a73e8; cursor: pointer; border: 2px solid #fff; box-shadow: 0 0 0 1px #ccc;
+}
+
+.gif-sg { opacity: .35; pointer-events: none; }
+.gif-sg.on { opacity: 1; pointer-events: auto; }
+
+/* ── PREVIEW ── */
+.prev-stack {
+  position: relative; border: 1px solid #e8e8e8; border-radius: 3px;
+  overflow: hidden; cursor: pointer; user-select: none;
+}
+.prev-bg {
+  background: repeating-conic-gradient(#e8e8e8 0% 25%, #f5f5f5 0% 50%) 0 0/8px 8px;
+  padding: 4px; min-height: 90px; display: flex; align-items: center; justify-content: center;
+  position: relative;
+}
+.prev-bg img { max-width: 100%; max-height: 110px; object-fit: contain; border-radius: 2px; display: block; }
+.prev-ph { font-size: 10px; color: #ccc; }
+.prev-label {
+  position: absolute; bottom: 5px; left: 5px;
+  background: rgba(0,0,0,.5); color: #fff; font-size: 10px;
+  padding: 2px 6px; border-radius: 3px; pointer-events: none;
+}
+.prev-size-badge {
+  position: absolute; bottom: 5px; right: 5px;
+  background: rgba(0,0,0,.5); color: #fff; font-size: 10px;
+  font-family: 'Roboto Mono', monospace; padding: 2px 6px; border-radius: 3px; pointer-events: none;
+}
+.prev-hint { font-size: 10px; color: #bbb; text-align: center; margin-top: 3px; }
+
+/* ── RESULT ITEM ── */
+.result-item {
+  height: 40px; flex-shrink: 0;
+  display: grid; grid-template-columns: 36px 1fr auto;
+  align-items: center; gap: 7px; padding: 0 5px;
+  border-radius: 4px; border: 1px solid transparent;
+}
+.result-item.done    { border-color: #d4edda; background: #f6fff7; }
+.result-item.pending { background: #fafafa; }
+.result-item.error   { border-color: #fcd; background: #fff5f5; }
+
+.rt {
+  width: 36px; height: 36px; border-radius: 3px; border: 1px solid #e8e8e8;
+  background: #f5f5f5; display: flex; align-items: center; justify-content: center;
+  font-size: 8px; font-weight: 500; color: #999; overflow: hidden; flex-shrink: 0;
+  font-family: 'Roboto Mono', monospace;
+}
+.rt img { width: 100%; height: 100%; object-fit: cover; border-radius: 2px; }
+
+.ri { min-width: 0; }
+.rn { font-size: 12px; color: #1a1a1a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rm { font-size: 10px; color: #888; font-family: 'Roboto Mono', monospace; margin-top: 1px; }
+.sp { color: #2e7d32; } .sn { color: #e65100; }
+
+/* status badges */
+.st-badge {
+  font-size: 10px; font-weight: 500; padding: 2px 7px; border-radius: 10px;
+  white-space: nowrap; flex-shrink: 0;
+}
+.st-badge.processing { background: #e8f0fe; color: #1a73e8; }
+.st-badge.done-b     { background: #e8f5e9; color: #2e7d32; }
+.st-badge.error-b    { background: #fde8e8; color: #c00; }
+.st-badge.wait       { background: #f5f5f5; color: #999; }
+
+.dl-item-btn {
+  width: 26px; height: 26px; border: 1px solid #ccc; border-radius: 4px;
+  background: #fff; cursor: pointer; color: #555; display: flex; align-items: center;
+  justify-content: center; font-size: 14px; transition: background .1s, border-color .1s, color .1s; flex-shrink: 0;
+}
+.dl-item-btn:hover { background: #f0f0f0; border-color: #1a73e8; color: #1a73e8; }
+
+/* ── STATUSBAR ── */
+.statusbar {
+  height: 26px; background: #fafafa; border-top: 1px solid #e0e0e0;
+  display: flex; align-items: center; padding: 0 12px; gap: 10px;
+  font-size: 11px; color: #888; flex-shrink: 0;
+}
+.sd { width: 5px; height: 5px; border-radius: 50%; background: #bbb; flex-shrink: 0; }
+.sd.run  { background: #1a73e8; animation: blink .8s infinite; }
+.sd.done { background: #2e7d32; }
+@keyframes blink { 0%,100%{opacity:1}50%{opacity:.3} }
+.pw { width: 120px; height: 3px; background: #e0e0e0; border-radius: 2px; overflow: hidden; display: none; flex-shrink: 0; }
+.pb { height: 100%; background: #1a73e8; transition: width .2s; width: 0%; }
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #ddd; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <button class="tb-btn" id="uploadBtn">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+    <span data-t="upload">Load files</span>
+    <input type="file" id="fileInput" multiple accept="image/*,.avif,.webp,.gif,.svg">
+  </button>
+  <div class="tb-sep"></div>
+  <button class="modal-trigger" id="btnReason">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <span data-t="why">Why this tool</span>
+  </button>
+  <button class="modal-trigger" id="btnHow">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    <span data-t="how">How to use</span>
+  </button>
+  <div class="spacer"></div>
+  <div class="lang-toggle">
+    <button class="lang-opt active" data-lang="en">EN</button>
+    <button class="lang-opt" data-lang="de">DE</button>
+  </div>
+  <div class="tb-sep"></div>
+  <button class="dl-all-btn" id="dlAllBtn">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    <span data-t="dlAll">Download all</span>
+  </button>
+</div>
+
+<!-- WORKSPACE -->
+<div class="workspace">
+
+  <!-- COL 1: INPUT -->
+  <div class="col col-1">
+    <div class="col-head">
+      <span data-t="col1">Input</span>
+      <div class="col-head-actions">
+        <button class="sel-btn" id="selAllBtn" data-t="selAll">Select all</button>
+        <button class="sel-btn" id="deselBtn" data-t="desel">Deselect</button>
+        <span id="inCount" style="font-size:11px;color:#aaa;font-weight:400"></span>
+      </div>
+    </div>
+    <div class="col-body" id="col1Body"></div>
+  </div>
+
+  <!-- COL 2: SETTINGS -->
+  <div class="col col-2">
+    <div class="col-head">
+      <span data-t="col2">Settings</span>
+      <span id="scope" style="font-weight:400;color:#1a73e8;font-size:11px"></span>
+    </div>
+    <div class="settings-empty" id="settingsEmpty" data-t-html="emptySettings">Load files to see settings.</div>
+    <div class="settings-body" id="settingsBody">
+      <div class="sg">
+        <div class="sg-title" data-t="sgFormat">Format & Quality</div>
+        <div class="field">
+          <div class="fl" data-t="labelFormat">Format</div>
+          <select id="fmtSel">
+            <option value="image/jpeg">JPG</option>
+            <option value="image/png">PNG</option>
+            <option value="image/webp">WebP</option>
+          </select>
+        </div>
+        <div class="field" id="qField">
+          <div class="fl"><span data-t="labelQuality">Quality</span> <span class="fv" id="qVal">82%</span></div>
+          <input type="range" min="1" max="100" value="82" id="qSlider" step="1">
+        </div>
+      </div>
+      <div class="sg">
+        <div class="sg-title" data-t="sgSize">Size</div>
+        <div class="field">
+          <div class="fl"><span data-t="labelScale">Scale</span> <span class="fv" id="scVal">100%</span></div>
+          <input type="range" min="10" max="100" value="100" id="scSlider" step="1">
+        </div>
+        <div class="field">
+          <div class="fl"><span data-t="labelMaxW">Max width</span> <span style="color:#bbb;font-size:11px" data-t="labelPx">(0 = original)</span></div>
+          <input type="number" id="mxW" value="0" min="0" max="8000">
+        </div>
+      </div>
+      <div class="sg gif-sg" id="gifSg">
+        <div class="sg-title">GIF</div>
+        <div class="field">
+          <div class="fl"><span data-t="labelFps">Framerate</span> <span class="fv" id="gfVal">10 fps</span></div>
+          <input type="range" min="1" max="30" value="10" id="gfSlider" step="1">
+        </div>
+        <div class="field">
+          <div class="fl"><span data-t="labelColors">Color palette</span> <span class="fv" id="gcVal">128</span></div>
+          <input type="range" min="8" max="256" value="128" id="gcSlider" step="8">
+        </div>
+      </div>
+      <div class="sg">
+        <div class="sg-title" data-t="sgPreview">Preview</div>
+        <div class="prev-stack" id="prevStack" onclick="window._app.togglePrev()">
+          <div class="prev-bg" id="pOW"><div class="prev-ph" data-t="prevPh">—</div></div>
+          <div class="prev-label" id="prevLbl"></div>
+          <div class="prev-size-badge" id="prevSzBadge"></div>
+        </div>
+        <div class="prev-hint" data-t="prevHint">Click to toggle original / output</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COL 3: OUTPUT -->
+  <div class="col col-3">
+    <div class="col-head">
+      <span data-t="col3">Output</span>
+      <span id="outCount" style="font-weight:400;font-size:11px;color:#aaa"></span>
+    </div>
+    <div class="col-body" id="col3Body">
+      <div id="outEmpty" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:12px;color:#ccc;text-align:center;line-height:2" data-t-html="emptyOutput">No converted<br>files yet</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- STATUSBAR -->
+<div class="statusbar">
+  <div class="sd" id="sd"></div>
+  <span id="st" data-t="ready">Ready</span>
+  <div class="pw" id="pw"><div class="pb" id="pb"></div></div>
+  <div class="spacer"></div>
+  <span id="ss"></span>
+</div>
+
+<!-- FLOATING CONVERT BUTTON -->
+<div id="ripBtn">
+  <div class="rip-inner" id="ripInner">
+    <div class="rip-text" id="ripText">LET IT<br>RIP</div>
+  </div>
+</div>
+
+<!-- MODAL: WHY -->
+<div class="modal-overlay" id="modalReason">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modalReason')">✕</button>
+    <h2 data-t="reasonTitle">Why this tool exists</h2>
+    <p data-t="reasonBody">Most image conversion tools send your files to a server. This tool converts everything locally in your browser — nothing leaves your device. It supports bulk conversion, quality control, scaling, and GIF optimization, all in one place with a clear three-column workflow.</p>
+  </div>
+</div>
+
+<!-- MODAL: HOW -->
+<div class="modal-overlay" id="modalHow">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modalHow')">✕</button>
+    <h2 data-t="howTitle">How to use</h2>
+    <ol>
+      <li data-t="how1"><b>Load files</b> — drag & drop images into column 1, or click to browse. Supports JPG, PNG, WebP, AVIF, GIF, SVG.</li>
+      <li data-t="how2"><b>Adjust settings</b> — choose output format, quality, scale, and max width in column 2. Click the preview to toggle original vs output.</li>
+      <li data-t="how3"><b>Select files</b> — click to select individual files. Shift+click for range, Ctrl+click for multi. Settings apply to selection or all files.</li>
+      <li data-t="how4"><b>Convert</b> — click the floating "Let it Rip" button. Results appear in column 3 with file size comparison.</li>
+      <li data-t="how5"><b>Download</b> — download files individually or all at once as a ZIP.</li>
+    </ol>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+(function() {
+'use strict';
+
+// ── TRANSLATIONS ──
+const T = {
+  en: {
+    upload:'Load files', why:'Why this tool', how:'How to use', dlAll:'Download all',
+    col1:'Input', col2:'Settings', col3:'Output',
+    selAll:'Select all', desel:'Deselect',
+    sgFormat:'Format & Quality', labelFormat:'Format', labelQuality:'Quality',
+    sgSize:'Size', labelScale:'Scale', labelMaxW:'Max width', labelPx:'(0 = original)',
+    labelFps:'Framerate', labelColors:'Color palette',
+    sgPreview:'Preview', prevPh:'—', prevHint:'Click to toggle original / output',
+    emptySettings:'Load files to<br>see settings.',
+    emptyOutput:'No converted<br>files yet',
+    ready:'Ready', converting:'Converting…', done:'files converted', of:'/',
+    scope_all:'all files', scope_sel:'selected',
+    statusWait:'Waiting', statusProcessing:'Processing…', statusDone:'Done', statusError:'Error',
+    reasonTitle:'Why this tool exists',
+    reasonBody:'Most image conversion tools send your files to a server. This tool converts everything locally in your browser — nothing leaves your device. It supports bulk conversion, quality control, scaling, and GIF optimization, all in one place with a clear three-column workflow.',
+    howTitle:'How to use',
+    how1:'<b>Load files</b> — drag & drop images into column 1, or click to browse.',
+    how2:'<b>Adjust settings</b> — choose format, quality, scale in column 2. Click preview to compare.',
+    how3:'<b>Select files</b> — click to select. Shift+click for range, Ctrl+click for multi.',
+    how4:'<b>Convert</b> — click "Let it Rip". Results appear in column 3.',
+    how5:'<b>Download</b> — individually or all as ZIP.',
+    ripText:'LET IT\nRIP',
+    totalSaving:'total saved',
+  },
+  de: {
+    upload:'Dateien laden', why:'Warum dieses Tool', how:'Anleitung', dlAll:'Alle herunterladen',
+    col1:'Eingabe', col2:'Einstellungen', col3:'Ausgabe',
+    selAll:'Alle auswählen', desel:'Aufheben',
+    sgFormat:'Format & Qualität', labelFormat:'Format', labelQuality:'Qualität',
+    sgSize:'Grösse', labelScale:'Skalierung', labelMaxW:'Max. Breite', labelPx:'(0 = original)',
+    labelFps:'Framerate', labelColors:'Farbpalette',
+    sgPreview:'Vorschau', prevPh:'—', prevHint:'Tippen zum Umschalten',
+    emptySettings:'Dateien laden,<br>dann Einstellungen.',
+    emptyOutput:'Noch keine<br>konvertierten Dateien',
+    ready:'Bereit', converting:'Konvertiere…', done:'Dateien fertig', of:'/',
+    scope_all:'alle Dateien', scope_sel:'ausgewählt',
+    statusWait:'Wartend', statusProcessing:'Wird bearbeitet…', statusDone:'Fertig', statusError:'Fehler',
+    reasonTitle:'Warum dieses Tool existiert',
+    reasonBody:'Die meisten Konverter laden deine Dateien auf einen Server hoch. Dieses Tool konvertiert alles lokal im Browser — nichts verlässt dein Gerät. Batch-Konvertierung, Qualitätskontrolle, Skalierung und GIF-Optimierung — alles in einem übersichtlichen Drei-Spalten-Layout.',
+    howTitle:'Anleitung',
+    how1:'<b>Dateien laden</b> — Bilder in Spalte 1 ablegen oder klicken. JPG, PNG, WebP, AVIF, GIF, SVG.',
+    how2:'<b>Einstellungen</b> — Format, Qualität, Skalierung in Spalte 2. Vorschau klicken zum Vergleichen.',
+    how3:'<b>Auswählen</b> — Klick wählt einzeln. Shift+Klick für Bereich, Ctrl+Klick für Mehrfach.',
+    how4:'<b>Konvertieren</b> — auf "Let it Rip" klicken. Ergebnisse erscheinen in Spalte 3.',
+    how5:'<b>Herunterladen</b> — einzeln oder alle als ZIP.',
+    ripText:'LET IT\nRIP',
+    totalSaving:'gespart',
+  }
+};
+let lang = 'en';
+
+function t(key) { return T[lang][key] || T['en'][key] || key; }
+
+function applyLang() {
+  document.querySelectorAll('[data-t]').forEach(el => {
+    const k = el.getAttribute('data-t');
+    el.textContent = t(k);
+  });
+  document.querySelectorAll('[data-t-html]').forEach(el => {
+    const k = el.getAttribute('data-t-html');
+    el.innerHTML = t(k);
+  });
+  // rip button
+  const rt = document.getElementById('ripText');
+  if (rt) rt.innerHTML = t('ripText').replace('\n','<br>');
+  // scope
+  updateSel();
+}
+
+document.querySelectorAll('.lang-opt').forEach(btn => {
+  btn.addEventListener('click', () => {
+    lang = btn.dataset.lang;
+    document.querySelectorAll('.lang-opt').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+    applyLang();
+  });
+});
+
+// ── MODALS ──
+document.getElementById('btnReason').addEventListener('click', () => openModal('modalReason'));
+document.getElementById('btnHow').addEventListener('click', () => openModal('modalHow'));
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+});
+window.openModal = id => document.getElementById(id).classList.add('open');
+window.closeModal = id => document.getElementById(id).classList.remove('open');
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
+});
+
+// ── STATE ──
+const files = [];
+const sel = new Set();
+let blobs = [];
+let previewTimer = null;
+let prevShowOrig = true;
+let prevOrigUrl = null, prevOutUrl = null, prevOrigSize = 0, prevOutSize = 0;
+
+const $ = id => document.getElementById(id);
+const col1 = $('col1Body');
+const col3 = $('col3Body');
+
+// ── UTILS ──
+function ext(f) { return f.name.split('.').pop().toLowerCase(); }
+function fb(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1048576) return (bytes/1024).toFixed(1) + ' KB';
+  return (bytes/1048576).toFixed(2) + ' MB';
+}
+function isImgFile(f) {
+  return ['jpg','jpeg','png','gif','webp','avif','svg','bmp','tiff','tif','ico'].includes(ext(f));
+}
+function outName(f) {
+  const base = f.name.replace(/\.[^.]+$/, '');
+  const map = {'image/jpeg':'jpg','image/png':'png','image/webp':'webp'};
+  return base + '.' + (map[$('fmtSel').value] || 'jpg');
+}
+
+// Read a File as data URL (returns Promise<string>)
+function fileToDataURL(file) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result);
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+}
+
+// Convert a Blob to data URL
+function blobToDataURL(blob) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result);
+    r.onerror = reject;
+    r.readAsDataURL(blob);
+  });
+}
+
+// ── FLOATING RIP BUTTON with lazy mouse follow ──
+const ripBtn   = $('ripBtn');
+const ripInner = $('ripInner');
+
+// Anchor point: center of col2/col3 border, vertically centered in workspace
+let ripTargetX = 0, ripTargetY = 0;
+let ripCurrentX = 0, ripCurrentY = 0;
+let rafRunning = false;
+
+function setRipAnchor() {
+  const ws = document.querySelector('.workspace');
+  if (!ws) return;
+  const r = ws.getBoundingClientRect();
+  const colW = r.width / 3;
+  ripTargetX = r.left + colW * 2;
+  ripTargetY = r.top + r.height / 2;
+  if (!rafRunning) {
+    ripCurrentX = ripTargetX;
+    ripCurrentY = ripTargetY;
+    positionRip();
+  }
+}
+
+function positionRip() {
+  ripBtn.style.left = (ripCurrentX - 34) + 'px';
+  ripBtn.style.top  = (ripCurrentY - 34) + 'px';
+}
+
+// Mouse move: only follow vertically (lazy), X is fixed to col border
+document.addEventListener('mousemove', e => {
+  if (!ripBtn.classList.contains('ready')) return;
+  const ws = document.querySelector('.workspace');
+  if (!ws) return;
+  const r = ws.getBoundingClientRect();
+  const colW = r.width / 3;
+  ripTargetX = r.left + colW * 2; // always fixed to border
+  // vertical: clamp within workspace
+  const minY = r.top + 50;
+  const maxY = r.top + r.height - 50;
+  ripTargetY = Math.max(minY, Math.min(maxY, e.clientY));
+  if (!rafRunning) { rafRunning = true; animateRip(); }
+});
+
+function animateRip() {
+  const ease = 0.08; // lazy delay factor
+  ripCurrentX += (ripTargetX - ripCurrentX) * ease;
+  ripCurrentY += (ripTargetY - ripCurrentY) * ease;
+  positionRip();
+  const dx = Math.abs(ripTargetX - ripCurrentX);
+  const dy = Math.abs(ripTargetY - ripCurrentY);
+  if (dx > 0.3 || dy > 0.3) {
+    requestAnimationFrame(animateRip);
+  } else {
+    rafRunning = false;
+  }
+}
+
+// Tilt on mouse proximity
+document.addEventListener('mousemove', e => {
+  const r = ripInner.getBoundingClientRect();
+  const cx = r.left + r.width/2, cy = r.top + r.height/2;
+  const dx = e.clientX - cx, dy = e.clientY - cy;
+  const dist = Math.sqrt(dx*dx + dy*dy);
+  if (dist < 80) {
+    const tiltX = (dy / 80) * 8;
+    const tiltY = -(dx / 80) * 8;
+    ripInner.style.transform = `perspective(200px) rotateX(${tiltX}deg) rotateY(${tiltY}deg)`;
+  } else {
+    ripInner.style.transform = '';
+  }
+});
+
+ripInner.addEventListener('click', () => {
+  if (ripInner.classList.contains('disabled')) return;
+  doConvert();
+});
+
+function updateRipBtn() {
+  const hasFiles = files.length > 0;
+  ripBtn.classList.toggle('ready', hasFiles);
+  ripInner.classList.toggle('disabled', !hasFiles);
+}
+
+window.addEventListener('resize', setRipAnchor);
+setTimeout(setRipAnchor, 100);
+
+// ── DROP ZONE FACTORY ──
+function makeDZ(isEmpty) {
+  const dz = document.createElement('div');
+  dz.className = 'drop-zone';
+  if (isEmpty) {
+    dz.innerHTML = `
+      <input type="file" multiple accept="image/*,.avif,.webp,.gif,.svg">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <span data-t="upload">Load files</span>
+      <span style="font-size:11px;color:#bbb">WebP · AVIF · GIF · PNG · JPG · SVG</span>`;
+  } else {
+    dz.innerHTML = `
+      <input type="file" multiple accept="image/*,.avif,.webp,.gif,.svg">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <span>+ more files</span>`;
+  }
+  dz.querySelector('input').addEventListener('change', function() { addFiles(this.files); });
+  dz.addEventListener('dragover',  e => { e.preventDefault(); dz.classList.add('over'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('over'));
+  dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('over'); addFiles(e.dataTransfer.files); });
+  return dz;
+}
+
+// ── ADD FILES ──
+function addFiles(newFiles) {
+  Array.from(newFiles).forEach(f => {
+    if (!files.find(x => x.name === f.name && x.size === f.size)) files.push(f);
+  });
+  blobs = [];
+  renderCol1();
+  updateSel();
+  showSettings();
+  renderCol3([]);
+  updateRipBtn();
+  setStatus(t('ready'), false);
+}
+
+// ── RENDER COL 1 ──
+function renderCol1() {
+  col1.innerHTML = '';
+  col1.appendChild(makeDZ(files.length === 0));
+  if (!files.length) { $('inCount').textContent = ''; return; }
+  $('inCount').textContent = files.length;
+  files.forEach((f, i) => {
+    const item = document.createElement('div');
+    item.className = 'file-item' + (sel.has(i) ? ' sel' : '');
+    item.innerHTML = `
+      <div class="chk"></div>
+      <div class="thumb" id="th${i}">${ext(f).toUpperCase()}</div>
+      <div class="fi-info">
+        <div class="fi-name">${f.name}</div>
+        <div class="fi-size">${fb(f.size)}</div>
+      </div>
+      <button class="rm-btn" title="Remove">✕</button>`;
+    item.querySelector('.rm-btn').addEventListener('click', e => { e.stopPropagation(); removeFile(i); });
+    item.addEventListener('click', e => toggleSel(i, e));
+    col1.appendChild(item);
+    // Use FileReader → data URL (works under strict CSP)
+    if (isImgFile(f)) {
+      fileToDataURL(f).then(dataUrl => {
+        const el = document.getElementById('th' + i);
+        if (el) el.innerHTML = `<img src="${dataUrl}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:2px;">`;
+      }).catch(() => {});
+    }
+  });
+  $('gifSg').classList.toggle('on', files.some(f => ext(f) === 'gif'));
+}
+
+// ── SELECTION ──
+function toggleSel(i, e) {
+  if (e.shiftKey && sel.size > 0) {
+    const last = [...sel].pop();
+    const from = Math.min(last, i), to = Math.max(last, i);
+    for (let j = from; j <= to; j++) sel.add(j);
+  } else if (e.ctrlKey || e.metaKey) {
+    sel.has(i) ? sel.delete(i) : sel.add(i);
+  } else {
+    if (sel.has(i) && sel.size === 1) sel.clear();
+    else { sel.clear(); sel.add(i); }
+  }
+  renderCol1(); updateSel(); schedulePreview();
+}
+
+function removeFile(i) {
+  files.splice(i, 1);
+  const ns = new Set();
+  sel.forEach(x => { if (x < i) ns.add(x); else if (x > i) ns.add(x-1); });
+  sel.clear(); ns.forEach(x => sel.add(x));
+  renderCol1(); updateSel(); showSettings(); updateRipBtn();
+  if (!files.length) {
+    $('settingsEmpty').style.display = 'flex';
+    $('settingsBody').style.display = 'none';
+  }
+}
+
+function updateSel() {
+  const n = sel.size;
+  $('selAllBtn').textContent = t('selAll');
+  $('deselBtn').textContent  = t('desel');
+  $('selAllBtn').classList.toggle('visible', files.length > 0 && n < files.length);
+  $('deselBtn').classList.toggle('visible', n > 0);
+  const scopeEl = $('scope');
+  if (n > 0) scopeEl.textContent = n + ' ' + t('scope_sel');
+  else if (files.length > 0) scopeEl.textContent = t('scope_all');
+  else scopeEl.textContent = '';
+}
+
+$('selAllBtn').addEventListener('click', () => { files.forEach((_,i) => sel.add(i)); renderCol1(); updateSel(); schedulePreview(); });
+$('deselBtn').addEventListener('click',  () => { sel.clear(); renderCol1(); updateSel(); schedulePreview(); });
+
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey||e.metaKey) && e.key === 'a' && files.length) {
+    e.preventDefault(); files.forEach((_,i) => sel.add(i)); renderCol1(); updateSel(); schedulePreview();
+  }
+  if (e.key === 'Escape' && !document.querySelector('.modal-overlay.open')) {
+    sel.clear(); renderCol1(); updateSel();
+  }
+});
+
+// ── SETTINGS ──
+function showSettings() {
+  if (!files.length) return;
+  $('settingsEmpty').style.display = 'none';
+  $('settingsBody').style.display  = 'flex';
+  schedulePreview();
+}
+
+$('fileInput').addEventListener('change', function() { addFiles(this.files); });
+
+$('qSlider').addEventListener('input',  () => { $('qVal').textContent  = $('qSlider').value + '%'; schedulePreview(); });
+$('scSlider').addEventListener('input', () => { $('scVal').textContent = $('scSlider').value + '%'; schedulePreview(); });
+$('mxW').addEventListener('input',      () => schedulePreview());
+$('gfSlider').addEventListener('input', () => { $('gfVal').textContent = $('gfSlider').value + ' fps'; });
+$('gcSlider').addEventListener('input', () => { $('gcVal').textContent = $('gcSlider').value; });
+$('fmtSel').addEventListener('change',  () => {
+  $('qField').style.opacity = $('fmtSel').value === 'image/png' ? '.4' : '1';
+  schedulePreview();
+});
+
+// ── PREVIEW ──
+window._app = {
+  togglePrev: function() {
+    if (!prevOrigUrl) return;
+    prevShowOrig = !prevShowOrig;
+    renderPreview();
+  }
+};
+
+function renderPreview() {
+  const wrap  = $('pOW');
+  const lbl   = $('prevLbl');
+  const badge = $('prevSzBadge');
+  if (prevShowOrig) {
+    wrap.innerHTML    = `<img src="${prevOrigUrl}" alt="" style="max-width:100%;max-height:110px;object-fit:contain;border-radius:2px;">`;
+    lbl.textContent   = 'Original';
+    badge.textContent = fb(prevOrigSize);
+  } else {
+    wrap.innerHTML    = prevOutUrl
+      ? `<img src="${prevOutUrl}" alt="" style="max-width:100%;max-height:110px;object-fit:contain;border-radius:2px;">`
+      : `<div class="prev-ph">${lang==='de'?'Berechne…':'Computing…'}</div>`;
+    lbl.textContent   = lang === 'de' ? 'Ausgabe' : 'Output';
+    badge.textContent = prevOutSize ? fb(prevOutSize) : '…';
+  }
+}
+
+function schedulePreview() {
+  clearTimeout(previewTimer);
+  previewTimer = setTimeout(doPreview, 350);
+}
+
+async function doPreview() {
+  if (!files.length) return;
+  const f = sel.size > 0 ? files[[...sel][0]] : files[0];
+  if (!f) return;
+  if (ext(f) === 'gif') {
+    $('pOW').innerHTML = `<div class="prev-ph">GIF — n/a</div>`;
+    $('prevLbl').textContent = ''; $('prevSzBadge').textContent = '';
+    prevOrigUrl = null; return;
+  }
+  // Use data URLs — blob: is blocked by Claude sandbox CSP
+  prevOrigUrl  = await fileToDataURL(f);
+  prevOrigSize = f.size;
+  prevOutUrl   = null; prevOutSize = 0;
+  prevShowOrig = true;
+  renderPreview();
+  const b = await convertFile(f);
+  if (b) {
+    prevOutUrl  = await blobToDataURL(b);
+    prevOutSize = b.size;
+    if (!prevShowOrig) renderPreview();
+    else renderPreview(); // also update badge/hint after output is ready
+  }
+}
+
+// ── CONVERT ENGINE ──
+async function convertFile(file) {
+  const fmt = $('fmtSel').value;
+  const q   = fmt === 'image/png' ? 1 : parseInt($('qSlider').value) / 100;
+  const sc  = parseInt($('scSlider').value) / 100;
+  const mw  = parseInt($('mxW').value) || 0;
+
+  // Use data URL for img.src — blob: URLs may be blocked by CSP in embedded contexts
+  const dataUrl = await fileToDataURL(file);
+
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      let w = img.naturalWidth, h = img.naturalHeight;
+      if (sc < 1)            { w = Math.round(w * sc); h = Math.round(h * sc); }
+      if (mw > 0 && w > mw)  { h = Math.round(h * mw / w); w = mw; }
+      if (w < 1) w = 1; if (h < 1) h = 1;
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      if (fmt === 'image/jpeg') { ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h); }
+      ctx.drawImage(img, 0, 0, w, h);
+      canvas.toBlob(resolve, fmt, q);
+    };
+    img.onerror = () => resolve(null);
+    img.src = dataUrl;
+  });
+}
+
+// ── CONVERT (RIP) ──
+async function doConvert() {
+  if (!files.length) return;
+  const targets = sel.size > 0 ? [...sel].map(i => files[i]) : [...files];
+
+  ripInner.classList.add('disabled');
+  blobs = [];
+  $('dlAllBtn').classList.remove('show');
+  $('pw').style.display = 'block';
+  $('pb').style.width   = '0%';
+  setStatus(t('converting'), true);
+
+  // Build result placeholders with status
+  const results = targets.map(f => ({ name: outName(f), origSize: f.size, blob: null, url: null, status: 'wait' }));
+  renderCol3(results);
+
+  let totalOrig = 0, totalNew = 0;
+  for (let i = 0; i < targets.length; i++) {
+    results[i].status = 'processing';
+    renderCol3(results);
+    $('pb').style.width = Math.round(i / targets.length * 100) + '%';
+
+    try {
+      const b = await convertFile(targets[i]);
+      $('pb').style.width = Math.round((i+1) / targets.length * 100) + '%';
+      if (b) {
+        totalOrig += targets[i].size; totalNew += b.size;
+        results[i].blob      = b;
+        results[i].dataUrl   = await blobToDataURL(b); // data URL for img display & download
+        results[i].status    = 'done';
+        blobs.push({ name: results[i].name, blob: b, dataUrl: results[i].dataUrl });
+      } else {
+        results[i].status = 'error';
+      }
+    } catch(e) {
+      results[i].status = 'error';
+    }
+    renderCol3(results);
+  }
+
+  setTimeout(() => { $('pw').style.display = 'none'; }, 600);
+  const saving = totalOrig > 0 ? Math.round((1 - totalNew / totalOrig) * 100) : 0;
+  setStatus(blobs.length + ' ' + t('done'), false);
+  $('ss').textContent = saving > 0 ? '−' + saving + '% ' + t('totalSaving') : '';
+  ripInner.classList.remove('disabled');
+  if (blobs.length > 1) $('dlAllBtn').classList.add('show');
+}
+
+// ── RENDER COL 3 ──
+function renderCol3(results) {
+  col3.innerHTML = '';
+  if (!results.length) {
+    const empty = document.createElement('div');
+    empty.id = 'outEmpty';
+    empty.style.cssText = 'flex:1;display:flex;align-items:center;justify-content:center;font-size:12px;color:#ccc;text-align:center;line-height:2';
+    empty.innerHTML = t('emptyOutput');
+    col3.appendChild(empty);
+    $('outCount').textContent = '';
+    return;
+  }
+
+  $('outCount').textContent = results.filter(r => r.status === 'done').length + t('of') + results.length;
+
+  results.forEach(r => {
+    const el = document.createElement('div');
+    if      (r.status === 'done')       el.className = 'result-item done';
+    else if (r.status === 'error')      el.className = 'result-item error';
+    else if (r.status === 'processing') el.className = 'result-item pending';
+    else                                el.className = 'result-item pending';
+
+    const sv = r.blob ? Math.round((1 - r.blob.size / r.origSize) * 100) : null;
+    const svSpan = r.blob
+      ? ` <span class="${sv>0?'sp':sv<0?'sn':''}">${sv>0?'−'+sv+'%':sv<0?'+'+Math.abs(sv)+'%':'±0%'}</span>`
+      : '';
+    const sizeLine = r.blob ? `${fb(r.origSize)} → ${fb(r.blob.size)}${svSpan}` : '';
+
+    const thumbHTML = r.dataUrl
+      ? `<div class="rt"><img src="${r.dataUrl}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:2px;"></div>`
+      : `<div class="rt">${r.name.split('.').pop().toUpperCase()}</div>`;
+
+    let badgeHTML = '';
+    let dlHTML    = `<div style="width:26px"></div>`;
+    if (r.status === 'wait') {
+      badgeHTML = `<span class="st-badge wait">${t('statusWait')}</span>`;
+    } else if (r.status === 'processing') {
+      badgeHTML = `<span class="st-badge processing">${t('statusProcessing')}</span>`;
+    } else if (r.status === 'done') {
+      badgeHTML = `<span class="st-badge done-b">${t('statusDone')}</span>`;
+      dlHTML    = `<button class="dl-item-btn" title="Download" onclick="window._app.dlDataUrl('${r.dataUrl}','${r.name}')">↓</button>`;
+    } else if (r.status === 'error') {
+      badgeHTML = `<span class="st-badge error-b">${t('statusError')}</span>`;
+    }
+
+    el.innerHTML = `
+      ${thumbHTML}
+      <div class="ri">
+        <div class="rn">${r.name}</div>
+        <div class="rm">${sizeLine}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px">
+        ${badgeHTML}
+        ${dlHTML}
+      </div>`;
+    col3.appendChild(el);
+  });
+}
+
+// ── DOWNLOAD ──
+window._app.dlDataUrl = function(dataUrl, name) {
+  const a = document.createElement('a');
+  a.href = dataUrl; a.download = name;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+};
+
+$('dlAllBtn').addEventListener('click', async () => {
+  $('dlAllBtn').querySelector('[data-t]').textContent = lang === 'de' ? 'ZIP erstellen…' : 'Creating ZIP…';
+  const zip = new JSZip();
+  blobs.forEach(x => zip.file(x.name, x.blob));
+  const zipBlob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE' });
+  const zipDataUrl = await blobToDataURL(zipBlob);
+  window._app.dlDataUrl(zipDataUrl, 'converted.zip');
+  $('dlAllBtn').querySelector('[data-t]').textContent = t('dlAll');
+});
+
+function setStatus(msg, running) {
+  $('st').textContent = msg;
+  $('sd').className = 'sd' + (running ? ' run' : '');
+}
+
+// ── INIT ──
+renderCol1();
+updateRipBtn();
+applyLang();
+setTimeout(setRipAnchor, 200);
+
+})();
+</script>
+</body>
+</html>
