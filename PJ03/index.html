@@ -169,6 +169,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px;
 .prev-container { background: repeating-conic-gradient(#e8e8e8 0% 25%, #f5f5f5 0% 50%) 0 0/8px 8px; min-height: 80px; overflow: auto; display: flex; align-items: center; justify-content: center; position: relative; }
 .prev-container img { display: block; }
 .prev-container.fit img { max-width: 100%; height: auto; }
+.prev-container.actual { align-items: flex-start; justify-content: flex-start; }
 .prev-container.actual img { max-width: none; }
 .prev-ph { font-size: 11px; color: #ccc; padding: 20px; text-align: center; }
 
@@ -275,12 +276,11 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px;
 /* Each channel row */
 .merge-node-slot {
   display: grid;
-  grid-template-columns: 18px 1fr 36px;
+  grid-template-columns: 18px 1fr;
   align-items: center;
   gap: 6px;
-  padding: 4px 8px;
+  padding: 3px 8px;
   border-bottom: 1px solid #f0f0f0;
-  min-height: 44px;
 }
 .merge-node-slot:last-child { border-bottom: none; }
 .merge-node-slot-lbl {
@@ -291,9 +291,10 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px;
 .slot-g { color: #388e3c; }
 .slot-b { color: #1565c0; }
 .merge-node-drop {
-  border-radius: 4px; height: 34px; position: relative;
+  border-radius: 3px; height: 36px; position: relative;
   display: flex; align-items: center; justify-content: center;
   font-size: 10px; cursor: pointer; transition: background .1s, border-color .1s;
+  overflow: hidden;
 }
 .merge-node-drop input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
 .drop-r { border: 1.5px dashed #ef9a9a; background: #fff8f8; color: #e57373; }
@@ -319,6 +320,14 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px;
 .node-chevron { color: #bbb; flex-shrink: 0; transition: transform .15s; }
 .node-chevron.rot { transform: rotate(180deg); }
 
+/* TOGGLE SWITCH */
+.toggle-row { display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; padding: 2px 0; }
+.toggle-label { font-size: 11px; color: #999; font-family: 'Roboto Mono', monospace; min-width: 22px; }
+.toggle-switch { width: 36px; height: 20px; border-radius: 10px; background: #ddd; position: relative; transition: background .2s; flex-shrink: 0; }
+.toggle-switch.on { background: #1a73e8; }
+.toggle-knob { width: 14px; height: 14px; border-radius: 50%; background: #fff; position: absolute; top: 3px; left: 3px; transition: left .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+.toggle-switch.on .toggle-knob { left: 19px; }
+
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #ddd; border-radius: 3px; }
@@ -342,14 +351,15 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px;
     <span data-t="how">How to use</span>
   </button>
   <div class="spacer"></div>
-  <div class="lang-toggle">
-    <button class="lang-opt active" data-lang="en">EN</button>
-    <button class="lang-opt" data-lang="de">DE</button>
-  </div>
   <button class="dl-all-topbar" id="dlAllTopbar">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
     <span data-t="dlAll">Download all</span>
   </button>
+  <div class="tb-sep"></div>
+  <div class="lang-toggle">
+    <button class="lang-opt active" data-lang="en">EN</button>
+    <button class="lang-opt" data-lang="de">DE</button>
+  </div>
 </div>
 
 <div class="workspace">
@@ -441,48 +451,57 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px;
         </div>
       </div>
 
-      <!-- TEXTURE TOOLS — collapsed, opens on pow2 detection -->
-      <div class="texture-sg" id="textureSg">
-        <div class="texture-header" id="textureHeader">
-          <div class="texture-header-title">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
-            <span data-t="sgTexture">Texture Tools</span>
-            <span class="texture-header-badge" id="textureBadge" style="display:none">POW2</span>
-          </div>
-          <span class="texture-header-arrow" id="textureArrow">▾</span>
+      <!-- TEXTURE TOOLS -->
+      <div class="sg" id="textureSg" style="display:none">
+        <div class="sg-title" id="textureHeader" style="cursor:pointer;user-select:none">
+          <span data-t="sgTexture">Texture Tools</span>
+          <span style="font-size:10px;color:#bbb;font-weight:400;margin-left:6px;text-transform:none;letter-spacing:0">split · normal · merge</span>
+          <span id="textureArrow" style="margin-left:auto;font-size:10px;color:#bbb">▴</span>
         </div>
-        <div class="texture-body" id="textureBody">
-          <div class="pow2-info" id="pow2Info" style="display:none"></div>
+        <div id="textureBody">
           <div class="field">
             <div class="fl" style="font-size:11px;color:#444" data-t="labelRgbSplit">RGB Channel Split</div>
-            <button id="rgbSplitBtn" class="ch-opt" style="height:28px;font-size:11px" data-t="btnSplit">Split → R / G / B</button>
+            <label class="toggle-row" id="splitToggleRow">
+              <span class="toggle-label" id="splitToggleLabel">Off</span>
+              <div class="toggle-switch" id="splitToggle" data-on="false">
+                <div class="toggle-knob"></div>
+              </div>
+            </label>
+            <div style="font-size:10px;color:#888;margin-top:3px">Splits into R / G / B greyscale images on convert</div>
           </div>
           <div class="field">
-            <div class="fl" style="font-size:11px;color:#444">Normal Map</div>
-            <div style="display:flex;gap:4px">
-              <button id="nmBtnDX" class="ch-opt active" style="height:28px;font-size:11px;flex:1">DirectX</button>
-              <button id="nmBtnGL" class="ch-opt" style="height:28px;font-size:11px;flex:1">OpenGL</button>
-            </div>
-            <div style="font-size:10px;color:#888;margin-top:3px" id="nmHint">Current: DirectX — click OpenGL to convert</div>
+            <div class="fl" style="font-size:11px;color:#444">Normal Map — Flip G</div>
+            <label class="toggle-row" id="nmToggleRow">
+              <span class="toggle-label" id="nmToggleLabel">Off</span>
+              <div class="toggle-switch" id="nmToggle" data-on="false">
+                <div class="toggle-knob"></div>
+              </div>
+            </label>
+            <div style="font-size:10px;color:#888;margin-top:3px">Inverts the G channel (Y axis) on convert</div>
           </div>
         </div>
       </div>
 
       <!-- PREVIEW -->
       <div class="sg">
-        <div class="sg-title" data-t="sgPreview">Preview</div>
-        <div class="prev-wrap" id="prevWrap">
-          <div class="prev-toolbar-bar" id="prevToolbar">
-            <button class="prev-btn active" id="prevBtnOrig">orig</button>
-            <button class="prev-btn" id="prevBtnOut">out</button>
-            <button class="prev-btn" id="prevBtn1to1">1:1</button>
-            <span class="prev-info" id="prevInfo"></span>
-          </div>
-          <div class="prev-container fit" id="prevContainer">
-            <div class="prev-ph" id="prevPh">—</div>
+        <div class="sg-title" id="prevSgTitle" style="cursor:pointer;user-select:none" onclick="togglePreviewPanel()">
+          Preview
+          <span id="prevMeta" style="font-size:10px;font-weight:400;color:#888;margin-left:6px;font-family:'Roboto Mono',monospace;text-transform:none;letter-spacing:0"></span>
+          <span style="margin-left:auto;font-size:11px;color:#bbb" id="prevToggleArrow">▾</span>
+        </div>
+        <div id="prevPanelBody" style="display:none">
+          <div class="prev-wrap" id="prevWrap">
+            <div class="prev-toolbar-bar" id="prevToolbar">
+              <button class="prev-btn" id="prevBtnOrig">orig</button>
+              <button class="prev-btn active" id="prevBtnOut">out</button>
+              <button class="prev-btn" id="prevBtn1to1">1:1</button>
+              <span class="prev-info" id="prevInfo"></span>
+            </div>
+            <div class="prev-container fit" id="prevContainer">
+              <div class="prev-ph" id="prevPh">—</div>
+            </div>
           </div>
         </div>
-        <div style="font-size:10px;color:#bbb;text-align:center;margin-top:3px" data-t="prevHint">orig / out to compare</div>
       </div>
 
     </div>
@@ -662,7 +681,7 @@ const col1=$('col1Body'), col3=$('col3Body');
 
 // DEFAULT SETTINGS factory
 function defaultSettings(){
-  return {format:'image/jpeg',quality:82,scale:100,maxWidth:0,outputChannel:'rgb',gifFps:10,gifColors:128};
+  return {format:'image/jpeg',quality:82,scale:100,maxWidth:0,outputChannel:'rgb',gifFps:10,gifColors:128,splitRGB:false,nmFlip:false};
 }
 
 // UTILS
@@ -715,13 +734,16 @@ async function detectChannelAsync(file){
 
 // PER-FILE SETTINGS
 function getActiveSettings(){
-  if(sel.size===0) return defaultSettings();
+  if(sel.size===0){
+    // No selection — return first file's settings for display only (won't be saved globally)
+    return files.find(Boolean)?.settings || defaultSettings();
+  }
   if(sel.size===1){
     const idx=[...sel][0];
     return files[idx]?files[idx].settings:defaultSettings();
   }
-  // multi: return first selected (they share via UI)
-  return files[[...sel][0]].settings;
+  // multi: return first selected's settings
+  return files[[...sel][0]]?.settings || defaultSettings();
 }
 function saveActiveSettings(){
   const s={
@@ -732,11 +754,17 @@ function saveActiveSettings(){
     outputChannel:document.querySelector('.ch-opt.active[data-ch]')?.dataset.ch||'rgb',
     gifFps:parseInt($('gfSlider').value),
     gifColors:parseInt($('gcSlider').value),
+    splitRGB:$('splitToggle').classList.contains('on'),
+    nmFlip:$('nmToggle').classList.contains('on'),
   };
-  if(sel.size===0){
-    // apply to all
-    files.forEach(f=>{if(f)Object.assign(f.settings,s);});
+  if(activeSelection?.type==='node'){
+    const nd=mergeNodes.find(n=>n.id===activeSelection.idx);
+    if(nd) Object.assign(nd.settings, s);
+  } else if(sel.size===0){
+    // Nothing selected → do NOT apply globally, ignore
+    return;
   } else {
+    // Apply only to selected files
     sel.forEach(i=>{if(files[i])Object.assign(files[i].settings,s);});
   }
 }
@@ -749,19 +777,31 @@ function loadSettingsToUI(s){
   $('gcSlider').value=s.gifColors; $('gcVal').textContent=s.gifColors;
   $('qField').style.opacity=s.format==='image/png'?'.4':'1';
   document.querySelectorAll('.ch-opt[data-ch]').forEach(b=>b.classList.toggle('active',b.dataset.ch===s.outputChannel));
+  // texture toggles
+  setToggleUI('splitToggle','splitToggleLabel', !!s.splitRGB);
+  setToggleUI('nmToggle','nmToggleLabel', !!s.nmFlip);
 }
 function updateSettingsIndicator(){
   const ind=$('perFileIndicator');
+  if(activeSelection?.type==='node'){
+    const nd=mergeNodes.find(n=>n.id===activeSelection.idx);
+    ind.style.display='block'; ind.className='per-file-indicator';
+    ind.textContent='Node: '+(nd?.name||'');
+    return;
+  }
   if(!files.length){ind.style.display='none';return;}
   if(sel.size===0){
     ind.style.display='block'; ind.className='per-file-indicator';
-    ind.textContent=t('scope_all');
+    ind.style.color='#aaa'; ind.style.background='#fafafa'; ind.style.borderColor='#e0e0e0';
+    ind.textContent=lang==='de'?'Datei auswählen zum Bearbeiten':'Select a file to edit settings';
   } else if(sel.size===1){
     ind.style.display='block'; ind.className='per-file-indicator';
+    ind.style.color=''; ind.style.background=''; ind.style.borderColor='';
     const idx=[...sel][0];
     ind.textContent=t('perFileHint')+' '+(files[idx]?.file.name||'');
   } else {
     ind.style.display='block'; ind.className='per-file-indicator per-file-multi';
+    ind.style.color=''; ind.style.background=''; ind.style.borderColor='';
     ind.textContent=t('perMultiHint')+' '+sel.size+' '+t('files');
   }
 }
@@ -785,11 +825,14 @@ document.querySelectorAll('.ch-opt[data-ch]').forEach(btn=>{
   });
 });
 
-// TEXTURE SECTION toggle
+// TEXTURE SECTION toggle (open by default)
+let textureOpen = true;
 $('textureHeader').addEventListener('click',()=>{
-  const body=$('textureBody'), arrow=$('textureArrow');
-  const open=body.classList.toggle('open');
-  arrow.classList.toggle('open',open);
+  textureOpen = !textureOpen;
+  const body = $('textureBody');
+  const arrow = $('textureArrow');
+  body.style.display = textureOpen ? '' : 'none';
+  arrow.textContent = textureOpen ? '▴' : '▾';
 });
 
 // FLOATING RIP BUTTON
@@ -803,20 +846,30 @@ function setRipAnchor(){
   if(!rafOn){ripCX=ripTX;ripCY=ripTY;posRip();}
 }
 function posRip(){
-  // offset: button center sits 50px above cursor so button doesn't cover the mouse
+  // button center placed at (ripCX, ripCY), offset left by half button width
   ripBtn.style.left=(ripCX-36)+'px';
-  ripBtn.style.top=(ripCY-36-50)+'px';
+  ripBtn.style.top=(ripCY-36)+'px';
 }
 document.addEventListener('mousemove',e=>{
   if(!ripBtn.classList.contains('ready'))return;
   const ws=document.querySelector('.workspace');if(!ws)return;
   const r=ws.getBoundingClientRect();
+
+  // X is always fixed to col2/col3 border
   ripTX=r.left+r.width*(2/3);
-  ripTY=Math.max(r.top+50,Math.min(r.top+r.height-50,e.clientY));
-  if(!rafOn){rafOn=true;animRip();}
-  // tilt
-  const bx=ripCX,by=ripCY,dx=e.clientX-bx,dy=e.clientY-by,d=Math.sqrt(dx*dx+dy*dy);
-  if(d<90){ripInner.style.transform=`perspective(200px) rotateX(${dy/9}deg) rotateY(${-dx/9}deg)`;}
+
+  // Y: only move if mouse is more than 100px away vertically from button center
+  const mouseY = e.clientY;
+  const btnCenterY = ripCY; // current rendered center
+  const vertDist = Math.abs(mouseY - btnCenterY);
+  if(vertDist > 100){
+    // clamp within workspace bounds
+    ripTY = Math.max(r.top+44, Math.min(r.top+r.height-44, mouseY));
+    if(!rafOn){rafOn=true;animRip();}
+  }
+  // tilt effect based on proximity
+  const dx=e.clientX-ripCX, dy=e.clientY-ripCY, d=Math.sqrt(dx*dx+dy*dy);
+  if(d<100){ripInner.style.transform=`perspective(200px) rotateX(${dy/10}deg) rotateY(${-dx/10}deg)`;}
   else ripInner.style.transform='';
 });
 function animRip(){
@@ -865,13 +918,31 @@ function addMergeNode() {
   nodeCounter++;
   const nid = 'n' + nodeCounter;
   const defaultName = 'merge_' + String(nodeCounter).padStart(2,'0');
-  const nodeState = {id:nid, name:defaultName, files:{R:null,G:null,B:null}, expanded:true};
+  const nodeState = {id:nid, name:defaultName, files:{R:null,G:null,B:null}, expanded:true, settings:defaultSettings()};
   mergeNodes.push(nodeState);
-  // Show settings panel even if no files loaded
   $('settingsEmpty').style.display='none';
   $('settingsBody').style.display='flex';
   renderCol1();
   updateSel();
+}
+
+// Preview panel collapse
+let prevPanelOpen = false;
+window.togglePreviewPanel = function() {
+  prevPanelOpen = !prevPanelOpen;
+  const body = $('prevPanelBody');
+  const arrow = $('prevToggleArrow');
+  if (body) body.style.display = prevPanelOpen ? 'block' : 'none';
+  if (arrow) arrow.textContent = prevPanelOpen ? '▴' : '▾';
+};
+
+function updatePrevMeta(f, dims) {
+  const meta = $('prevMeta');
+  if (!meta || !f) { if(meta) meta.textContent=''; return; }
+  const parts = [f.name];
+  if (f.size) parts.push(fb(f.size));
+  if (dims) parts.push(dims.w + '×' + dims.h);
+  meta.textContent = parts.join(' · ');
 }
 
 function removeNode(nid) {
@@ -929,10 +1000,6 @@ function buildMergeNodeEl(nodeState) {
       ${mkNodeSlotHTML('R','r',nid, nodeState.files.R)}
       ${mkNodeSlotHTML('G','g',nid, nodeState.files.G)}
       ${mkNodeSlotHTML('B','b',nid, nodeState.files.B)}
-      <button class="merge-node-exec" ${filled===3?'':'disabled'}>
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-        Merge → RGB
-      </button>
     </div>`;
 
   // Toggle expand on header click
@@ -1005,20 +1072,16 @@ function buildMergeNodeEl(nodeState) {
 }
 
 function mkNodeSlotHTML(ch, cls, nid, currentFile) {
-  const thumbHTML = currentFile
-    ? `<div id="nd2_${nid}_${ch}" class="merge-node-drop drop-${cls}">
-        <input type="file" accept="image/*" id="nf2_${nid}_${ch}" style="position:absolute;inset:0;opacity:0;cursor:pointer;">
-        <img class="merge-node-thumb" id="nthumb_${nid}_${ch}" src="" alt="">
-       </div>`
-    : `<div id="nd2_${nid}_${ch}" class="merge-node-drop drop-${cls}">
-        <input type="file" accept="image/*" id="nf2_${nid}_${ch}" style="position:absolute;inset:0;opacity:0;cursor:pointer;">
-        <span style="pointer-events:none;font-size:9px">drop / click</span>
-       </div>`;
-
+  // Drop fills available space; when filled, shows thumb as 40×40 square
   return `<div class="merge-node-slot">
     <span class="merge-node-slot-lbl slot-${cls}">${ch}</span>
-    ${thumbHTML}
-    <div class="merge-node-thumb-placeholder" id="ntp_${nid}_${ch}" style="${currentFile?'display:none':''}"></div>
+    <div id="nd2_${nid}_${ch}" class="merge-node-drop drop-${cls}">
+      <input type="file" accept="image/*" id="nf2_${nid}_${ch}" style="position:absolute;inset:0;opacity:0;cursor:pointer;z-index:1;">
+      ${currentFile
+        ? `<img id="nthumb_${nid}_${ch}" src="" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:3px;display:block;pointer-events:none;">`
+        : `<span id="nthumb_${nid}_${ch}" style="pointer-events:none;font-size:9px">drop / click</span>`
+      }
+    </div>
   </div>`;
 }
 
@@ -1040,53 +1103,25 @@ function appendOrUpdateResult(r) {
   renderCol3(col3Results);
 }
 
-// ── NORMAL MAP SWAP (2-button toggle: DX ↔ GL) ──
-let nmCurrentMode = 'dx'; // 'dx' = DirectX style, 'gl' = OpenGL style
-
-function updateNmUI() {
-  $('nmBtnDX').classList.toggle('active', nmCurrentMode === 'dx');
-  $('nmBtnGL').classList.toggle('active', nmCurrentMode === 'gl');
-  $('nmHint').textContent = nmCurrentMode === 'dx'
-    ? 'Current: DirectX — click OpenGL to convert'
-    : 'Current: OpenGL — click DirectX to convert';
+// ── TEXTURE TOOL TOGGLES — per-file, stored in settings ──
+function setToggleUI(switchId, labelId, on) {
+  const sw=$(switchId), lbl=$(labelId);
+  if(!sw||!lbl) return;
+  sw.classList.toggle('on', on);
+  lbl.textContent = on ? 'On' : 'Off';
+  lbl.style.color = on ? '#1a73e8' : '#999';
 }
 
-async function doNmSwap() {
-  const targets = sel.size>0 ? [...sel].map(i=>files[i]).filter(Boolean) : [...files].filter(Boolean);
-  if (!targets.length) return;
-  const targetMode = nmCurrentMode === 'dx' ? 'gl' : 'dx';
-  const suffix = nmCurrentMode === 'dx' ? '_GL' : '_DX';
-  setStatus('Converting normals…', true);
-  const results = [];
-  for (const entry of targets) {
-    const du = entry.dataUrl || (await fileToDataURL(entry.file));
-    const blob = await new Promise(res => {
-      const img = new Image();
-      img.onload = () => {
-        const w=img.naturalWidth, h=img.naturalHeight;
-        const c=document.createElement('canvas'); c.width=w; c.height=h;
-        const ctx=c.getContext('2d'); ctx.drawImage(img,0,0,w,h);
-        const id=ctx.getImageData(0,0,w,h);
-        for(let p=0;p<id.data.length;p+=4) { id.data[p+1] = 255 - id.data[p+1]; }
-        ctx.putImageData(id,0,0);
-        c.toBlob(res,'image/png');
-      };
-      img.src = du;
-    });
-    const bdu = await blobToDataURL(blob);
-    const nm = entry.file.name.replace(/\.[^.]+$/,'') + suffix + '.png';
-    results.push({name:nm, dataUrl:bdu, blob, origSize:blob.size, status:'done'});
-    blobs.push({name:nm, blob, dataUrl:bdu});
-  }
-  nmCurrentMode = targetMode;
-  updateNmUI();
-  renderCol3(results); col3Results = results;
-  showDlBar(blobs.length>1);
-  setStatus(results.length + ' normal maps converted', false);
-}
-
-$('nmBtnDX').addEventListener('click', () => { if(nmCurrentMode !== 'dx') doNmSwap(); });
-$('nmBtnGL').addEventListener('click', () => { if(nmCurrentMode !== 'gl') doNmSwap(); });
+// Wire toggle clicks → save into active file settings
+['splitToggle','nmToggle'].forEach(id => {
+  const sw=$(id);
+  if(!sw) return;
+  sw.parentElement.addEventListener('click', () => {
+    const isOn = sw.classList.contains('on');
+    setToggleUI(id, id==='splitToggle'?'splitToggleLabel':'nmToggleLabel', !isOn);
+    onSettingChange();
+  });
+});
 
 // ADD FILES
 function addFiles(newFiles){
@@ -1173,20 +1208,9 @@ function renderCol1(){
 
 function checkPow2ForSelection(){
   const activeEntries = sel.size>0 ? [...sel].map(i=>files[i]).filter(Boolean) : files.filter(Boolean);
-  const hasPow2=activeEntries.some(e=>e.dims&&isPow2(e.dims.w)&&isPow2(e.dims.h));
-  const hasNonPow2=activeEntries.some(e=>e.dims&&(!isPow2(e.dims.w)||!isPow2(e.dims.h)));
-  const texBadge=$('textureBadge'), pow2Info=$('pow2Info');
-  if(hasPow2||hasNonPow2){
-    texBadge.style.display='inline';
-    if(hasNonPow2){
-      const e=activeEntries.find(e=>e.dims&&(!isPow2(e.dims.w)||!isPow2(e.dims.h)));
-      if(e){
-        const nw=nearestPow2(e.dims.w),nh=nearestPow2(e.dims.h);
-        pow2Info.style.display='block';
-        pow2Info.textContent=t('pow2')+': '+e.dims.w+'×'+e.dims.h+' → nearest: '+nw+'×'+nh;
-      }
-    } else { pow2Info.style.display='none'; }
-  } else { texBadge.style.display='none'; pow2Info.style.display='none'; }
+  const hasPow2 = activeEntries.some(e=>e.dims&&isPow2(e.dims.w)&&isPow2(e.dims.h));
+  // Show texture tools section only when at least one pow2 texture is present
+  $('textureSg').style.display = hasPow2 ? '' : 'none';
 }
 
 // SELECTION
@@ -1230,19 +1254,24 @@ document.addEventListener('keydown',e=>{
 
 // Load settings from active file/node into UI
 function updateSettingsUI(){
-  // show settings panel if we have files OR a node selected
   const hasContent = files.length>0 || mergeNodes.length>0;
   if(!hasContent) return;
   $('settingsEmpty').style.display='none';
   $('settingsBody').style.display='flex';
   if(activeSelection?.type==='node'){
-    // Node selected — show node-specific settings (format/quality for output)
     const nd=mergeNodes.find(n=>n.id===activeSelection.idx);
-    // nodes use global default settings for now; load defaults
-    loadSettingsToUI(defaultSettings());
+    loadSettingsToUI(nd?.settings || defaultSettings());
+    $('settingsBody').style.opacity='1';
+    $('settingsBody').style.pointerEvents='auto';
+  } else if(sel.size===0){
+    // Show first file's settings as reference, but grey out — nothing to save to
+    loadSettingsToUI(files.find(Boolean)?.settings || defaultSettings());
+    $('settingsBody').style.opacity='.45';
+    $('settingsBody').style.pointerEvents='none';
   } else {
-    const s=getActiveSettings();
-    loadSettingsToUI(s);
+    loadSettingsToUI(getActiveSettings());
+    $('settingsBody').style.opacity='1';
+    $('settingsBody').style.pointerEvents='auto';
   }
   updateSettingsIndicator();
   checkPow2ForSelection();
@@ -1298,18 +1327,30 @@ function renderPreview(){
 }
 function schedulePreview(){clearTimeout(previewTimer);previewTimer=setTimeout(doPreview,360);}
 async function doPreview(){
-  if(!files.length)return;
-  const entry=sel.size>0?files[[...sel][0]]:files[0];
-  if(!entry)return;
-  const {file}=entry;
+  if(!files.length) return;
+  const entry = sel.size>0 ? files[[...sel][0]] : files[0];
+  if(!entry) return;
+  const {file} = entry;
+  // Update meta line in preview title
+  updatePrevMeta(file, entry.dims);
+  // Auto-open panel when a file is selected
+  if (!prevPanelOpen && sel.size>0) {
+    prevPanelOpen = true;
+    const body=$('prevPanelBody'), arrow=$('prevToggleArrow');
+    if(body) body.style.display='block';
+    if(arrow) arrow.textContent='▴';
+  }
   if(ext(file)==='gif'){$('prevPh').style.display='flex';$('prevPh').textContent='GIF';$('prevToolbar').classList.remove('visible');prevOrigUrl=null;return;}
-  prevOrigUrl=entry.dataUrl||(await fileToDataURL(file));
-  prevOrigSize=file.size;
-  prevOutUrl=null;prevOutSize=0;
-  prevMode='orig';$('prevBtnOrig').classList.add('active');$('prevBtnOut').classList.remove('active');
+  prevOrigUrl = entry.dataUrl||(await fileToDataURL(file));
+  prevOrigSize = file.size;
+  prevOutUrl = null; prevOutSize = 0;
+  // Default: show 'out' mode
+  prevMode = 'out';
+  $('prevBtnOrig').classList.remove('active');
+  $('prevBtnOut').classList.add('active');
   renderPreview();
-  const b=await convertFile(file,entry.settings);
-  if(b){prevOutUrl=await blobToDataURL(b);prevOutSize=b.size;renderPreview();}
+  const b = await convertFile(file, entry.settings);
+  if(b){ prevOutUrl=await blobToDataURL(b); prevOutSize=b.size; renderPreview(); }
 }
 
 // CONVERT ENGINE
@@ -1336,6 +1377,12 @@ async function convertFile(file,settings){
         for(let p=0;p<id.data.length;p+=4){const g=Math.round(id.data[p]*.299+id.data[p+1]*.587+id.data[p+2]*.114);id.data[p]=id.data[p+1]=id.data[p+2]=g;}
         ctx.putImageData(id,0,0);
       }
+      // Normal map G-flip (applied after other ops, per-file setting)
+      if(s.nmFlip){
+        const id=ctx.getImageData(0,0,w,h);
+        for(let p=0;p<id.data.length;p+=4) id.data[p+1]=255-id.data[p+1];
+        ctx.putImageData(id,0,0);
+      }
       c.toBlob(res,fmt,q);
     };
     img.onerror=()=>res(null);
@@ -1343,70 +1390,124 @@ async function convertFile(file,settings){
   });
 }
 
-// RGB SPLIT
-$('rgbSplitBtn').addEventListener('click',async()=>{
-  const targets=sel.size>0?[...sel].map(i=>files[i]).filter(Boolean):[...files].filter(Boolean);
-  if(!targets.length)return;
-  setStatus('Splitting channels…',true);
-  const splitRes=[];
-  for(const entry of targets){
-    const du=entry.dataUrl||(await fileToDataURL(entry.file));
-    await new Promise(res=>{
-      const img=new Image();
-      img.onload=async()=>{
-        const w=img.naturalWidth,h=img.naturalHeight;
-        for(const [ch,idx,lbl] of [['R',0,'_R'],['G',1,'_G'],['B',2,'_B']]){
-          const c=document.createElement('canvas');c.width=w;c.height=h;
-          const ctx=c.getContext('2d');ctx.drawImage(img,0,0,w,h);
-          const id=ctx.getImageData(0,0,w,h);
-          for(let p=0;p<id.data.length;p+=4){const v=id.data[p+idx];id.data[p]=id.data[p+1]=id.data[p+2]=v;id.data[p+3]=255;}
-          ctx.putImageData(id,0,0);
-          const blob=await new Promise(r=>c.toBlob(r,'image/png'));
-          const bdu=await blobToDataURL(blob);
-          const nm=entry.file.name.replace(/\.[^.]+$/,'')+lbl+'.png';
-          splitRes.push({name:nm,dataUrl:bdu,blob,origSize:blob.size,status:'done'});
-        }
-        res();
-      };
-      img.src=du;
-    });
-  }
-  blobs=splitRes.map(r=>({name:r.name,blob:r.blob,dataUrl:r.dataUrl}));
-  renderCol3(splitRes);showDlBar(blobs.length>1);
-  setStatus(splitRes.length+' '+t('done'),false);
-});
-
+// Extract single R/G/B channel as greyscale PNG
+async function extractChannel(file, channelIdx) {
+  const entry = files.find(e=>e&&e.file===file);
+  const du = entry?.dataUrl || (await fileToDataURL(file));
+  return new Promise(res => {
+    const img = new Image();
+    img.onload = () => {
+      const w=img.naturalWidth, h=img.naturalHeight;
+      const c=document.createElement('canvas'); c.width=w; c.height=h;
+      const ctx=c.getContext('2d'); ctx.drawImage(img,0,0,w,h);
+      const id=ctx.getImageData(0,0,w,h);
+      for(let p=0;p<id.data.length;p+=4){
+        const v=id.data[p+channelIdx];
+        id.data[p]=id.data[p+1]=id.data[p+2]=v; id.data[p+3]=255;
+      }
+      ctx.putImageData(id,0,0);
+      c.toBlob(res,'image/png');
+    };
+    img.onerror=()=>res(null);
+    img.src=du;
+  });
+}
 // MAIN CONVERT
 async function doConvert(){
-  // If nothing selected → convert all files
-  const targets = sel.size>0
+  const hasNodeSel = activeSelection?.type === 'node';
+  const hasMergeNodes = mergeNodes.length > 0 && !hasNodeSel && sel.size === 0;
+
+  // Determine file targets
+  const fileTargets = sel.size>0
     ? [...sel].map(i=>files[i]).filter(Boolean)
-    : [...files].filter(Boolean);
-  if(!targets.length) return;
+    : (hasNodeSel ? [] : [...files].filter(Boolean));
+
+  // Determine node targets
+  const nodeTargets = hasNodeSel
+    ? mergeNodes.filter(n => n.id === activeSelection.idx)
+    : (sel.size === 0 ? mergeNodes.filter(n => n.files.R && n.files.G && n.files.B) : []);
+
+  if (!fileTargets.length && !nodeTargets.length) return;
+
   ripInner.classList.add('disabled');
-  blobs=[];showDlBar(false);
-  $('pw').style.display='block';$('pb').style.width='0%';
+  blobs=[]; showDlBar(false);
+  $('pw').style.display='block'; $('pb').style.width='0%';
   setStatus(t('converting'),true);
-  const results=targets.map(e=>({name:outName(e.file),origSize:e.file.size,blob:null,dataUrl:null,status:'wait'}));
+
+  // When RGB split is on for a file, expand that file into R/G/B entries
+  let expandedFileTargets = [];
+  fileTargets.forEach(e => {
+    if (e.settings?.splitRGB) {
+      ['R','G','B'].forEach((ch,idx) => expandedFileTargets.push({...e, splitCh:ch, splitIdx:idx}));
+    } else {
+      expandedFileTargets.push({...e, splitCh:null});
+    }
+  });
+
+  const results=[
+    ...expandedFileTargets.map(e=>{
+      const base = e.file.name.replace(/\.[^.]+$/,'');
+      const name = e.splitCh ? base+'_'+e.splitCh+'.png' : outName(e.file);
+      return {name, origSize:e.file.size, blob:null, dataUrl:null, status:'wait', isMerge:false, entry:e};
+    }),
+    ...nodeTargets.map(n=>({name:n.name+'.png',origSize:0,blob:null,dataUrl:null,status:'wait',isMerge:true,node:n}))
+  ];
   renderCol3(results);
+
+  const total = results.length;
   let tO=0,tN=0;
-  for(let i=0;i<targets.length;i++){
-    results[i].status='processing';renderCol3(results);
-    $('pb').style.width=Math.round(i/targets.length*100)+'%';
+
+  for(let i=0;i<results.length;i++){
+    results[i].status='processing'; renderCol3(results);
+    $('pb').style.width=Math.round(i/total*100)+'%';
     try{
-      const b=await convertFile(targets[i].file,targets[i].settings);
-      $('pb').style.width=Math.round((i+1)/targets.length*100)+'%';
-      if(b){tO+=targets[i].file.size;tN+=b.size;results[i].blob=b;results[i].dataUrl=await blobToDataURL(b);results[i].status='done';blobs.push({name:results[i].name,blob:b,dataUrl:results[i].dataUrl});}
+      let b = null;
+      if(results[i].isMerge){
+        const nd = results[i].node;
+        b = await mergeNodeToBlob(nd, nd.settings || getActiveSettings());
+        if(b) results[i].origSize = b.size;
+      } else {
+        const e = results[i].entry;
+        if(e.splitCh !== null){
+          // Extract single channel as greyscale
+          b = await extractChannel(e.file, e.splitIdx);
+        } else {
+          b = await convertFile(e.file, e.settings);
+        }
+        if(b){ tO+=e.file.size; tN+=b.size; }
+      }
+      $('pb').style.width=Math.round((i+1)/total*100)+'%';
+      if(b){ results[i].blob=b; results[i].dataUrl=await blobToDataURL(b); results[i].status='done'; blobs.push({name:results[i].name,blob:b,dataUrl:results[i].dataUrl}); }
       else results[i].status='error';
-    }catch(e){results[i].status='error';}
+    }catch(e){ results[i].status='error'; }
     renderCol3(results);
   }
+
   setTimeout(()=>$('pw').style.display='none',600);
   const sv=tO>0?Math.round((1-tN/tO)*100):0;
   setStatus(blobs.length+' '+t('done'),false);
   $('ss').textContent=sv>0?'−'+sv+'% '+t('totalSaving'):'';
   ripInner.classList.remove('disabled');
   showDlBar(blobs.length>1);
+}
+
+async function mergeNodeToBlob(nodeState, settings) {
+  const {R,G,B} = nodeState.files;
+  if(!R||!G||!B) return null;
+  const fmt = settings?.format || 'image/png';
+  const q = fmt==='image/png' ? 1 : (settings?.quality||82)/100;
+  const imgs = await Promise.all([R,G,B].map(f => fileToDataURL(f).then(du => new Promise(res => {
+    const i=new Image(); i.onload=()=>res(i); i.src=du;
+  }))));
+  const w=imgs[0].naturalWidth, h=imgs[0].naturalHeight;
+  const c=document.createElement('canvas'); c.width=w; c.height=h;
+  const ctx=c.getContext('2d');
+  function gd(img){ const tmp=document.createElement('canvas');tmp.width=w;tmp.height=h;const tc=tmp.getContext('2d');tc.drawImage(img,0,0,w,h);return tc.getImageData(0,0,w,h); }
+  const [iR,iG,iB] = imgs.map(gd);
+  const out = ctx.createImageData(w,h);
+  for(let p=0;p<out.data.length;p+=4){ out.data[p]=iR.data[p]; out.data[p+1]=iG.data[p+1]; out.data[p+2]=iB.data[p+2]; out.data[p+3]=255; }
+  ctx.putImageData(out,0,0);
+  return new Promise(res => c.toBlob(res, fmt, q));
 }
 
 // RENDER COL 3
