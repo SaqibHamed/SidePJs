@@ -9,312 +9,315 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; font-family: 'Roboto', sans-serif; background: #f2f2f2; color: #1a1a1a; overflow: hidden; }
 
-/* ── TOPBAR ── */
-.topbar {
-  height: 44px; background: #fff; border-bottom: 1px solid #ddd;
-  display: flex; align-items: center; padding: 0 10px; gap: 5px;
-  flex-shrink: 0; z-index: 10; position: relative;
-}
-.tb-btn {
-  height: 30px; padding: 0 10px; border: 1px solid #ccc; border-radius: 4px;
-  background: #fff; font-family: 'Roboto', sans-serif; font-size: 13px; color: #333;
-  cursor: pointer; display: flex; align-items: center; gap: 5px; white-space: nowrap;
-  transition: background .1s; position: relative;
-}
+/* TOPBAR */
+.topbar { height: 44px; background: #fff; border-bottom: 1px solid #ddd; display: flex; align-items: center; padding: 0 10px; gap: 5px; flex-shrink: 0; z-index: 10; position: relative; }
+.tb-btn { height: 30px; padding: 0 10px; border: 1px solid #ccc; border-radius: 4px; background: #fff; font-family: 'Roboto', sans-serif; font-size: 13px; color: #333; cursor: pointer; display: flex; align-items: center; gap: 5px; white-space: nowrap; transition: background .1s; position: relative; }
 .tb-btn:hover { background: #f5f5f5; border-color: #aaa; }
 .tb-btn input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
 .tb-sep { width: 1px; height: 20px; background: #ddd; margin: 0 2px; }
 .spacer { flex: 1; }
-
-.dl-all-btn {
-  height: 30px; padding: 0 12px; border: 1px solid #1a73e8; border-radius: 4px;
-  background: #fff; font-family: 'Roboto', sans-serif; font-size: 13px; color: #1a73e8;
-  cursor: pointer; align-items: center; gap: 5px; white-space: nowrap;
-  transition: background .1s; display: none;
-}
-.dl-all-btn:hover { background: #e8f0fe; }
-.dl-all-btn.show { display: flex; }
-
-/* lang toggle */
-.lang-btn {
-  height: 30px; padding: 0 10px; border: 1px solid #ccc; border-radius: 4px;
-  background: #fff; font-family: 'Roboto Mono', monospace; font-size: 12px; color: #555;
-  cursor: pointer; display: flex; align-items: center; gap: 4px;
-  transition: background .1s;
-}
-.lang-btn:hover { background: #f5f5f5; }
 .lang-toggle { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
-.lang-opt {
-  height: 30px; padding: 0 10px;
-  background: #fff; font-family: 'Roboto', sans-serif; font-size: 12px; color: #888;
-  cursor: pointer; border: none; transition: background .1s, color .1s;
-}
+.lang-opt { height: 30px; padding: 0 10px; background: #fff; font-family: 'Roboto', sans-serif; font-size: 12px; color: #888; cursor: pointer; border: none; transition: background .1s, color .1s; }
 .lang-opt.active { background: #1a73e8; color: #fff; }
 .lang-opt:not(.active):hover { background: #f5f5f5; color: #333; }
-
-/* modal buttons */
-.modal-trigger {
-  height: 30px; padding: 0 10px; border: 1px solid #ccc; border-radius: 4px;
-  background: #fff; font-family: 'Roboto', sans-serif; font-size: 13px; color: #333;
-  cursor: pointer; display: flex; align-items: center; gap: 5px;
-  transition: background .1s;
-}
+.modal-trigger { height: 30px; padding: 0 10px; border: 1px solid #ccc; border-radius: 4px; background: #fff; font-family: 'Roboto', sans-serif; font-size: 13px; color: #333; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: background .1s; }
 .modal-trigger:hover { background: #f5f5f5; }
+.dl-all-topbar { height: 30px; padding: 0 12px; border: 1px solid #ccc; border-radius: 4px; background: #fff; font-family: 'Roboto', sans-serif; font-size: 13px; color: #bbb; cursor: default; display: flex; align-items: center; gap: 5px; white-space: nowrap; transition: background .1s, color .1s, border-color .1s; }
+.dl-all-topbar.active { border-color: #1a73e8; color: #1a73e8; cursor: pointer; }
+.dl-all-topbar.active:hover { background: #e8f0fe; }
 
-/* ── MODAL ── */
-.modal-overlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 200;
-  display: none; align-items: center; justify-content: center;
-}
+/* MODAL */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 200; display: none; align-items: center; justify-content: center; }
 .modal-overlay.open { display: flex; }
-.modal {
-  background: #fff; border-radius: 8px; max-width: 480px; width: 90%;
-  box-shadow: 0 8px 32px rgba(0,0,0,.18); padding: 28px 28px 24px;
-  position: relative; animation: mIn .15s ease;
-}
+.modal { background: #fff; border-radius: 8px; max-width: 480px; width: 90%; box-shadow: 0 8px 32px rgba(0,0,0,.18); padding: 28px 28px 24px; position: relative; animation: mIn .15s ease; }
 @keyframes mIn { from { opacity:0; transform: scale(.96) translateY(6px); } to { opacity:1; transform: none; } }
-.modal h2 { font-size: 16px; font-weight: 500; color: #1a1a1a; margin-bottom: 12px; }
+.modal h2 { font-size: 16px; font-weight: 500; margin-bottom: 12px; }
 .modal p, .modal li { font-size: 13px; color: #444; line-height: 1.7; }
 .modal ol { padding-left: 18px; margin-top: 8px; }
 .modal ol li { margin-bottom: 4px; }
-.modal-close {
-  position: absolute; top: 12px; right: 14px;
-  background: none; border: none; font-size: 18px; color: #999; cursor: pointer;
-}
+.modal-close { position: absolute; top: 12px; right: 14px; background: none; border: none; font-size: 18px; color: #999; cursor: pointer; }
 .modal-close:hover { color: #333; }
 
-/* ── WORKSPACE ── */
+/* WORKSPACE */
 .workspace { display: grid; grid-template-columns: 1fr 1fr 1fr; height: calc(100vh - 44px - 26px); }
 
-/* ── COLUMNS ── */
+/* COLUMNS */
 .col { display: flex; flex-direction: column; background: #fff; overflow: hidden; }
 .col-1 { border-right: 1px solid #ddd; }
-.col-2 { border-right: 1px solid #ddd; min-width: 0; position: relative; overflow: visible; }
-.col-3 { }
-
-.col-head {
-  height: 34px; padding: 0 10px; border-bottom: 1px solid #eee; background: #fafafa;
-  display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
-  font-size: 11px; font-weight: 500; color: #888; text-transform: uppercase; letter-spacing: 0.5px;
-  gap: 6px;
-}
+.col-2 { border-right: 1px solid #ddd; min-width: 0; position: relative; }
+.col-head { height: 34px; padding: 0 10px; border-bottom: 1px solid #eee; background: #fafafa; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; font-size: 11px; font-weight: 500; color: #888; text-transform: uppercase; letter-spacing: 0.5px; gap: 6px; }
 .col-head-actions { display: flex; gap: 4px; align-items: center; }
-
-/* ── SELECT ALL / DESEL ── */
-.sel-btn {
-  height: 22px; padding: 0 7px; border: 1px solid #ddd; border-radius: 3px;
-  background: #fff; font-family: 'Roboto', sans-serif; font-size: 11px; color: #666;
-  cursor: pointer; transition: background .1s;
-  display: none;
-}
+.sel-btn { height: 22px; padding: 0 7px; border: 1px solid #ddd; border-radius: 3px; background: #fff; font-family: 'Roboto', sans-serif; font-size: 11px; color: #666; cursor: pointer; transition: background .1s; display: none; }
 .sel-btn:hover { background: #f0f0f0; }
 .sel-btn.visible { display: block; }
 
-/* ── FLOATING "LET IT RIP" BUTTON ── */
-#ripBtn {
-  position: fixed;
-  z-index: 100;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity .2s;
-}
+/* FLOATING RIP */
+#ripBtn { position: fixed; z-index: 100; pointer-events: none; opacity: 0; transition: opacity .25s; }
 #ripBtn.ready { pointer-events: auto; opacity: 1; }
-.rip-inner {
-  width: 68px; height: 68px; border-radius: 50%;
-  background: #1a73e8; border: 3px solid #fff;
-  box-shadow: 0 2px 12px rgba(26,115,232,.45);
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  cursor: pointer; color: #fff;
-  transition: background .15s, box-shadow .15s, transform .1s;
-  user-select: none;
-}
-.rip-inner:hover { background: #1557b0; box-shadow: 0 4px 20px rgba(26,115,232,.6); }
-.rip-inner:active { transform: scale(.92); }
+.rip-outer { width: 72px; height: 72px; position: relative; display: flex; align-items: center; justify-content: center; }
+.rip-svg-ring { position: absolute; inset: 0; pointer-events: none; animation: spinRing 5s linear infinite; transform-origin: 36px 36px; }
+.rip-inner { width: 50px; height: 50px; border-radius: 50%; background: #1a73e8; border: 3px solid #fff; box-shadow: 0 2px 12px rgba(26,115,232,.5); display: flex; align-items: center; justify-content: center; cursor: pointer; color: #fff; transition: background .15s, box-shadow .15s, transform .12s; position: relative; z-index: 1; }
+.rip-inner:hover { background: #1557b0; box-shadow: 0 4px 20px rgba(26,115,232,.7); }
+.rip-inner:active { transform: scale(.88) !important; }
 .rip-inner.disabled { background: #aac4f0; box-shadow: none; cursor: not-allowed; }
-.rip-text {
-  font-family: 'Roboto', sans-serif;
-  font-size: 9px; font-weight: 500;
-  letter-spacing: .5px;
-  text-transform: uppercase;
-  line-height: 1.2;
-  text-align: center;
-  transition: letter-spacing .15s, font-size .15s;
-}
-.rip-inner:hover .rip-text { letter-spacing: 1.5px; font-size: 8.5px; }
-.rip-sub { font-size: 7px; opacity: .7; margin-top: 1px; }
+.rip-label { font-family: 'Roboto', sans-serif; font-size: 7px; font-weight: 500; letter-spacing: 3px; text-transform: uppercase; fill: #1a73e8; }
+@keyframes spinRing { to { transform: rotate(360deg); } }
+.rip-outer:hover .rip-svg-ring { animation-duration: 1.8s; }
 
-/* ── COL BODY ── */
-.col-body {
-  flex: 1; overflow-y: auto; padding: 8px;
-  display: flex; flex-direction: column; gap: 3px;
-}
+/* COL BODY */
+.col-body { flex: 1; overflow-y: auto; padding: 8px; display: flex; flex-direction: column; gap: 3px; }
 
-/* ── DROP ZONE ── */
-.drop-zone {
-  height: 80px; flex-shrink: 0;
-  border: 1.5px dashed #ccc; border-radius: 5px;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 4px; cursor: pointer; color: #aaa; font-size: 12px; position: relative;
-  transition: border-color .15s, background .15s, color .15s;
-}
+/* DROP ZONE */
+.drop-zone { height: 80px; flex-shrink: 0; border: 1.5px dashed #ccc; border-radius: 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; cursor: pointer; color: #aaa; font-size: 12px; position: relative; transition: border-color .15s, background .15s, color .15s; }
 .drop-zone:hover, .drop-zone.over { border-color: #1a73e8; background: #f0f5ff; color: #1a73e8; }
 .drop-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
 
-/* ── FILE ITEM ── */
-.file-item {
-  height: 40px; flex-shrink: 0;
-  display: grid; grid-template-columns: 16px 36px 1fr 20px;
-  align-items: center; gap: 7px; padding: 0 5px;
-  border-radius: 4px; border: 1px solid transparent;
-  cursor: pointer; user-select: none; transition: background .1s;
-}
+/* FILE ITEM - col1 */
+.file-item { min-height: 44px; flex-shrink: 0; display: grid; grid-template-columns: 16px 38px 1fr auto 20px; align-items: center; gap: 6px; padding: 4px 5px; border-radius: 4px; border: 1px solid transparent; cursor: pointer; user-select: none; transition: background .1s; }
 .file-item:hover { background: #f5f5f5; }
 .file-item.sel { background: #e8f0fe; border-color: #c5d8fb; }
-
-.chk {
-  width: 14px; height: 14px; border: 1.5px solid #bbb; border-radius: 3px;
-  flex-shrink: 0; display: flex; align-items: center; justify-content: center;
-  transition: background .1s, border-color .1s;
-}
+.chk { width: 14px; height: 14px; border: 1.5px solid #bbb; border-radius: 3px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: background .1s, border-color .1s; }
 .file-item.sel .chk { background: #1a73e8; border-color: #1a73e8; }
-.chk::after {
-  content: ''; display: none;
-  width: 3px; height: 6px;
-  border-right: 1.5px solid #fff; border-bottom: 1.5px solid #fff;
-  transform: rotate(45deg) translate(-0.5px,-1px);
-}
+.chk::after { content: ''; display: none; width: 3px; height: 6px; border-right: 1.5px solid #fff; border-bottom: 1.5px solid #fff; transform: rotate(45deg) translate(-.5px,-1px); }
 .file-item.sel .chk::after { display: block; }
-
-.thumb {
-  width: 36px; height: 36px; border-radius: 3px; border: 1px solid #e8e8e8;
-  background: #f5f5f5; display: flex; align-items: center; justify-content: center;
-  font-size: 8px; font-weight: 500; color: #999; overflow: hidden; flex-shrink: 0;
-  font-family: 'Roboto Mono', monospace;
-}
+.thumb { width: 38px; height: 38px; border-radius: 3px; border: 1px solid #e8e8e8; background: #f5f5f5; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 500; color: #999; overflow: hidden; flex-shrink: 0; font-family: 'Roboto Mono', monospace; }
 .thumb img { width: 100%; height: 100%; object-fit: cover; border-radius: 2px; }
-
+.ch-badge { font-size: 7px; font-weight: 500; padding: 2px 4px; border-radius: 2px; text-transform: uppercase; letter-spacing: .3px; flex-shrink: 0; line-height: 1; }
+.ch-rgb  { background: #e3f2fd; color: #1565c0; border: 1px solid #90caf9; }
+.ch-grey { background: #f5f5f5; color: #555;    border: 1px solid #bbb; }
+.ch-srgb { background: #e8f5e9; color: #1b5e20; border: 1px solid #a5d6a7; }
+.ch-rgba { background: #f3e5f5; color: #6a1b9a; border: 1px solid #ce93d8; }
 .fi-info { min-width: 0; }
 .fi-name { font-size: 12px; color: #1a1a1a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .fi-size { font-size: 10px; color: #999; font-family: 'Roboto Mono', monospace; margin-top: 1px; }
-
-.rm-btn {
-  width: 20px; height: 20px; border: none; background: none; border-radius: 3px;
-  cursor: pointer; color: #ccc; font-size: 12px; display: flex; align-items: center;
-  justify-content: center; opacity: 0; transition: opacity .1s, color .1s, background .1s;
-}
+.fi-dims { font-size: 10px; color: #bbb; font-family: 'Roboto Mono', monospace; }
+.rm-btn { width: 20px; height: 20px; border: none; background: none; border-radius: 3px; cursor: pointer; color: #ccc; font-size: 12px; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity .1s, color .1s, background .1s; }
 .file-item:hover .rm-btn { opacity: 1; }
 .rm-btn:hover { color: #c00; background: #fde8e8; }
 
-/* ── SETTINGS ── */
-.settings-empty {
-  flex: 1; display: flex; align-items: center; justify-content: center;
-  font-size: 12px; color: #ccc; text-align: center; line-height: 1.9; padding: 20px;
-}
-.settings-body { flex: 1; overflow-y: auto; padding: 10px 12px; display: none; flex-direction: column; gap: 12px; }
-.sg { display: flex; flex-direction: column; gap: 7px; }
-.sg-title {
-  font-size: 10px; font-weight: 500; color: #aaa; text-transform: uppercase;
-  letter-spacing: 0.6px; padding-bottom: 4px; border-bottom: 1px solid #f0f0f0;
-}
+/* RGB MERGE SECTION in col1 */
+.merge-section { margin-top: 4px; border: 1.5px solid #e0e0e0; border-radius: 6px; overflow: hidden; flex-shrink: 0; }
+.merge-header { display: flex; align-items: center; justify-content: space-between; padding: 7px 10px; background: #fafafa; cursor: pointer; border-bottom: 1px solid #e0e0e0; user-select: none; }
+.merge-header-title { font-size: 11px; font-weight: 500; color: #555; display: flex; align-items: center; gap: 6px; }
+.merge-header-arrow { font-size: 10px; color: #aaa; transition: transform .2s; }
+.merge-header-arrow.open { transform: rotate(180deg); }
+.merge-body { padding: 10px; display: none; flex-direction: column; gap: 8px; background: #fff; }
+.merge-body.open { display: flex; }
+.merge-slots { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+.merge-slot { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.merge-slot-label { font-size: 10px; font-weight: 600; }
+.merge-drop { width: 100%; height: 56px; border-radius: 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 9px; cursor: pointer; position: relative; transition: background .1s; gap: 2px; }
+.merge-drop input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.merge-drop.filled { opacity: .85; }
+.merge-drop-r  { border: 1.5px dashed #ef9a9a; background: #fff8f8; color: #e53935; }
+.merge-drop-r:hover, .merge-drop-r.over  { background: #ffebee; border-color: #e53935; }
+.merge-drop-g  { border: 1.5px dashed #a5d6a7; background: #f1fff2; color: #388e3c; }
+.merge-drop-g:hover, .merge-drop-g.over  { background: #e8f5e9; border-color: #388e3c; }
+.merge-drop-b  { border: 1.5px dashed #90caf9; background: #f0f4ff; color: #1565c0; }
+.merge-drop-b:hover, .merge-drop-b.over  { background: #e3f2fd; border-color: #1565c0; }
+.merge-thumb { width: 28px; height: 28px; object-fit: cover; border-radius: 2px; display: block; }
+.merge-exec-btn { width: 100%; height: 30px; border: 1px solid #1a73e8; border-radius: 4px; background: #fff; color: #1a73e8; font-family: 'Roboto', sans-serif; font-size: 12px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; transition: background .1s; }
+.merge-exec-btn:hover { background: #e8f0fe; }
+.merge-exec-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+/* SETTINGS col2 */
+.settings-empty { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #ccc; text-align: center; line-height: 1.9; padding: 20px; }
+.settings-body { flex: 1; overflow-y: auto; padding: 10px 12px; display: none; flex-direction: column; gap: 11px; }
+.sg { display: flex; flex-direction: column; gap: 6px; }
+.sg-title { font-size: 10px; font-weight: 500; color: #aaa; text-transform: uppercase; letter-spacing: .6px; padding-bottom: 4px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; justify-content: space-between; }
+.sg-title .sg-collapse { font-size: 10px; color: #bbb; cursor: pointer; padding: 0 2px; transition: color .1s; }
+.sg-title .sg-collapse:hover { color: #555; }
 .field { display: flex; flex-direction: column; gap: 4px; }
 .fl { font-size: 12px; color: #555; display: flex; justify-content: space-between; align-items: center; }
 .fv { font-family: 'Roboto Mono', monospace; color: #1a73e8; font-size: 11px; }
-
-select, input[type=number] {
-  font-family: 'Roboto', sans-serif; font-size: 13px; padding: 5px 8px;
-  border: 1px solid #ccc; border-radius: 4px; background: #fff; color: #1a1a1a; outline: none; width: 100%;
-}
+select, input[type=number] { font-family: 'Roboto', sans-serif; font-size: 13px; padding: 5px 8px; border: 1px solid #ccc; border-radius: 4px; background: #fff; color: #1a1a1a; outline: none; width: 100%; }
 select:focus, input[type=number]:focus { border-color: #1a73e8; }
-
-input[type=range] {
-  -webkit-appearance: none; appearance: none; width: 100%; height: 3px;
-  background: #e0e0e0; border-radius: 2px; outline: none; cursor: pointer; border: none; padding: 0;
-}
-input[type=range]::-webkit-slider-thumb {
-  -webkit-appearance: none; width: 13px; height: 13px; border-radius: 50%;
-  background: #1a73e8; cursor: pointer; border: 2px solid #fff; box-shadow: 0 0 0 1px #ccc;
-}
-
+input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 3px; background: #e0e0e0; border-radius: 2px; outline: none; cursor: pointer; border: none; padding: 0; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px; height: 13px; border-radius: 50%; background: #1a73e8; cursor: pointer; border: 2px solid #fff; box-shadow: 0 0 0 1px #ccc; }
 .gif-sg { opacity: .35; pointer-events: none; }
 .gif-sg.on { opacity: 1; pointer-events: auto; }
 
-/* ── PREVIEW ── */
-.prev-stack {
-  position: relative; border: 1px solid #e8e8e8; border-radius: 3px;
-  overflow: hidden; cursor: pointer; user-select: none;
-}
-.prev-bg {
-  background: repeating-conic-gradient(#e8e8e8 0% 25%, #f5f5f5 0% 50%) 0 0/8px 8px;
-  padding: 4px; min-height: 90px; display: flex; align-items: center; justify-content: center;
-  position: relative;
-}
-.prev-bg img { max-width: 100%; max-height: 110px; object-fit: contain; border-radius: 2px; display: block; }
-.prev-ph { font-size: 10px; color: #ccc; }
-.prev-label {
-  position: absolute; bottom: 5px; left: 5px;
-  background: rgba(0,0,0,.5); color: #fff; font-size: 10px;
-  padding: 2px 6px; border-radius: 3px; pointer-events: none;
-}
-.prev-size-badge {
-  position: absolute; bottom: 5px; right: 5px;
-  background: rgba(0,0,0,.5); color: #fff; font-size: 10px;
-  font-family: 'Roboto Mono', monospace; padding: 2px 6px; border-radius: 3px; pointer-events: none;
-}
-.prev-hint { font-size: 10px; color: #bbb; text-align: center; margin-top: 3px; }
+/* per-file settings indicator */
+.per-file-indicator { font-size: 10px; padding: 3px 8px; border-radius: 3px; background: #e8f0fe; color: #1a73e8; border: 1px solid #c5d8fb; margin-bottom: 4px; }
+.per-file-multi { background: #fff8e1; color: #e65100; border-color: #ffe082; }
 
-/* ── RESULT ITEM ── */
-.result-item {
-  height: 40px; flex-shrink: 0;
-  display: grid; grid-template-columns: 36px 1fr auto;
-  align-items: center; gap: 7px; padding: 0 5px;
-  border-radius: 4px; border: 1px solid transparent;
-}
+/* channel opts */
+.ch-row { display: flex; gap: 4px; }
+.ch-opt { flex: 1; height: 26px; border: 1px solid #ddd; border-radius: 3px; background: #fafafa; font-family: 'Roboto', sans-serif; font-size: 11px; color: #666; cursor: pointer; transition: all .1s; }
+.ch-opt:hover { background: #f0f0f0; }
+.ch-opt.active { border-color: #1a73e8; background: #e8f0fe; color: #1a73e8; font-weight: 500; }
+
+/* texture section - collapsed by default, opens on pow2 */
+.texture-sg { border: 1px solid #e0e0e0; border-radius: 5px; overflow: hidden; }
+.texture-header { display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; background: #fafafa; cursor: pointer; }
+.texture-header-title { font-size: 10px; font-weight: 500; color: #888; text-transform: uppercase; letter-spacing: .6px; display: flex; align-items: center; gap: 5px; }
+.texture-header-badge { font-size: 9px; padding: 1px 5px; border-radius: 8px; background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+.texture-header-arrow { font-size: 9px; color: #bbb; transition: transform .2s; }
+.texture-header-arrow.open { transform: rotate(180deg); }
+.texture-body { display: none; padding: 8px; border-top: 1px solid #e0e0e0; flex-direction: column; gap: 6px; }
+.texture-body.open { display: flex; }
+.pow2-info { font-size: 11px; color: #2e7d32; background: #e8f5e9; border: 1px solid #a5d6a7; border-radius: 3px; padding: 4px 8px; }
+
+/* PREVIEW */
+.prev-wrap { display: flex; flex-direction: column; gap: 0; border: 1px solid #e8e8e8; border-radius: 4px; overflow: hidden; }
+.prev-toolbar-bar { display: none; align-items: center; gap: 4px; padding: 0 6px; background: #fafafa; border-bottom: 1px solid #eee; flex-shrink: 0; height: 32px; min-height: 32px; }
+.prev-toolbar-bar.visible { display: flex; }
+.prev-btn { height: 22px; padding: 0 8px; border: 1px solid #ddd; border-radius: 3px; background: #fff; font-size: 11px; color: #555; cursor: pointer; font-family: 'Roboto Mono', monospace; transition: background .1s, border-color .1s, color .1s; }
+.prev-btn:hover { background: #f0f0f0; }
+.prev-btn.active { background: #1a73e8; color: #fff; border-color: #1a73e8; }
+.prev-info { margin-left: auto; font-size: 10px; color: #aaa; font-family: 'Roboto Mono', monospace; }
+.prev-container { background: repeating-conic-gradient(#e8e8e8 0% 25%, #f5f5f5 0% 50%) 0 0/8px 8px; min-height: 80px; overflow: auto; display: flex; align-items: center; justify-content: center; position: relative; }
+.prev-container img { display: block; }
+.prev-container.fit img { max-width: 100%; height: auto; }
+.prev-container.actual img { max-width: none; }
+.prev-ph { font-size: 11px; color: #ccc; padding: 20px; text-align: center; }
+
+/* RESULT ITEM col3 */
+.result-item { min-height: 50px; flex-shrink: 0; display: grid; grid-template-columns: 40px 1fr auto; align-items: center; gap: 8px; padding: 5px 8px 5px 5px; border-radius: 4px; border: 1px solid transparent; }
 .result-item.done    { border-color: #d4edda; background: #f6fff7; }
 .result-item.pending { background: #fafafa; }
 .result-item.error   { border-color: #fcd; background: #fff5f5; }
-
-.rt {
-  width: 36px; height: 36px; border-radius: 3px; border: 1px solid #e8e8e8;
-  background: #f5f5f5; display: flex; align-items: center; justify-content: center;
-  font-size: 8px; font-weight: 500; color: #999; overflow: hidden; flex-shrink: 0;
-  font-family: 'Roboto Mono', monospace;
-}
+.rt { width: 40px; height: 40px; border-radius: 3px; border: 1px solid #e8e8e8; background: #f5f5f5; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 500; color: #999; overflow: hidden; flex-shrink: 0; font-family: 'Roboto Mono', monospace; }
 .rt img { width: 100%; height: 100%; object-fit: cover; border-radius: 2px; }
-
 .ri { min-width: 0; }
 .rn { font-size: 12px; color: #1a1a1a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .rm { font-size: 10px; color: #888; font-family: 'Roboto Mono', monospace; margin-top: 1px; }
 .sp { color: #2e7d32; } .sn { color: #e65100; }
-
-/* status badges */
-.st-badge {
-  font-size: 10px; font-weight: 500; padding: 2px 7px; border-radius: 10px;
-  white-space: nowrap; flex-shrink: 0;
-}
-.st-badge.processing { background: #e8f0fe; color: #1a73e8; }
-.st-badge.done-b     { background: #e8f5e9; color: #2e7d32; }
-.st-badge.error-b    { background: #fde8e8; color: #c00; }
-.st-badge.wait       { background: #f5f5f5; color: #999; }
-
-.dl-item-btn {
-  width: 26px; height: 26px; border: 1px solid #ccc; border-radius: 4px;
-  background: #fff; cursor: pointer; color: #555; display: flex; align-items: center;
-  justify-content: center; font-size: 14px; transition: background .1s, border-color .1s, color .1s; flex-shrink: 0;
-}
+.st-badge { font-size: 10px; font-weight: 500; white-space: nowrap; margin-top: 2px; display: inline-block; }
+.st-badge.processing { color: #1a73e8; }
+.st-badge.done-b     { color: #2e7d32; }
+.st-badge.error-b    { color: #c00; }
+.st-badge.wait       { color: #bbb; }
+.dl-item-btn { width: 28px; height: 28px; border: 1px solid #ccc; border-radius: 4px; background: #fff; cursor: pointer; color: #555; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: background .1s, border-color .1s, color .1s; flex-shrink: 0; }
 .dl-item-btn:hover { background: #f0f0f0; border-color: #1a73e8; color: #1a73e8; }
 
-/* ── STATUSBAR ── */
-.statusbar {
-  height: 26px; background: #fafafa; border-top: 1px solid #e0e0e0;
-  display: flex; align-items: center; padding: 0 12px; gap: 10px;
-  font-size: 11px; color: #888; flex-shrink: 0;
-}
+/* col3 download bar */
+.col3-dl-bar { padding: 6px 8px; border-bottom: 1px solid #eee; background: #fafafa; display: none; gap: 5px; flex-shrink: 0; }
+.col3-dl-bar.show { display: flex; }
+.col3-dl-btn { flex: 1; height: 28px; border: 1px solid #ccc; border-radius: 4px; background: #fff; font-family: 'Roboto', sans-serif; font-size: 12px; color: #444; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; transition: background .1s; }
+.col3-dl-btn:hover { background: #f0f0f0; border-color: #aaa; }
+.col3-dl-btn.primary { border-color: #1a73e8; color: #1a73e8; }
+.col3-dl-btn.primary:hover { background: #e8f0fe; }
+
+/* STATUSBAR */
+.statusbar { height: 26px; background: #fafafa; border-top: 1px solid #e0e0e0; display: flex; align-items: center; padding: 0 12px; gap: 10px; font-size: 11px; color: #888; flex-shrink: 0; }
 .sd { width: 5px; height: 5px; border-radius: 50%; background: #bbb; flex-shrink: 0; }
 .sd.run  { background: #1a73e8; animation: blink .8s infinite; }
 .sd.done { background: #2e7d32; }
 @keyframes blink { 0%,100%{opacity:1}50%{opacity:.3} }
 .pw { width: 120px; height: 3px; background: #e0e0e0; border-radius: 2px; overflow: hidden; display: none; flex-shrink: 0; }
 .pb { height: 100%; background: #1a73e8; transition: width .2s; width: 0%; }
+
+/* MERGE NODE — lives inline in col1 alongside file items */
+.merge-node {
+  flex-shrink: 0;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 5px;
+  overflow: hidden;
+  transition: border-color .1s;
+}
+.merge-node.sel { border-color: #1a73e8; background: #f8fbff; }
+
+/* Header row — same height/style as a file-item */
+.merge-node-header {
+  height: 40px;
+  display: grid;
+  grid-template-columns: 16px 38px 1fr auto 20px;
+  align-items: center;
+  gap: 6px;
+  padding: 0 5px;
+  cursor: pointer;
+  user-select: none;
+  background: #fafafa;
+}
+.merge-node.sel .merge-node-header { background: #e8f0fe; }
+.merge-node-header:hover { background: #f0f4ff; }
+.merge-node-sel-chk {
+  width: 14px; height: 14px; border: 1.5px solid #bbb; border-radius: 3px;
+  flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  transition: background .1s, border-color .1s;
+}
+.merge-node.sel .merge-node-sel-chk { background: #1a73e8; border-color: #1a73e8; }
+.merge-node.sel .merge-node-sel-chk::after { content:''; display:block; width:3px; height:6px; border-right:1.5px solid #fff; border-bottom:1.5px solid #fff; transform:rotate(45deg) translate(-.5px,-1px); }
+.merge-node-icon {
+  width: 38px; height: 38px; border-radius: 3px; border: 1px solid #e8e8e8;
+  background: #f0f4ff; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; font-size: 7px; font-weight: 600; color: #1a73e8;
+  font-family: 'Roboto Mono', monospace; letter-spacing: .5px;
+}
+.merge-node-info { min-width: 0; }
+.merge-node-name {
+  display: block; width: 100%;
+  font-size: 12px; font-weight: 500; color: #1a1a1a;
+  background: none; border: none; outline: none;
+  font-family: 'Roboto', sans-serif; cursor: text;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.merge-node-name:focus { background: #e8f0fe; border-radius: 2px; padding: 0 3px; }
+.merge-node-sub { font-size: 10px; color: #999; font-family: 'Roboto Mono', monospace; margin-top: 1px; }
+.merge-node-rm {
+  width: 20px; height: 20px; border: none; background: none; border-radius: 3px;
+  cursor: pointer; color: #ccc; font-size: 12px; display: flex; align-items: center;
+  justify-content: center; opacity: 0; transition: opacity .1s, color .1s, background .1s;
+}
+.merge-node-header:hover .merge-node-rm { opacity: 1; }
+.merge-node-rm:hover { color: #c00; background: #fde8e8; }
+
+/* Expanded body — R/G/B vertical stack */
+.merge-node-body {
+  display: none;
+  flex-direction: column;
+  gap: 0;
+  border-top: 1px solid #e8e8e8;
+}
+.merge-node.expanded .merge-node-body { display: flex; }
+
+/* Each channel row */
+.merge-node-slot {
+  display: grid;
+  grid-template-columns: 18px 1fr 36px;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-bottom: 1px solid #f0f0f0;
+  min-height: 44px;
+}
+.merge-node-slot:last-child { border-bottom: none; }
+.merge-node-slot-lbl {
+  font-size: 9px; font-weight: 700; text-align: center;
+  padding: 2px 0; border-radius: 2px; letter-spacing: .3px;
+}
+.slot-r { color: #e53935; }
+.slot-g { color: #388e3c; }
+.slot-b { color: #1565c0; }
+.merge-node-drop {
+  border-radius: 4px; height: 34px; position: relative;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; cursor: pointer; transition: background .1s, border-color .1s;
+}
+.merge-node-drop input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.drop-r { border: 1.5px dashed #ef9a9a; background: #fff8f8; color: #e57373; }
+.drop-r:hover,.drop-r.over { background: #ffebee; border-color: #e53935; }
+.drop-g { border: 1.5px dashed #a5d6a7; background: #f1fff2; color: #66bb6a; }
+.drop-g:hover,.drop-g.over { background: #e8f5e9; border-color: #388e3c; }
+.drop-b { border: 1.5px dashed #90caf9; background: #f0f4ff; color: #64b5f6; }
+.drop-b:hover,.drop-b.over { background: #e3f2fd; border-color: #1565c0; }
+.merge-node-thumb { width: 34px; height: 34px; object-fit: cover; border-radius: 3px; border: 1px solid #e8e8e8; flex-shrink: 0; display: block; }
+.merge-node-thumb-placeholder { width: 34px; height: 34px; border-radius: 3px; border: 1px dashed #ddd; flex-shrink: 0; background: #fafafa; }
+
+.merge-node-exec {
+  margin: 6px 8px;
+  height: 28px; border: 1px solid #1a73e8; border-radius: 4px;
+  background: #fff; color: #1a73e8; font-family: 'Roboto', sans-serif;
+  font-size: 11px; font-weight: 500; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 4px;
+  transition: background .1s;
+}
+.merge-node-exec:hover { background: #e8f0fe; }
+.merge-node-exec:disabled { opacity: .4; cursor: not-allowed; }
+
+.node-chevron { color: #bbb; flex-shrink: 0; transition: transform .15s; }
+.node-chevron.rot { transform: rotate(180deg); }
 
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -323,7 +326,6 @@ input[type=range]::-webkit-slider-thumb {
 </head>
 <body>
 
-<!-- TOPBAR -->
 <div class="topbar">
   <button class="tb-btn" id="uploadBtn">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
@@ -333,7 +335,7 @@ input[type=range]::-webkit-slider-thumb {
   <div class="tb-sep"></div>
   <button class="modal-trigger" id="btnReason">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-    <span data-t="why">Why this tool</span>
+    <span data-t="why">Why</span>
   </button>
   <button class="modal-trigger" id="btnHow">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
@@ -344,14 +346,12 @@ input[type=range]::-webkit-slider-thumb {
     <button class="lang-opt active" data-lang="en">EN</button>
     <button class="lang-opt" data-lang="de">DE</button>
   </div>
-  <div class="tb-sep"></div>
-  <button class="dl-all-btn" id="dlAllBtn">
+  <button class="dl-all-topbar" id="dlAllTopbar">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
     <span data-t="dlAll">Download all</span>
   </button>
 </div>
 
-<!-- WORKSPACE -->
 <div class="workspace">
 
   <!-- COL 1: INPUT -->
@@ -365,7 +365,14 @@ input[type=range]::-webkit-slider-thumb {
       </div>
     </div>
     <div class="col-body" id="col1Body"></div>
-  </div>
+    <!-- Bottom bar: Add merge node -->
+    <div style="flex-shrink:0;padding:5px 8px;border-top:1px solid #eee;background:#fafafa;">
+      <button id="addMergeNodeBtn" style="width:100%;height:28px;border:1px dashed #ccc;border-radius:4px;background:#fff;font-family:Roboto,sans-serif;font-size:12px;color:#888;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:background .1s,border-color .1s,color .1s;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span data-t="addMergeNode">Add RGB Merge Node</span>
+      </button>
+    </div>
+  </div><!-- /col-1 -->
 
   <!-- COL 2: SETTINGS -->
   <div class="col col-2">
@@ -373,8 +380,12 @@ input[type=range]::-webkit-slider-thumb {
       <span data-t="col2">Settings</span>
       <span id="scope" style="font-weight:400;color:#1a73e8;font-size:11px"></span>
     </div>
-    <div class="settings-empty" id="settingsEmpty" data-t-html="emptySettings">Load files to see settings.</div>
+    <div class="settings-empty" id="settingsEmpty">Load a file to see settings.</div>
     <div class="settings-body" id="settingsBody">
+
+      <div id="perFileIndicator" class="per-file-indicator" style="display:none"></div>
+
+      <!-- FORMAT & QUALITY -->
       <div class="sg">
         <div class="sg-title" data-t="sgFormat">Format & Quality</div>
         <div class="field">
@@ -386,41 +397,94 @@ input[type=range]::-webkit-slider-thumb {
           </select>
         </div>
         <div class="field" id="qField">
-          <div class="fl"><span data-t="labelQuality">Quality</span> <span class="fv" id="qVal">82%</span></div>
+          <div class="fl"><span data-t="labelQuality">Quality</span><span class="fv" id="qVal">82%</span></div>
           <input type="range" min="1" max="100" value="82" id="qSlider" step="1">
         </div>
       </div>
+
+      <!-- SIZE -->
       <div class="sg">
         <div class="sg-title" data-t="sgSize">Size</div>
         <div class="field">
-          <div class="fl"><span data-t="labelScale">Scale</span> <span class="fv" id="scVal">100%</span></div>
+          <div class="fl"><span data-t="labelScale">Scale</span><span class="fv" id="scVal">100%</span></div>
           <input type="range" min="10" max="100" value="100" id="scSlider" step="1">
         </div>
         <div class="field">
-          <div class="fl"><span data-t="labelMaxW">Max width</span> <span style="color:#bbb;font-size:11px" data-t="labelPx">(0 = original)</span></div>
-          <input type="number" id="mxW" value="0" min="0" max="8000">
+          <div class="fl"><span data-t="labelMaxW">Max width</span><span style="color:#bbb;font-size:11px">(0 = orig)</span></div>
+          <input type="number" id="mxW" value="0" min="0" max="8192">
         </div>
       </div>
+
+      <!-- CHANNEL CONFIG -->
+      <div class="sg">
+        <div class="sg-title" data-t="sgChannel">Channel Config</div>
+        <div class="field">
+          <div class="fl" style="font-size:11px;color:#666" data-t="labelChOut">Output color space</div>
+          <div class="ch-row" id="chRow">
+            <button class="ch-opt active" data-ch="rgb">RGB</button>
+            <button class="ch-opt" data-ch="srgb">sRGB</button>
+            <button class="ch-opt" data-ch="grey">Grey</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- GIF -->
       <div class="sg gif-sg" id="gifSg">
         <div class="sg-title">GIF</div>
         <div class="field">
-          <div class="fl"><span data-t="labelFps">Framerate</span> <span class="fv" id="gfVal">10 fps</span></div>
+          <div class="fl"><span data-t="labelFps">Framerate</span><span class="fv" id="gfVal">10 fps</span></div>
           <input type="range" min="1" max="30" value="10" id="gfSlider" step="1">
         </div>
         <div class="field">
-          <div class="fl"><span data-t="labelColors">Color palette</span> <span class="fv" id="gcVal">128</span></div>
+          <div class="fl"><span data-t="labelColors">Color palette</span><span class="fv" id="gcVal">128</span></div>
           <input type="range" min="8" max="256" value="128" id="gcSlider" step="8">
         </div>
       </div>
+
+      <!-- TEXTURE TOOLS — collapsed, opens on pow2 detection -->
+      <div class="texture-sg" id="textureSg">
+        <div class="texture-header" id="textureHeader">
+          <div class="texture-header-title">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
+            <span data-t="sgTexture">Texture Tools</span>
+            <span class="texture-header-badge" id="textureBadge" style="display:none">POW2</span>
+          </div>
+          <span class="texture-header-arrow" id="textureArrow">▾</span>
+        </div>
+        <div class="texture-body" id="textureBody">
+          <div class="pow2-info" id="pow2Info" style="display:none"></div>
+          <div class="field">
+            <div class="fl" style="font-size:11px;color:#444" data-t="labelRgbSplit">RGB Channel Split</div>
+            <button id="rgbSplitBtn" class="ch-opt" style="height:28px;font-size:11px" data-t="btnSplit">Split → R / G / B</button>
+          </div>
+          <div class="field">
+            <div class="fl" style="font-size:11px;color:#444">Normal Map</div>
+            <div style="display:flex;gap:4px">
+              <button id="nmBtnDX" class="ch-opt active" style="height:28px;font-size:11px;flex:1">DirectX</button>
+              <button id="nmBtnGL" class="ch-opt" style="height:28px;font-size:11px;flex:1">OpenGL</button>
+            </div>
+            <div style="font-size:10px;color:#888;margin-top:3px" id="nmHint">Current: DirectX — click OpenGL to convert</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PREVIEW -->
       <div class="sg">
         <div class="sg-title" data-t="sgPreview">Preview</div>
-        <div class="prev-stack" id="prevStack" onclick="window._app.togglePrev()">
-          <div class="prev-bg" id="pOW"><div class="prev-ph" data-t="prevPh">—</div></div>
-          <div class="prev-label" id="prevLbl"></div>
-          <div class="prev-size-badge" id="prevSzBadge"></div>
+        <div class="prev-wrap" id="prevWrap">
+          <div class="prev-toolbar-bar" id="prevToolbar">
+            <button class="prev-btn active" id="prevBtnOrig">orig</button>
+            <button class="prev-btn" id="prevBtnOut">out</button>
+            <button class="prev-btn" id="prevBtn1to1">1:1</button>
+            <span class="prev-info" id="prevInfo"></span>
+          </div>
+          <div class="prev-container fit" id="prevContainer">
+            <div class="prev-ph" id="prevPh">—</div>
+          </div>
         </div>
-        <div class="prev-hint" data-t="prevHint">Click to toggle original / output</div>
+        <div style="font-size:10px;color:#bbb;text-align:center;margin-top:3px" data-t="prevHint">orig / out to compare</div>
       </div>
+
     </div>
   </div>
 
@@ -430,641 +494,969 @@ input[type=range]::-webkit-slider-thumb {
       <span data-t="col3">Output</span>
       <span id="outCount" style="font-weight:400;font-size:11px;color:#aaa"></span>
     </div>
+    <div class="col3-dl-bar" id="col3DlBar">
+      <button class="col3-dl-btn primary" id="col3DlAllBtn">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span data-t="dlAll">Download all</span>
+      </button>
+      <button class="col3-dl-btn" id="col3DlZipBtn">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M10 3v18M14 3v18M3 10h4M17 10h4M3 14h4M17 14h4"/></svg>
+        <span data-t="dlZip">Download ZIP</span>
+      </button>
+    </div>
     <div class="col-body" id="col3Body">
-      <div id="outEmpty" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:12px;color:#ccc;text-align:center;line-height:2" data-t-html="emptyOutput">No converted<br>files yet</div>
+      <div id="outEmpty" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:12px;color:#ccc;text-align:center;line-height:2">No converted<br>files yet</div>
     </div>
   </div>
-
 </div>
 
-<!-- STATUSBAR -->
 <div class="statusbar">
   <div class="sd" id="sd"></div>
-  <span id="st" data-t="ready">Ready</span>
+  <span id="st">Ready</span>
   <div class="pw" id="pw"><div class="pb" id="pb"></div></div>
   <div class="spacer"></div>
   <span id="ss"></span>
 </div>
 
-<!-- FLOATING CONVERT BUTTON -->
+<!-- FLOATING RIP BUTTON -->
 <div id="ripBtn">
-  <div class="rip-inner" id="ripInner">
-    <div class="rip-text" id="ripText">LET IT<br>RIP</div>
+  <div class="rip-outer">
+    <svg class="rip-svg-ring" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
+      <defs><path id="rC" d="M36,36 m-26,0 a26,26 0 1,1 52,0 a26,26 0 1,1 -52,0"/></defs>
+      <text class="rip-label"><textPath href="#rC" startOffset="2%">LET IT RIP  •  LET IT RIP  •</textPath></text>
+    </svg>
+    <div class="rip-inner" id="ripInner">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
+    </div>
   </div>
 </div>
 
-<!-- MODAL: WHY -->
+<!-- MODALS -->
 <div class="modal-overlay" id="modalReason">
   <div class="modal">
     <button class="modal-close" onclick="closeModal('modalReason')">✕</button>
     <h2 data-t="reasonTitle">Why this tool exists</h2>
-    <p data-t="reasonBody">Most image conversion tools send your files to a server. This tool converts everything locally in your browser — nothing leaves your device. It supports bulk conversion, quality control, scaling, and GIF optimization, all in one place with a clear three-column workflow.</p>
+    <p data-t="reasonBody">Everything runs locally in your browser — nothing is uploaded. Supports bulk conversion, quality control, scaling, GIF optimization, RGB channel split/merge, and power-of-2 texture detection for 3D workflows.</p>
   </div>
 </div>
-
-<!-- MODAL: HOW -->
 <div class="modal-overlay" id="modalHow">
   <div class="modal">
     <button class="modal-close" onclick="closeModal('modalHow')">✕</button>
-    <h2 data-t="howTitle">How to use</h2>
-    <ol>
-      <li data-t="how1"><b>Load files</b> — drag & drop images into column 1, or click to browse. Supports JPG, PNG, WebP, AVIF, GIF, SVG.</li>
-      <li data-t="how2"><b>Adjust settings</b> — choose output format, quality, scale, and max width in column 2. Click the preview to toggle original vs output.</li>
-      <li data-t="how3"><b>Select files</b> — click to select individual files. Shift+click for range, Ctrl+click for multi. Settings apply to selection or all files.</li>
-      <li data-t="how4"><b>Convert</b> — click the floating "Let it Rip" button. Results appear in column 3 with file size comparison.</li>
-      <li data-t="how5"><b>Download</b> — download files individually or all at once as a ZIP.</li>
+    <h2 id="howTitleEl">How to use</h2>
+    <ol id="howList">
+      <li><b>Load files</b> — drag & drop or click. JPG, PNG, WebP, AVIF, GIF, SVG.</li>
+      <li><b>Select a file</b> — click in column 1. Settings apply per file; multi-select for shared settings.</li>
+      <li><b>Adjust settings</b> — format, quality, scale, channel config in column 2.</li>
+      <li><b>Add Merge Node</b> — bottom of column 1. Drop R/G/B channels, name it, click Merge.</li>
+      <li><b>Convert</b> — "Let it Rip" converts selected files, or all if none selected.</li>
+      <li><b>Download</b> — per file, all at once, or as ZIP.</li>
     </ol>
   </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script>
-(function() {
+(function(){
 'use strict';
 
 // ── TRANSLATIONS ──
-const T = {
-  en: {
-    upload:'Load files', why:'Why this tool', how:'How to use', dlAll:'Download all',
-    col1:'Input', col2:'Settings', col3:'Output',
-    selAll:'Select all', desel:'Deselect',
-    sgFormat:'Format & Quality', labelFormat:'Format', labelQuality:'Quality',
-    sgSize:'Size', labelScale:'Scale', labelMaxW:'Max width', labelPx:'(0 = original)',
-    labelFps:'Framerate', labelColors:'Color palette',
-    sgPreview:'Preview', prevPh:'—', prevHint:'Click to toggle original / output',
-    emptySettings:'Load files to<br>see settings.',
-    emptyOutput:'No converted<br>files yet',
-    ready:'Ready', converting:'Converting…', done:'files converted', of:'/',
-    scope_all:'all files', scope_sel:'selected',
-    statusWait:'Waiting', statusProcessing:'Processing…', statusDone:'Done', statusError:'Error',
+const T={
+  en:{
+    upload:'Load files',why:'Why',how:'How to use',dlAll:'Download all',dlZip:'Download ZIP',
+    col1:'Input',col2:'Settings',col3:'Output',
+    selAll:'Select all',desel:'Deselect',
+    sgFormat:'Format & Quality',labelFormat:'Format',labelQuality:'Quality',
+    sgSize:'Size',labelScale:'Scale',labelMaxW:'Max width',
+    sgChannel:'Channel Config',labelChOut:'Output color space',
+    sgTexture:'Texture Tools',labelRgbSplit:'RGB Channel Split',btnSplit:'Split → R / G / B',
+    sgPreview:'Preview',prevHint:'orig / out to compare',
+    ready:'Ready',converting:'Converting…',done:'files converted',of:'/',
+    scope_all:'all files',scope_sel:'selected',scope_none:'select a file',
+    statusWait:'Waiting',statusProcessing:'Processing…',statusDone:'Done',statusError:'Error',
+    labelFps:'Framerate',labelColors:'Color palette',
     reasonTitle:'Why this tool exists',
-    reasonBody:'Most image conversion tools send your files to a server. This tool converts everything locally in your browser — nothing leaves your device. It supports bulk conversion, quality control, scaling, and GIF optimization, all in one place with a clear three-column workflow.',
+    reasonBody:'Everything runs locally in your browser — nothing is uploaded.',
     howTitle:'How to use',
-    how1:'<b>Load files</b> — drag & drop images into column 1, or click to browse.',
-    how2:'<b>Adjust settings</b> — choose format, quality, scale in column 2. Click preview to compare.',
-    how3:'<b>Select files</b> — click to select. Shift+click for range, Ctrl+click for multi.',
-    how4:'<b>Convert</b> — click "Let it Rip". Results appear in column 3.',
-    how5:'<b>Download</b> — individually or all as ZIP.',
-    ripText:'LET IT\nRIP',
-    totalSaving:'total saved',
+    how1:'<b>Load files</b> — drag & drop or click.',
+    how2:'<b>Select a file</b> — settings apply per file. Multi-select for shared settings.',
+    how3:'<b>Adjust settings</b> — format, quality, scale, channel config.',
+    how4:'<b>Convert</b> — "Let it Rip" converts selected files.',
+    how5:'<b>Download</b> — per file, all, or ZIP.',
+    perFileHint:'Settings for:',perMultiHint:'Shared settings for',files:'files',
+    totalSaving:'total saved',pow2:'Power of 2',
+    mergeTitle:'RGB Merge',mergeHint:'Drop or click each channel',mergeBtnLabel:'Merge R+G+B → RGB',
+    noSelWarning:'Select at least one file to convert',
+    addMergeNode:'Add RGB Merge Node',
+    mergeNodeDefaultName:'merge_rgb',
+    mergeNodeExec:'Merge → RGB',
+    nmSwapDxToGl:'DirectX → OpenGL (flip G)',
+    nmSwapGlToDx:'OpenGL → DirectX (flip G)',
   },
-  de: {
-    upload:'Dateien laden', why:'Warum dieses Tool', how:'Anleitung', dlAll:'Alle herunterladen',
-    col1:'Eingabe', col2:'Einstellungen', col3:'Ausgabe',
-    selAll:'Alle auswählen', desel:'Aufheben',
-    sgFormat:'Format & Qualität', labelFormat:'Format', labelQuality:'Qualität',
-    sgSize:'Grösse', labelScale:'Skalierung', labelMaxW:'Max. Breite', labelPx:'(0 = original)',
-    labelFps:'Framerate', labelColors:'Farbpalette',
-    sgPreview:'Vorschau', prevPh:'—', prevHint:'Tippen zum Umschalten',
-    emptySettings:'Dateien laden,<br>dann Einstellungen.',
-    emptyOutput:'Noch keine<br>konvertierten Dateien',
-    ready:'Bereit', converting:'Konvertiere…', done:'Dateien fertig', of:'/',
-    scope_all:'alle Dateien', scope_sel:'ausgewählt',
-    statusWait:'Wartend', statusProcessing:'Wird bearbeitet…', statusDone:'Fertig', statusError:'Fehler',
-    reasonTitle:'Warum dieses Tool existiert',
-    reasonBody:'Die meisten Konverter laden deine Dateien auf einen Server hoch. Dieses Tool konvertiert alles lokal im Browser — nichts verlässt dein Gerät. Batch-Konvertierung, Qualitätskontrolle, Skalierung und GIF-Optimierung — alles in einem übersichtlichen Drei-Spalten-Layout.',
+  de:{
+    upload:'Dateien laden',why:'Warum',how:'Anleitung',dlAll:'Alle laden',dlZip:'ZIP laden',
+    col1:'Eingabe',col2:'Einstellungen',col3:'Ausgabe',
+    selAll:'Alle auswählen',desel:'Aufheben',
+    sgFormat:'Format & Qualität',labelFormat:'Format',labelQuality:'Qualität',
+    sgSize:'Grösse',labelScale:'Skalierung',labelMaxW:'Max. Breite',
+    sgChannel:'Kanal-Konfig.',labelChOut:'Ausgabe-Farbraum',
+    sgTexture:'Texture-Tools',labelRgbSplit:'RGB-Kanal-Split',btnSplit:'Aufteilen → R / G / B',
+    sgPreview:'Vorschau',prevHint:'orig / out zum Vergleichen',
+    ready:'Bereit',converting:'Konvertiere…',done:'Dateien fertig',of:'/',
+    scope_all:'alle Dateien',scope_sel:'ausgewählt',scope_none:'Datei auswählen',
+    statusWait:'Wartend',statusProcessing:'Wird bearbeitet…',statusDone:'Fertig',statusError:'Fehler',
+    labelFps:'Framerate',labelColors:'Farbpalette',
+    reasonTitle:'Warum dieses Tool',
+    reasonBody:'Alles läuft lokal im Browser — nichts wird hochgeladen.',
     howTitle:'Anleitung',
-    how1:'<b>Dateien laden</b> — Bilder in Spalte 1 ablegen oder klicken. JPG, PNG, WebP, AVIF, GIF, SVG.',
-    how2:'<b>Einstellungen</b> — Format, Qualität, Skalierung in Spalte 2. Vorschau klicken zum Vergleichen.',
-    how3:'<b>Auswählen</b> — Klick wählt einzeln. Shift+Klick für Bereich, Ctrl+Klick für Mehrfach.',
-    how4:'<b>Konvertieren</b> — auf "Let it Rip" klicken. Ergebnisse erscheinen in Spalte 3.',
-    how5:'<b>Herunterladen</b> — einzeln oder alle als ZIP.',
-    ripText:'LET IT\nRIP',
-    totalSaving:'gespart',
+    how1:'<b>Dateien laden</b> — ablegen oder klicken.',
+    how2:'<b>Datei auswählen</b> — Einstellungen pro Datei. Multi-Auswahl für gemeinsame Einstellungen.',
+    how3:'<b>Einstellungen</b> — Format, Qualität, Skalierung, Kanal.',
+    how4:'<b>Konvertieren</b> — "Let it Rip" konvertiert ausgewählte Dateien.',
+    how5:'<b>Herunterladen</b> — einzeln, alle, oder als ZIP.',
+    perFileHint:'Einstellungen für:',perMultiHint:'Gemeinsame Einstellungen für',files:'Dateien',
+    totalSaving:'gespart',pow2:'Power of 2',
+    mergeTitle:'RGB Merge',mergeHint:'Ablegen oder klicken',mergeBtnLabel:'R+G+B → RGB zusammenführen',
+    noSelWarning:'Mindestens eine Datei auswählen',
+    addMergeNode:'RGB Merge Node hinzufügen',
+    mergeNodeDefaultName:'merge_rgb',
+    mergeNodeExec:'Zusammenführen → RGB',
+    nmSwapDxToGl:'DirectX → OpenGL (G umkehren)',
+    nmSwapGlToDx:'OpenGL → DirectX (G umkehren)',
   }
 };
-let lang = 'en';
-
-function t(key) { return T[lang][key] || T['en'][key] || key; }
-
-function applyLang() {
-  document.querySelectorAll('[data-t]').forEach(el => {
-    const k = el.getAttribute('data-t');
-    el.textContent = t(k);
-  });
-  document.querySelectorAll('[data-t-html]').forEach(el => {
-    const k = el.getAttribute('data-t-html');
-    el.innerHTML = t(k);
-  });
-  // rip button
-  const rt = document.getElementById('ripText');
-  if (rt) rt.innerHTML = t('ripText').replace('\n','<br>');
-  // scope
-  updateSel();
+let lang='en';
+function t(k){return T[lang][k]||T.en[k]||k;}
+function applyLang(){
+  document.querySelectorAll('[data-t]').forEach(el=>el.textContent=t(el.getAttribute('data-t')));
+  const howTitleEl=document.getElementById('howTitleEl');
+  if(howTitleEl) howTitleEl.textContent=t('howTitle');
+  updateSel(); updateSettingsIndicator();
 }
-
-document.querySelectorAll('.lang-opt').forEach(btn => {
-  btn.addEventListener('click', () => {
-    lang = btn.dataset.lang;
-    document.querySelectorAll('.lang-opt').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+document.querySelectorAll('.lang-opt').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    lang=btn.dataset.lang;
+    document.querySelectorAll('.lang-opt').forEach(b=>b.classList.toggle('active',b.dataset.lang===lang));
     applyLang();
   });
 });
 
-// ── MODALS ──
-document.getElementById('btnReason').addEventListener('click', () => openModal('modalReason'));
-document.getElementById('btnHow').addEventListener('click', () => openModal('modalHow'));
-document.querySelectorAll('.modal-overlay').forEach(m => {
-  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
-});
-window.openModal = id => document.getElementById(id).classList.add('open');
-window.closeModal = id => document.getElementById(id).classList.remove('open');
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
-});
+// MODALS
+document.getElementById('btnReason').addEventListener('click',()=>openModal('modalReason'));
+document.getElementById('btnHow').addEventListener('click',()=>openModal('modalHow'));
+document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
+window.openModal=id=>document.getElementById(id).classList.add('open');
+window.closeModal=id=>document.getElementById(id).classList.remove('open');
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.modal-overlay.open').forEach(m=>m.classList.remove('open'));});
 
-// ── STATE ──
-const files = [];
-const sel = new Set();
-let blobs = [];
-let previewTimer = null;
-let prevShowOrig = true;
-let prevOrigUrl = null, prevOutUrl = null, prevOrigSize = 0, prevOutSize = 0;
+// STATE
+const files=[];       // array of {file, settings, dataUrl, dims}
+const sel=new Set();  // indices of selected files
+let blobs=[];
+let col3Results=[];
+let previewTimer=null;
+let prevOrigUrl=null, prevOutUrl=null, prevOrigSize=0, prevOutSize=0;
+let prevMode='orig', prevActual=false;
 
-const $ = id => document.getElementById(id);
-const col1 = $('col1Body');
-const col3 = $('col3Body');
+const $=id=>document.getElementById(id);
+const col1=$('col1Body'), col3=$('col3Body');
 
-// ── UTILS ──
-function ext(f) { return f.name.split('.').pop().toLowerCase(); }
-function fb(bytes) {
-  if (bytes < 1024) return bytes + ' B';
-  if (bytes < 1048576) return (bytes/1024).toFixed(1) + ' KB';
-  return (bytes/1048576).toFixed(2) + ' MB';
-}
-function isImgFile(f) {
-  return ['jpg','jpeg','png','gif','webp','avif','svg','bmp','tiff','tif','ico'].includes(ext(f));
-}
-function outName(f) {
-  const base = f.name.replace(/\.[^.]+$/, '');
-  const map = {'image/jpeg':'jpg','image/png':'png','image/webp':'webp'};
-  return base + '.' + (map[$('fmtSel').value] || 'jpg');
+// DEFAULT SETTINGS factory
+function defaultSettings(){
+  return {format:'image/jpeg',quality:82,scale:100,maxWidth:0,outputChannel:'rgb',gifFps:10,gifColors:128};
 }
 
-// Read a File as data URL (returns Promise<string>)
-function fileToDataURL(file) {
-  return new Promise((resolve, reject) => {
-    const r = new FileReader();
-    r.onload = () => resolve(r.result);
-    r.onerror = reject;
-    r.readAsDataURL(file);
-  });
+// UTILS
+function ext(f){return f.name.split('.').pop().toLowerCase();}
+function fb(b){return b<1024?b+' B':b<1048576?(b/1024).toFixed(1)+' KB':(b/1048576).toFixed(2)+' MB';}
+function isImgExt(f){return ['jpg','jpeg','png','gif','webp','avif','svg','bmp','tiff','tif','ico'].includes(ext(f));}
+function isPow2(n){return n>0&&(n&(n-1))===0;}
+function nearestPow2(n){return Math.pow(2,Math.round(Math.log2(n)));}
+function outName(f,suffix){
+  const base=f.name.replace(/\.[^.]+$/,'');
+  const map={'image/jpeg':'jpg','image/png':'png','image/webp':'webp'};
+  const e=map[getActiveSettings().format]||'jpg';
+  return base+(suffix||'')+'.'+e;
+}
+function fileToDataURL(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file);});}
+function blobToDataURL(blob){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(blob);});}
+
+// Detect channel type by pixel sampling (async)
+async function detectChannelAsync(file){
+  try {
+    const du=await fileToDataURL(file);
+    return new Promise(res=>{
+      const img=new Image();
+      img.onload=()=>{
+        const W=Math.min(img.naturalWidth,64),H=Math.min(img.naturalHeight,64);
+        if(!W||!H){res('rgb');return;}
+        const c=document.createElement('canvas');c.width=W;c.height=H;
+        const ctx=c.getContext('2d');ctx.drawImage(img,0,0,W,H);
+        const id=ctx.getImageData(0,0,W,H);
+        let hasAlpha=false,maxColorDev=0,totalSat=0,count=0;
+        for(let p=0;p<id.data.length;p+=4){
+          const r=id.data[p],g=id.data[p+1],b=id.data[p+2],a=id.data[p+3];
+          if(a<250)hasAlpha=true;
+          const avg=(r+g+b)/3;
+          const dev=Math.max(Math.abs(r-avg),Math.abs(g-avg),Math.abs(b-avg));
+          maxColorDev=Math.max(maxColorDev,dev);
+          totalSat+=dev;count++;
+        }
+        const avgSat=totalSat/count;
+        if(hasAlpha){res('rgba');return;}
+        if(avgSat<8){res('grey');return;}       // very low saturation → greyscale map
+        if(avgSat<22){res('rgb');return;}       // moderate → normals/PBR
+        res('srgb');                            // high saturation → colour texture
+      };
+      img.onerror=()=>res('rgb');
+      img.src=du;
+    });
+  } catch(e){return 'rgb';}
 }
 
-// Convert a Blob to data URL
-function blobToDataURL(blob) {
-  return new Promise((resolve, reject) => {
-    const r = new FileReader();
-    r.onload = () => resolve(r.result);
-    r.onerror = reject;
-    r.readAsDataURL(blob);
-  });
-}
-
-// ── FLOATING RIP BUTTON with lazy mouse follow ──
-const ripBtn   = $('ripBtn');
-const ripInner = $('ripInner');
-
-// Anchor point: center of col2/col3 border, vertically centered in workspace
-let ripTargetX = 0, ripTargetY = 0;
-let ripCurrentX = 0, ripCurrentY = 0;
-let rafRunning = false;
-
-function setRipAnchor() {
-  const ws = document.querySelector('.workspace');
-  if (!ws) return;
-  const r = ws.getBoundingClientRect();
-  const colW = r.width / 3;
-  ripTargetX = r.left + colW * 2;
-  ripTargetY = r.top + r.height / 2;
-  if (!rafRunning) {
-    ripCurrentX = ripTargetX;
-    ripCurrentY = ripTargetY;
-    positionRip();
+// PER-FILE SETTINGS
+function getActiveSettings(){
+  if(sel.size===0) return defaultSettings();
+  if(sel.size===1){
+    const idx=[...sel][0];
+    return files[idx]?files[idx].settings:defaultSettings();
   }
+  // multi: return first selected (they share via UI)
+  return files[[...sel][0]].settings;
 }
-
-function positionRip() {
-  ripBtn.style.left = (ripCurrentX - 34) + 'px';
-  ripBtn.style.top  = (ripCurrentY - 34) + 'px';
-}
-
-// Mouse move: only follow vertically (lazy), X is fixed to col border
-document.addEventListener('mousemove', e => {
-  if (!ripBtn.classList.contains('ready')) return;
-  const ws = document.querySelector('.workspace');
-  if (!ws) return;
-  const r = ws.getBoundingClientRect();
-  const colW = r.width / 3;
-  ripTargetX = r.left + colW * 2; // always fixed to border
-  // vertical: clamp within workspace
-  const minY = r.top + 50;
-  const maxY = r.top + r.height - 50;
-  ripTargetY = Math.max(minY, Math.min(maxY, e.clientY));
-  if (!rafRunning) { rafRunning = true; animateRip(); }
-});
-
-function animateRip() {
-  const ease = 0.08; // lazy delay factor
-  ripCurrentX += (ripTargetX - ripCurrentX) * ease;
-  ripCurrentY += (ripTargetY - ripCurrentY) * ease;
-  positionRip();
-  const dx = Math.abs(ripTargetX - ripCurrentX);
-  const dy = Math.abs(ripTargetY - ripCurrentY);
-  if (dx > 0.3 || dy > 0.3) {
-    requestAnimationFrame(animateRip);
+function saveActiveSettings(){
+  const s={
+    format:$('fmtSel').value,
+    quality:parseInt($('qSlider').value),
+    scale:parseInt($('scSlider').value),
+    maxWidth:parseInt($('mxW').value)||0,
+    outputChannel:document.querySelector('.ch-opt.active[data-ch]')?.dataset.ch||'rgb',
+    gifFps:parseInt($('gfSlider').value),
+    gifColors:parseInt($('gcSlider').value),
+  };
+  if(sel.size===0){
+    // apply to all
+    files.forEach(f=>{if(f)Object.assign(f.settings,s);});
   } else {
-    rafRunning = false;
+    sel.forEach(i=>{if(files[i])Object.assign(files[i].settings,s);});
   }
 }
-
-// Tilt on mouse proximity
-document.addEventListener('mousemove', e => {
-  const r = ripInner.getBoundingClientRect();
-  const cx = r.left + r.width/2, cy = r.top + r.height/2;
-  const dx = e.clientX - cx, dy = e.clientY - cy;
-  const dist = Math.sqrt(dx*dx + dy*dy);
-  if (dist < 80) {
-    const tiltX = (dy / 80) * 8;
-    const tiltY = -(dx / 80) * 8;
-    ripInner.style.transform = `perspective(200px) rotateX(${tiltX}deg) rotateY(${tiltY}deg)`;
+function loadSettingsToUI(s){
+  $('fmtSel').value=s.format;
+  $('qSlider').value=s.quality; $('qVal').textContent=s.quality+'%';
+  $('scSlider').value=s.scale;  $('scVal').textContent=s.scale+'%';
+  $('mxW').value=s.maxWidth;
+  $('gfSlider').value=s.gifFps; $('gfVal').textContent=s.gifFps+' fps';
+  $('gcSlider').value=s.gifColors; $('gcVal').textContent=s.gifColors;
+  $('qField').style.opacity=s.format==='image/png'?'.4':'1';
+  document.querySelectorAll('.ch-opt[data-ch]').forEach(b=>b.classList.toggle('active',b.dataset.ch===s.outputChannel));
+}
+function updateSettingsIndicator(){
+  const ind=$('perFileIndicator');
+  if(!files.length){ind.style.display='none';return;}
+  if(sel.size===0){
+    ind.style.display='block'; ind.className='per-file-indicator';
+    ind.textContent=t('scope_all');
+  } else if(sel.size===1){
+    ind.style.display='block'; ind.className='per-file-indicator';
+    const idx=[...sel][0];
+    ind.textContent=t('perFileHint')+' '+(files[idx]?.file.name||'');
   } else {
-    ripInner.style.transform = '';
+    ind.style.display='block'; ind.className='per-file-indicator per-file-multi';
+    ind.textContent=t('perMultiHint')+' '+sel.size+' '+t('files');
   }
-});
-
-ripInner.addEventListener('click', () => {
-  if (ripInner.classList.contains('disabled')) return;
-  doConvert();
-});
-
-function updateRipBtn() {
-  const hasFiles = files.length > 0;
-  ripBtn.classList.toggle('ready', hasFiles);
-  ripInner.classList.toggle('disabled', !hasFiles);
 }
 
-window.addEventListener('resize', setRipAnchor);
-setTimeout(setRipAnchor, 100);
+// Settings change → save to active files
+function onSettingChange(){
+  saveActiveSettings();
+  schedulePreview();
+}
+$('fmtSel').addEventListener('change',()=>{ $('qField').style.opacity=$('fmtSel').value==='image/png'?'.4':'1'; onSettingChange(); });
+$('qSlider').addEventListener('input',()=>{ $('qVal').textContent=$('qSlider').value+'%'; onSettingChange(); });
+$('scSlider').addEventListener('input',()=>{ $('scVal').textContent=$('scSlider').value+'%'; onSettingChange(); });
+$('mxW').addEventListener('input',()=>onSettingChange());
+$('gfSlider').addEventListener('input',()=>{ $('gfVal').textContent=$('gfSlider').value+' fps'; onSettingChange(); });
+$('gcSlider').addEventListener('input',()=>{ $('gcVal').textContent=$('gcSlider').value; onSettingChange(); });
+document.querySelectorAll('.ch-opt[data-ch]').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.ch-opt[data-ch]').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    onSettingChange();
+  });
+});
 
-// ── DROP ZONE FACTORY ──
-function makeDZ(isEmpty) {
-  const dz = document.createElement('div');
-  dz.className = 'drop-zone';
-  if (isEmpty) {
-    dz.innerHTML = `
-      <input type="file" multiple accept="image/*,.avif,.webp,.gif,.svg">
+// TEXTURE SECTION toggle
+$('textureHeader').addEventListener('click',()=>{
+  const body=$('textureBody'), arrow=$('textureArrow');
+  const open=body.classList.toggle('open');
+  arrow.classList.toggle('open',open);
+});
+
+// FLOATING RIP BUTTON
+const ripBtn=$('ripBtn'), ripInner=$('ripInner');
+let ripTX=0,ripTY=0,ripCX=0,ripCY=0,rafOn=false;
+function setRipAnchor(){
+  const ws=document.querySelector('.workspace');
+  if(!ws)return;
+  const r=ws.getBoundingClientRect();
+  ripTX=r.left+r.width*(2/3); ripTY=r.top+r.height/2;
+  if(!rafOn){ripCX=ripTX;ripCY=ripTY;posRip();}
+}
+function posRip(){
+  // offset: button center sits 50px above cursor so button doesn't cover the mouse
+  ripBtn.style.left=(ripCX-36)+'px';
+  ripBtn.style.top=(ripCY-36-50)+'px';
+}
+document.addEventListener('mousemove',e=>{
+  if(!ripBtn.classList.contains('ready'))return;
+  const ws=document.querySelector('.workspace');if(!ws)return;
+  const r=ws.getBoundingClientRect();
+  ripTX=r.left+r.width*(2/3);
+  ripTY=Math.max(r.top+50,Math.min(r.top+r.height-50,e.clientY));
+  if(!rafOn){rafOn=true;animRip();}
+  // tilt
+  const bx=ripCX,by=ripCY,dx=e.clientX-bx,dy=e.clientY-by,d=Math.sqrt(dx*dx+dy*dy);
+  if(d<90){ripInner.style.transform=`perspective(200px) rotateX(${dy/9}deg) rotateY(${-dx/9}deg)`;}
+  else ripInner.style.transform='';
+});
+function animRip(){
+  ripCX+=(ripTX-ripCX)*.07; ripCY+=(ripTY-ripCY)*.07; posRip();
+  if(Math.abs(ripTX-ripCX)>.3||Math.abs(ripTY-ripCY)>.3)requestAnimationFrame(animRip);
+  else rafOn=false;
+}
+ripInner.addEventListener('click',()=>{if(!ripInner.classList.contains('disabled'))doConvert();});
+function updateRipBtn(){
+  const hasFiles=files.length>0;
+  ripBtn.classList.toggle('ready',hasFiles);
+  ripInner.classList.toggle('disabled',!hasFiles);
+}
+window.addEventListener('resize',setRipAnchor);
+setTimeout(setRipAnchor,150);
+
+// DROP ZONE factory
+function makeDZ(isEmpty){
+  const dz=document.createElement('div');
+  dz.className='drop-zone';
+  dz.innerHTML=isEmpty
+    ?`<input type="file" multiple accept="image/*,.avif,.webp,.gif,.svg">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-      <span data-t="upload">Load files</span>
-      <span style="font-size:11px;color:#bbb">WebP · AVIF · GIF · PNG · JPG · SVG</span>`;
-  } else {
-    dz.innerHTML = `
-      <input type="file" multiple accept="image/*,.avif,.webp,.gif,.svg">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <span>${t('upload')}</span>
+      <span style="font-size:11px;color:#bbb">WebP · AVIF · GIF · PNG · JPG · SVG</span>`
+    :`<input type="file" multiple accept="image/*,.avif,.webp,.gif,.svg">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
       <span>+ more files</span>`;
-  }
-  dz.querySelector('input').addEventListener('change', function() { addFiles(this.files); });
-  dz.addEventListener('dragover',  e => { e.preventDefault(); dz.classList.add('over'); });
-  dz.addEventListener('dragleave', () => dz.classList.remove('over'));
-  dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('over'); addFiles(e.dataTransfer.files); });
+  dz.querySelector('input').addEventListener('change',function(){addFiles(this.files);});
+  dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('over');});
+  dz.addEventListener('dragleave',()=>dz.classList.remove('over'));
+  dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('over');addFiles(e.dataTransfer.files);});
   return dz;
 }
 
-// ── ADD FILES ──
-function addFiles(newFiles) {
-  Array.from(newFiles).forEach(f => {
-    if (!files.find(x => x.name === f.name && x.size === f.size)) files.push(f);
-  });
-  blobs = [];
+// ── MERGE NODE SYSTEM ──
+let nodeCounter = 0;
+// mergeNodes: array of {id, name, files:{R,G,B}, element}
+const mergeNodes = [];
+// selection: 'file:N' or 'node:ID'
+let activeSelection = null; // {type:'file'|'node', idx:number|string}
+
+$('addMergeNodeBtn').addEventListener('click', () => addMergeNode());
+
+function addMergeNode() {
+  nodeCounter++;
+  const nid = 'n' + nodeCounter;
+  const defaultName = 'merge_' + String(nodeCounter).padStart(2,'0');
+  const nodeState = {id:nid, name:defaultName, files:{R:null,G:null,B:null}, expanded:true};
+  mergeNodes.push(nodeState);
+  // Show settings panel even if no files loaded
+  $('settingsEmpty').style.display='none';
+  $('settingsBody').style.display='flex';
   renderCol1();
   updateSel();
-  showSettings();
-  renderCol3([]);
-  updateRipBtn();
-  setStatus(t('ready'), false);
 }
 
-// ── RENDER COL 1 ──
-function renderCol1() {
-  col1.innerHTML = '';
-  col1.appendChild(makeDZ(files.length === 0));
-  if (!files.length) { $('inCount').textContent = ''; return; }
-  $('inCount').textContent = files.length;
-  files.forEach((f, i) => {
-    const item = document.createElement('div');
-    item.className = 'file-item' + (sel.has(i) ? ' sel' : '');
-    item.innerHTML = `
+function removeNode(nid) {
+  const idx = mergeNodes.findIndex(n => n.id === nid);
+  if (idx >= 0) mergeNodes.splice(idx, 1);
+  if (activeSelection?.type === 'node' && activeSelection.idx === nid) {
+    activeSelection = null;
+  }
+  renderCol1();
+  updateSel();
+  updateSettingsUI();
+}
+
+function selectNode(nid, e) {
+  if (e && (e.target.closest('.merge-node-rm') || e.target.closest('.merge-node-name'))) return;
+  if (activeSelection?.type === 'node' && activeSelection.idx === nid) {
+    activeSelection = null;
+  } else {
+    // deselect files
+    sel.clear();
+    activeSelection = {type:'node', idx:nid};
+  }
+  renderCol1();
+  updateSel();
+  updateSettingsUI();
+}
+
+function buildMergeNodeEl(nodeState) {
+  const {id:nid, name:defaultName} = nodeState;
+  const isExpanded = !!nodeState.expanded;
+  const node = document.createElement('div');
+  node.className = 'merge-node' + (isExpanded ? ' expanded' : '');
+  node.id = 'mn_' + nid;
+
+  const isNodeSel = activeSelection?.type === 'node' && activeSelection.idx === nid;
+  if (isNodeSel) node.classList.add('sel');
+
+  // Compute status label
+  const {R,G,B} = nodeState.files;
+  const filled = [R,G,B].filter(Boolean).length;
+  const statusStr = filled === 3 ? 'ready to merge' : filled + '/3 channels';
+
+  node.innerHTML = `
+    <div class="merge-node-header" id="mnh_${nid}">
+      <div class="merge-node-sel-chk"></div>
+      <div class="merge-node-icon">RGB<br>NODE</div>
+      <div class="merge-node-info">
+        <input class="merge-node-name" type="text" value="${nodeState.name}" spellcheck="false" title="Export name">
+        <div class="merge-node-sub">${statusStr}</div>
+      </div>
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#bbb;flex-shrink:0;transition:transform .15s" class="node-chevron${isExpanded?' rot':''}"><polyline points="6 9 12 15 18 9"/></svg>
+      <button class="merge-node-rm" title="Remove">✕</button>
+    </div>
+    <div class="merge-node-body">
+      ${mkNodeSlotHTML('R','r',nid, nodeState.files.R)}
+      ${mkNodeSlotHTML('G','g',nid, nodeState.files.G)}
+      ${mkNodeSlotHTML('B','b',nid, nodeState.files.B)}
+      <button class="merge-node-exec" ${filled===3?'':'disabled'}>
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        Merge → RGB
+      </button>
+    </div>`;
+
+  // Toggle expand on header click
+  node.querySelector('#mnh_' + nid).addEventListener('click', e => {
+    if (e.target.closest('.merge-node-rm') || e.target.closest('.merge-node-name')) return;
+    nodeState.expanded = !nodeState.expanded;
+    node.classList.toggle('expanded', nodeState.expanded);
+    const chev = node.querySelector('.node-chevron');
+    if (chev) chev.classList.toggle('rot', nodeState.expanded);
+    selectNode(nid, e);
+  });
+
+  // Name input
+  node.querySelector('.merge-node-name').addEventListener('input', function() {
+    nodeState.name = this.value;
+  });
+  node.querySelector('.merge-node-name').addEventListener('click', e => e.stopPropagation());
+
+  // Remove
+  node.querySelector('.merge-node-rm').addEventListener('click', e => { e.stopPropagation(); removeNode(nid); });
+
+  // Slot inputs
+  ['R','G','B'].forEach(ch => {
+    const drop = node.querySelector(`#nd2_${nid}_${ch}`);
+    const input = node.querySelector(`#nf2_${nid}_${ch}`);
+    if (!drop || !input) return;
+
+    async function setNodeFile(f) {
+      nodeState.files[ch] = f;
+      // Re-render just this node
+      const updated = buildMergeNodeEl(nodeState);
+      updated.classList.toggle('expanded', node.classList.contains('expanded'));
+      node.replaceWith(updated);
+    }
+    input.addEventListener('change', function(){ if(this.files[0]) setNodeFile(this.files[0]); });
+    drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('over'); });
+    drop.addEventListener('dragleave', () => drop.classList.remove('over'));
+    drop.addEventListener('drop', e => { e.preventDefault(); drop.classList.remove('over'); if(e.dataTransfer.files[0]) setNodeFile(e.dataTransfer.files[0]); });
+  });
+
+  // Execute merge
+  node.querySelector('.merge-node-exec')?.addEventListener('click', async () => {
+    const {R,G,B} = nodeState.files;
+    if (!R||!G||!B) return;
+    const nameVal = nodeState.name.trim() || defaultName;
+    setStatus('Merging ' + nameVal + '…', true);
+    const imgs = await Promise.all([R,G,B].map(f => fileToDataURL(f).then(du => new Promise(res => {
+      const i=new Image(); i.onload=()=>res(i); i.src=du;
+    }))));
+    const w=imgs[0].naturalWidth, h=imgs[0].naturalHeight;
+    const c=document.createElement('canvas'); c.width=w; c.height=h;
+    const ctx=c.getContext('2d');
+    function gd(img){ const tmp=document.createElement('canvas');tmp.width=w;tmp.height=h;const tc=tmp.getContext('2d');tc.drawImage(img,0,0,w,h);return tc.getImageData(0,0,w,h); }
+    const [iR,iG,iB] = imgs.map(gd);
+    const out = ctx.createImageData(w,h);
+    for(let p=0;p<out.data.length;p+=4){ out.data[p]=iR.data[p]; out.data[p+1]=iG.data[p+1]; out.data[p+2]=iB.data[p+2]; out.data[p+3]=255; }
+    ctx.putImageData(out,0,0);
+    const blob = await new Promise(r => c.toBlob(r,'image/png'));
+    const du = await blobToDataURL(blob);
+    const nm = nameVal + '.png';
+    const existing = blobs.findIndex(b => b.name === nm);
+    if (existing >= 0) blobs[existing] = {name:nm, blob, dataUrl:du};
+    else blobs.push({name:nm, blob, dataUrl:du});
+    appendOrUpdateResult({name:nm, dataUrl:du, blob, origSize:blob.size, status:'done'});
+    showDlBar(blobs.length > 1);
+    setStatus(nm + ' merged', false);
+  });
+
+  return node;
+}
+
+function mkNodeSlotHTML(ch, cls, nid, currentFile) {
+  const thumbHTML = currentFile
+    ? `<div id="nd2_${nid}_${ch}" class="merge-node-drop drop-${cls}">
+        <input type="file" accept="image/*" id="nf2_${nid}_${ch}" style="position:absolute;inset:0;opacity:0;cursor:pointer;">
+        <img class="merge-node-thumb" id="nthumb_${nid}_${ch}" src="" alt="">
+       </div>`
+    : `<div id="nd2_${nid}_${ch}" class="merge-node-drop drop-${cls}">
+        <input type="file" accept="image/*" id="nf2_${nid}_${ch}" style="position:absolute;inset:0;opacity:0;cursor:pointer;">
+        <span style="pointer-events:none;font-size:9px">drop / click</span>
+       </div>`;
+
+  return `<div class="merge-node-slot">
+    <span class="merge-node-slot-lbl slot-${cls}">${ch}</span>
+    ${thumbHTML}
+    <div class="merge-node-thumb-placeholder" id="ntp_${nid}_${ch}" style="${currentFile?'display:none':''}"></div>
+  </div>`;
+}
+
+// After buildMergeNodeEl, load any existing thumbnails async
+function loadNodeThumbs(nodeState) {
+  ['R','G','B'].forEach(ch => {
+    if (!nodeState.files[ch]) return;
+    const img = document.querySelector(`#nthumb_${nodeState.id}_${ch}`);
+    if (!img) return;
+    fileToDataURL(nodeState.files[ch]).then(du => { if(img) img.src = du; }).catch(()=>{});
+  });
+}
+
+// append result to col3 without clearing existing
+function appendOrUpdateResult(r) {
+  const idx = col3Results.findIndex(x => x.name === r.name);
+  if (idx >= 0) col3Results[idx] = r;
+  else col3Results.push(r);
+  renderCol3(col3Results);
+}
+
+// ── NORMAL MAP SWAP (2-button toggle: DX ↔ GL) ──
+let nmCurrentMode = 'dx'; // 'dx' = DirectX style, 'gl' = OpenGL style
+
+function updateNmUI() {
+  $('nmBtnDX').classList.toggle('active', nmCurrentMode === 'dx');
+  $('nmBtnGL').classList.toggle('active', nmCurrentMode === 'gl');
+  $('nmHint').textContent = nmCurrentMode === 'dx'
+    ? 'Current: DirectX — click OpenGL to convert'
+    : 'Current: OpenGL — click DirectX to convert';
+}
+
+async function doNmSwap() {
+  const targets = sel.size>0 ? [...sel].map(i=>files[i]).filter(Boolean) : [...files].filter(Boolean);
+  if (!targets.length) return;
+  const targetMode = nmCurrentMode === 'dx' ? 'gl' : 'dx';
+  const suffix = nmCurrentMode === 'dx' ? '_GL' : '_DX';
+  setStatus('Converting normals…', true);
+  const results = [];
+  for (const entry of targets) {
+    const du = entry.dataUrl || (await fileToDataURL(entry.file));
+    const blob = await new Promise(res => {
+      const img = new Image();
+      img.onload = () => {
+        const w=img.naturalWidth, h=img.naturalHeight;
+        const c=document.createElement('canvas'); c.width=w; c.height=h;
+        const ctx=c.getContext('2d'); ctx.drawImage(img,0,0,w,h);
+        const id=ctx.getImageData(0,0,w,h);
+        for(let p=0;p<id.data.length;p+=4) { id.data[p+1] = 255 - id.data[p+1]; }
+        ctx.putImageData(id,0,0);
+        c.toBlob(res,'image/png');
+      };
+      img.src = du;
+    });
+    const bdu = await blobToDataURL(blob);
+    const nm = entry.file.name.replace(/\.[^.]+$/,'') + suffix + '.png';
+    results.push({name:nm, dataUrl:bdu, blob, origSize:blob.size, status:'done'});
+    blobs.push({name:nm, blob, dataUrl:bdu});
+  }
+  nmCurrentMode = targetMode;
+  updateNmUI();
+  renderCol3(results); col3Results = results;
+  showDlBar(blobs.length>1);
+  setStatus(results.length + ' normal maps converted', false);
+}
+
+$('nmBtnDX').addEventListener('click', () => { if(nmCurrentMode !== 'dx') doNmSwap(); });
+$('nmBtnGL').addEventListener('click', () => { if(nmCurrentMode !== 'gl') doNmSwap(); });
+
+// ADD FILES
+function addFiles(newFiles){
+  const added=[];
+  Array.from(newFiles).forEach(f=>{
+    if(!files.find(x=>x&&x.file.name===f.name&&x.file.size===f.size)){
+      files.push({file:f,settings:defaultSettings(),dataUrl:null,dims:null,channel:null});
+      added.push(files.length-1);
+    }
+  });
+  // detect channel async for new files
+  added.forEach(idx=>{
+    detectChannelAsync(files[idx].file).then(ch=>{
+      if(files[idx])files[idx].channel=ch;
+      // update channel in settings if rgb → adjust
+      renderCol1();
+    });
+    // load dims
+    fileToDataURL(files[idx].file).then(du=>{
+      if(!files[idx])return;
+      files[idx].dataUrl=du;
+      const img=new Image();
+      img.onload=()=>{
+        if(!files[idx])return;
+        files[idx].dims={w:img.naturalWidth,h:img.naturalHeight};
+        renderCol1();
+      };
+      img.src=du;
+    });
+  });
+
+  blobs=[];
+  renderCol1(); updateSel(); showSettings(); renderCol3([]); updateRipBtn();
+  setStatus(t('ready'),false);
+}
+$('fileInput').addEventListener('change',function(){addFiles(this.files);});
+
+// RENDER COL 1
+function renderCol1(){
+  col1.innerHTML='';
+  col1.appendChild(makeDZ(files.length===0));
+  if(!files.length){$('inCount').textContent='';return;}
+  $('inCount').textContent=files.length;
+
+  files.forEach((entry,i)=>{
+    if(!entry)return;
+    const {file,dims,channel}=entry;
+    const ch=channel||'rgb';
+    const chLabel={rgb:'RGB',grey:'Grey',srgb:'sRGB',rgba:'RGBA'}[ch]||'RGB';
+    const chClass='ch-badge ch-'+(ch==='rgba'?'rgba':ch);
+    const dimStr=dims?dims.w+'×'+dims.h:'';
+    const item=document.createElement('div');
+    item.className='file-item'+(sel.has(i)?' sel':'');
+    item.innerHTML=`
       <div class="chk"></div>
-      <div class="thumb" id="th${i}">${ext(f).toUpperCase()}</div>
+      <div class="thumb" id="th${i}">${ext(file).toUpperCase()}</div>
       <div class="fi-info">
-        <div class="fi-name">${f.name}</div>
-        <div class="fi-size">${fb(f.size)}</div>
+        <div class="fi-name">${file.name}</div>
+        <div class="fi-size">${fb(file.size)}${dimStr?' · '+dimStr:''}</div>
       </div>
+      <span class="${chClass}">${chLabel}</span>
       <button class="rm-btn" title="Remove">✕</button>`;
-    item.querySelector('.rm-btn').addEventListener('click', e => { e.stopPropagation(); removeFile(i); });
-    item.addEventListener('click', e => toggleSel(i, e));
+    item.querySelector('.rm-btn').addEventListener('click',e=>{e.stopPropagation();removeFile(i);});
+    item.addEventListener('click',e=>toggleSel(i,e));
     col1.appendChild(item);
-    // Use FileReader → data URL (works under strict CSP)
-    if (isImgFile(f)) {
-      fileToDataURL(f).then(dataUrl => {
-        const el = document.getElementById('th' + i);
-        if (el) el.innerHTML = `<img src="${dataUrl}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:2px;">`;
-      }).catch(() => {});
+    // thumbnail
+    if(entry.dataUrl){
+      const el=document.getElementById('th'+i);
+      if(el)el.innerHTML=`<img src="${entry.dataUrl}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:2px;">`;
     }
   });
-  $('gifSg').classList.toggle('on', files.some(f => ext(f) === 'gif'));
-}
 
-// ── SELECTION ──
-function toggleSel(i, e) {
-  if (e.shiftKey && sel.size > 0) {
-    const last = [...sel].pop();
-    const from = Math.min(last, i), to = Math.max(last, i);
-    for (let j = from; j <= to; j++) sel.add(j);
-  } else if (e.ctrlKey || e.metaKey) {
-    sel.has(i) ? sel.delete(i) : sel.add(i);
-  } else {
-    if (sel.has(i) && sel.size === 1) sel.clear();
-    else { sel.clear(); sel.add(i); }
-  }
-  renderCol1(); updateSel(); schedulePreview();
-}
+  $('gifSg').classList.toggle('on',files.some(e=>e&&ext(e.file)==='gif'));
+  // check pow2 for selected
+  checkPow2ForSelection();
 
-function removeFile(i) {
-  files.splice(i, 1);
-  const ns = new Set();
-  sel.forEach(x => { if (x < i) ns.add(x); else if (x > i) ns.add(x-1); });
-  sel.clear(); ns.forEach(x => sel.add(x));
-  renderCol1(); updateSel(); showSettings(); updateRipBtn();
-  if (!files.length) {
-    $('settingsEmpty').style.display = 'flex';
-    $('settingsBody').style.display = 'none';
-  }
-}
-
-function updateSel() {
-  const n = sel.size;
-  $('selAllBtn').textContent = t('selAll');
-  $('deselBtn').textContent  = t('desel');
-  $('selAllBtn').classList.toggle('visible', files.length > 0 && n < files.length);
-  $('deselBtn').classList.toggle('visible', n > 0);
-  const scopeEl = $('scope');
-  if (n > 0) scopeEl.textContent = n + ' ' + t('scope_sel');
-  else if (files.length > 0) scopeEl.textContent = t('scope_all');
-  else scopeEl.textContent = '';
-}
-
-$('selAllBtn').addEventListener('click', () => { files.forEach((_,i) => sel.add(i)); renderCol1(); updateSel(); schedulePreview(); });
-$('deselBtn').addEventListener('click',  () => { sel.clear(); renderCol1(); updateSel(); schedulePreview(); });
-
-document.addEventListener('keydown', e => {
-  if ((e.ctrlKey||e.metaKey) && e.key === 'a' && files.length) {
-    e.preventDefault(); files.forEach((_,i) => sel.add(i)); renderCol1(); updateSel(); schedulePreview();
-  }
-  if (e.key === 'Escape' && !document.querySelector('.modal-overlay.open')) {
-    sel.clear(); renderCol1(); updateSel();
-  }
-});
-
-// ── SETTINGS ──
-function showSettings() {
-  if (!files.length) return;
-  $('settingsEmpty').style.display = 'none';
-  $('settingsBody').style.display  = 'flex';
-  schedulePreview();
-}
-
-$('fileInput').addEventListener('change', function() { addFiles(this.files); });
-
-$('qSlider').addEventListener('input',  () => { $('qVal').textContent  = $('qSlider').value + '%'; schedulePreview(); });
-$('scSlider').addEventListener('input', () => { $('scVal').textContent = $('scSlider').value + '%'; schedulePreview(); });
-$('mxW').addEventListener('input',      () => schedulePreview());
-$('gfSlider').addEventListener('input', () => { $('gfVal').textContent = $('gfSlider').value + ' fps'; });
-$('gcSlider').addEventListener('input', () => { $('gcVal').textContent = $('gcSlider').value; });
-$('fmtSel').addEventListener('change',  () => {
-  $('qField').style.opacity = $('fmtSel').value === 'image/png' ? '.4' : '1';
-  schedulePreview();
-});
-
-// ── PREVIEW ──
-window._app = {
-  togglePrev: function() {
-    if (!prevOrigUrl) return;
-    prevShowOrig = !prevShowOrig;
-    renderPreview();
-  }
-};
-
-function renderPreview() {
-  const wrap  = $('pOW');
-  const lbl   = $('prevLbl');
-  const badge = $('prevSzBadge');
-  if (prevShowOrig) {
-    wrap.innerHTML    = `<img src="${prevOrigUrl}" alt="" style="max-width:100%;max-height:110px;object-fit:contain;border-radius:2px;">`;
-    lbl.textContent   = 'Original';
-    badge.textContent = fb(prevOrigSize);
-  } else {
-    wrap.innerHTML    = prevOutUrl
-      ? `<img src="${prevOutUrl}" alt="" style="max-width:100%;max-height:110px;object-fit:contain;border-radius:2px;">`
-      : `<div class="prev-ph">${lang==='de'?'Berechne…':'Computing…'}</div>`;
-    lbl.textContent   = lang === 'de' ? 'Ausgabe' : 'Output';
-    badge.textContent = prevOutSize ? fb(prevOutSize) : '…';
-  }
-}
-
-function schedulePreview() {
-  clearTimeout(previewTimer);
-  previewTimer = setTimeout(doPreview, 350);
-}
-
-async function doPreview() {
-  if (!files.length) return;
-  const f = sel.size > 0 ? files[[...sel][0]] : files[0];
-  if (!f) return;
-  if (ext(f) === 'gif') {
-    $('pOW').innerHTML = `<div class="prev-ph">GIF — n/a</div>`;
-    $('prevLbl').textContent = ''; $('prevSzBadge').textContent = '';
-    prevOrigUrl = null; return;
-  }
-  // Use data URLs — blob: is blocked by Claude sandbox CSP
-  prevOrigUrl  = await fileToDataURL(f);
-  prevOrigSize = f.size;
-  prevOutUrl   = null; prevOutSize = 0;
-  prevShowOrig = true;
-  renderPreview();
-  const b = await convertFile(f);
-  if (b) {
-    prevOutUrl  = await blobToDataURL(b);
-    prevOutSize = b.size;
-    if (!prevShowOrig) renderPreview();
-    else renderPreview(); // also update badge/hint after output is ready
-  }
-}
-
-// ── CONVERT ENGINE ──
-async function convertFile(file) {
-  const fmt = $('fmtSel').value;
-  const q   = fmt === 'image/png' ? 1 : parseInt($('qSlider').value) / 100;
-  const sc  = parseInt($('scSlider').value) / 100;
-  const mw  = parseInt($('mxW').value) || 0;
-
-  // Use data URL for img.src — blob: URLs may be blocked by CSP in embedded contexts
-  const dataUrl = await fileToDataURL(file);
-
-  return new Promise(resolve => {
-    const img = new Image();
-    img.onload = () => {
-      let w = img.naturalWidth, h = img.naturalHeight;
-      if (sc < 1)            { w = Math.round(w * sc); h = Math.round(h * sc); }
-      if (mw > 0 && w > mw)  { h = Math.round(h * mw / w); w = mw; }
-      if (w < 1) w = 1; if (h < 1) h = 1;
-      const canvas = document.createElement('canvas');
-      canvas.width = w; canvas.height = h;
-      const ctx = canvas.getContext('2d');
-      if (fmt === 'image/jpeg') { ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h); }
-      ctx.drawImage(img, 0, 0, w, h);
-      canvas.toBlob(resolve, fmt, q);
-    };
-    img.onerror = () => resolve(null);
-    img.src = dataUrl;
+  // Append merge nodes inline
+  mergeNodes.forEach(nodeState => {
+    const el = buildMergeNodeEl(nodeState);
+    col1.appendChild(el);
+    loadNodeThumbs(nodeState);
   });
 }
 
-// ── CONVERT (RIP) ──
-async function doConvert() {
-  if (!files.length) return;
-  const targets = sel.size > 0 ? [...sel].map(i => files[i]) : [...files];
-
-  ripInner.classList.add('disabled');
-  blobs = [];
-  $('dlAllBtn').classList.remove('show');
-  $('pw').style.display = 'block';
-  $('pb').style.width   = '0%';
-  setStatus(t('converting'), true);
-
-  // Build result placeholders with status
-  const results = targets.map(f => ({ name: outName(f), origSize: f.size, blob: null, url: null, status: 'wait' }));
-  renderCol3(results);
-
-  let totalOrig = 0, totalNew = 0;
-  for (let i = 0; i < targets.length; i++) {
-    results[i].status = 'processing';
-    renderCol3(results);
-    $('pb').style.width = Math.round(i / targets.length * 100) + '%';
-
-    try {
-      const b = await convertFile(targets[i]);
-      $('pb').style.width = Math.round((i+1) / targets.length * 100) + '%';
-      if (b) {
-        totalOrig += targets[i].size; totalNew += b.size;
-        results[i].blob      = b;
-        results[i].dataUrl   = await blobToDataURL(b); // data URL for img display & download
-        results[i].status    = 'done';
-        blobs.push({ name: results[i].name, blob: b, dataUrl: results[i].dataUrl });
-      } else {
-        results[i].status = 'error';
+function checkPow2ForSelection(){
+  const activeEntries = sel.size>0 ? [...sel].map(i=>files[i]).filter(Boolean) : files.filter(Boolean);
+  const hasPow2=activeEntries.some(e=>e.dims&&isPow2(e.dims.w)&&isPow2(e.dims.h));
+  const hasNonPow2=activeEntries.some(e=>e.dims&&(!isPow2(e.dims.w)||!isPow2(e.dims.h)));
+  const texBadge=$('textureBadge'), pow2Info=$('pow2Info');
+  if(hasPow2||hasNonPow2){
+    texBadge.style.display='inline';
+    if(hasNonPow2){
+      const e=activeEntries.find(e=>e.dims&&(!isPow2(e.dims.w)||!isPow2(e.dims.h)));
+      if(e){
+        const nw=nearestPow2(e.dims.w),nh=nearestPow2(e.dims.h);
+        pow2Info.style.display='block';
+        pow2Info.textContent=t('pow2')+': '+e.dims.w+'×'+e.dims.h+' → nearest: '+nw+'×'+nh;
       }
-    } catch(e) {
-      results[i].status = 'error';
-    }
-    renderCol3(results);
-  }
-
-  setTimeout(() => { $('pw').style.display = 'none'; }, 600);
-  const saving = totalOrig > 0 ? Math.round((1 - totalNew / totalOrig) * 100) : 0;
-  setStatus(blobs.length + ' ' + t('done'), false);
-  $('ss').textContent = saving > 0 ? '−' + saving + '% ' + t('totalSaving') : '';
-  ripInner.classList.remove('disabled');
-  if (blobs.length > 1) $('dlAllBtn').classList.add('show');
+    } else { pow2Info.style.display='none'; }
+  } else { texBadge.style.display='none'; pow2Info.style.display='none'; }
 }
 
-// ── RENDER COL 3 ──
-function renderCol3(results) {
-  col3.innerHTML = '';
-  if (!results.length) {
-    const empty = document.createElement('div');
-    empty.id = 'outEmpty';
-    empty.style.cssText = 'flex:1;display:flex;align-items:center;justify-content:center;font-size:12px;color:#ccc;text-align:center;line-height:2';
-    empty.innerHTML = t('emptyOutput');
-    col3.appendChild(empty);
-    $('outCount').textContent = '';
-    return;
+// SELECTION
+function toggleSel(i,e){
+  activeSelection = null; // file click clears node selection
+  if(e.shiftKey&&sel.size>0){const last=[...sel].pop(),from=Math.min(last,i),to=Math.max(last,i);for(let j=from;j<=to;j++)sel.add(j);}
+  else if(e.ctrlKey||e.metaKey){sel.has(i)?sel.delete(i):sel.add(i);}
+  else{if(sel.has(i)&&sel.size===1)sel.clear();else{sel.clear();sel.add(i);}}
+  renderCol1(); updateSel(); updateSettingsUI(); schedulePreview();
+}
+function removeFile(i){
+  files.splice(i,1);
+  const ns=new Set();sel.forEach(x=>{if(x<i)ns.add(x);else if(x>i)ns.add(x-1);});
+  sel.clear();ns.forEach(x=>sel.add(x));
+  renderCol1();updateSel();updateSettingsUI();updateRipBtn();
+  if(!files.length&&!mergeNodes.length){$('settingsEmpty').style.display='flex';$('settingsBody').style.display='none';}
+}
+function updateSel(){
+  const n=sel.size;
+  $('selAllBtn').textContent=t('selAll');$('deselBtn').textContent=t('desel');
+  $('selAllBtn').classList.toggle('visible',files.length>0&&n<files.length);
+  // show desel if files selected OR node selected
+  $('deselBtn').classList.toggle('visible',n>0||(activeSelection?.type==='node'));
+  // scope label
+  if(activeSelection?.type==='node'){
+    const nd=mergeNodes.find(n=>n.id===activeSelection.idx);
+    $('scope').textContent=nd?'node: '+nd.name:'node';
+  } else {
+    $('scope').textContent=n>0?n+' '+t('scope_sel'):files.length>0?t('scope_all'):'';
   }
+  updateSettingsIndicator();
+}
+$('selAllBtn').addEventListener('click',()=>{activeSelection=null;files.forEach((_,i)=>sel.add(i));renderCol1();updateSel();updateSettingsUI();schedulePreview();});
+$('deselBtn').addEventListener('click',()=>{activeSelection=null;sel.clear();renderCol1();updateSel();updateSettingsUI();schedulePreview();});
+document.addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key==='a'&&files.length&&!document.querySelector('.modal-overlay.open')){
+    e.preventDefault();activeSelection=null;files.forEach((_,i)=>sel.add(i));renderCol1();updateSel();updateSettingsUI();schedulePreview();
+  }
+  if(e.key==='Escape'&&!document.querySelector('.modal-overlay.open')){activeSelection=null;sel.clear();renderCol1();updateSel();updateSettingsUI();}
+});
 
-  $('outCount').textContent = results.filter(r => r.status === 'done').length + t('of') + results.length;
+// Load settings from active file/node into UI
+function updateSettingsUI(){
+  // show settings panel if we have files OR a node selected
+  const hasContent = files.length>0 || mergeNodes.length>0;
+  if(!hasContent) return;
+  $('settingsEmpty').style.display='none';
+  $('settingsBody').style.display='flex';
+  if(activeSelection?.type==='node'){
+    // Node selected — show node-specific settings (format/quality for output)
+    const nd=mergeNodes.find(n=>n.id===activeSelection.idx);
+    // nodes use global default settings for now; load defaults
+    loadSettingsToUI(defaultSettings());
+  } else {
+    const s=getActiveSettings();
+    loadSettingsToUI(s);
+  }
+  updateSettingsIndicator();
+  checkPow2ForSelection();
+}
 
-  results.forEach(r => {
-    const el = document.createElement('div');
-    if      (r.status === 'done')       el.className = 'result-item done';
-    else if (r.status === 'error')      el.className = 'result-item error';
-    else if (r.status === 'processing') el.className = 'result-item pending';
-    else                                el.className = 'result-item pending';
+// SETTINGS VISIBILITY
+function showSettings(){
+  const hasContent = files.length>0 || mergeNodes.length>0;
+  if(!hasContent) return;
+  $('settingsEmpty').style.display='none';
+  $('settingsBody').style.display='flex';
+  updateSettingsUI();
+  schedulePreview();
+}
 
-    const sv = r.blob ? Math.round((1 - r.blob.size / r.origSize) * 100) : null;
-    const svSpan = r.blob
-      ? ` <span class="${sv>0?'sp':sv<0?'sn':''}">${sv>0?'−'+sv+'%':sv<0?'+'+Math.abs(sv)+'%':'±0%'}</span>`
-      : '';
-    const sizeLine = r.blob ? `${fb(r.origSize)} → ${fb(r.blob.size)}${svSpan}` : '';
+// PREVIEW
+$('prevBtnOrig').addEventListener('click',()=>setPrevMode('orig'));
+$('prevBtnOut').addEventListener('click',()=>setPrevMode('out'));
+$('prevBtn1to1').addEventListener('click',()=>{prevActual=!prevActual;$('prevBtn1to1').classList.toggle('active',prevActual);renderPreview();});
 
-    const thumbHTML = r.dataUrl
-      ? `<div class="rt"><img src="${r.dataUrl}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:2px;"></div>`
-      : `<div class="rt">${r.name.split('.').pop().toUpperCase()}</div>`;
-
-    let badgeHTML = '';
-    let dlHTML    = `<div style="width:26px"></div>`;
-    if (r.status === 'wait') {
-      badgeHTML = `<span class="st-badge wait">${t('statusWait')}</span>`;
-    } else if (r.status === 'processing') {
-      badgeHTML = `<span class="st-badge processing">${t('statusProcessing')}</span>`;
-    } else if (r.status === 'done') {
-      badgeHTML = `<span class="st-badge done-b">${t('statusDone')}</span>`;
-      dlHTML    = `<button class="dl-item-btn" title="Download" onclick="window._app.dlDataUrl('${r.dataUrl}','${r.name}')">↓</button>`;
-    } else if (r.status === 'error') {
-      badgeHTML = `<span class="st-badge error-b">${t('statusError')}</span>`;
+function setPrevMode(m){
+  prevMode=m;
+  $('prevBtnOrig').classList.toggle('active',m==='orig');
+  $('prevBtnOut').classList.toggle('active',m==='out');
+  renderPreview();
+}
+function renderPreview(){
+  const cont=$('prevContainer'), ph=$('prevPh'), tb=$('prevToolbar'), info=$('prevInfo');
+  if(!prevOrigUrl){ph.style.display='flex';tb.classList.remove('visible');return;}
+  ph.style.display='none'; tb.classList.add('visible');
+  cont.querySelectorAll('img').forEach(i=>i.remove());
+  const url=prevMode==='out'?prevOutUrl:prevOrigUrl;
+  const sz=prevMode==='out'?prevOutSize:prevOrigSize;
+  if(url){
+    const img=document.createElement('img');
+    if(prevActual){
+      cont.classList.remove('fit'); cont.classList.add('actual');
+    } else {
+      cont.classList.add('fit'); cont.classList.remove('actual');
+      img.onload=()=>{
+        const cw=cont.clientWidth;
+        if(img.naturalWidth<cw){img.style.maxWidth=img.naturalWidth+'px';}
+      };
     }
+    img.src=url;
+    cont.insertBefore(img,cont.firstChild);
+  }
+  info.textContent=sz?fb(sz):'';
+  if(prevMode==='out'&&prevOutUrl&&prevOrigSize&&prevOutSize){
+    const sv=Math.round((1-prevOutSize/prevOrigSize)*100);
+    info.textContent=fb(prevOrigSize)+' → '+fb(prevOutSize)+(sv>0?' (−'+sv+'%)':sv<0?' (+'+Math.abs(sv)+'%)':'');
+  }
+}
+function schedulePreview(){clearTimeout(previewTimer);previewTimer=setTimeout(doPreview,360);}
+async function doPreview(){
+  if(!files.length)return;
+  const entry=sel.size>0?files[[...sel][0]]:files[0];
+  if(!entry)return;
+  const {file}=entry;
+  if(ext(file)==='gif'){$('prevPh').style.display='flex';$('prevPh').textContent='GIF';$('prevToolbar').classList.remove('visible');prevOrigUrl=null;return;}
+  prevOrigUrl=entry.dataUrl||(await fileToDataURL(file));
+  prevOrigSize=file.size;
+  prevOutUrl=null;prevOutSize=0;
+  prevMode='orig';$('prevBtnOrig').classList.add('active');$('prevBtnOut').classList.remove('active');
+  renderPreview();
+  const b=await convertFile(file,entry.settings);
+  if(b){prevOutUrl=await blobToDataURL(b);prevOutSize=b.size;renderPreview();}
+}
 
-    el.innerHTML = `
-      ${thumbHTML}
-      <div class="ri">
-        <div class="rn">${r.name}</div>
-        <div class="rm">${sizeLine}</div>
-      </div>
-      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px">
-        ${badgeHTML}
-        ${dlHTML}
-      </div>`;
+// CONVERT ENGINE
+async function convertFile(file,settings){
+  const s=settings||defaultSettings();
+  const fmt=s.format,q=fmt==='image/png'?1:s.quality/100;
+  let sc=s.scale/100, mw=s.maxWidth;
+  const entry=files.find(e=>e&&e.file===file);
+  const du=entry?.dataUrl||(await fileToDataURL(file));
+  return new Promise(res=>{
+    const img=new Image();
+    img.onload=()=>{
+      let w=img.naturalWidth,h=img.naturalHeight;
+      if(mw>0&&!isPow2(mw))mw=nearestPow2(mw);
+      if(sc<1){w=Math.round(w*sc);h=Math.round(h*sc);}
+      if(mw>0&&w>mw){h=Math.round(h*mw/w);w=mw;}
+      if(w<1)w=1;if(h<1)h=1;
+      const c=document.createElement('canvas');c.width=w;c.height=h;
+      const ctx=c.getContext('2d');
+      if(fmt==='image/jpeg'){ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);}
+      ctx.drawImage(img,0,0,w,h);
+      if(s.outputChannel==='grey'){
+        const id=ctx.getImageData(0,0,w,h);
+        for(let p=0;p<id.data.length;p+=4){const g=Math.round(id.data[p]*.299+id.data[p+1]*.587+id.data[p+2]*.114);id.data[p]=id.data[p+1]=id.data[p+2]=g;}
+        ctx.putImageData(id,0,0);
+      }
+      c.toBlob(res,fmt,q);
+    };
+    img.onerror=()=>res(null);
+    img.src=du;
+  });
+}
+
+// RGB SPLIT
+$('rgbSplitBtn').addEventListener('click',async()=>{
+  const targets=sel.size>0?[...sel].map(i=>files[i]).filter(Boolean):[...files].filter(Boolean);
+  if(!targets.length)return;
+  setStatus('Splitting channels…',true);
+  const splitRes=[];
+  for(const entry of targets){
+    const du=entry.dataUrl||(await fileToDataURL(entry.file));
+    await new Promise(res=>{
+      const img=new Image();
+      img.onload=async()=>{
+        const w=img.naturalWidth,h=img.naturalHeight;
+        for(const [ch,idx,lbl] of [['R',0,'_R'],['G',1,'_G'],['B',2,'_B']]){
+          const c=document.createElement('canvas');c.width=w;c.height=h;
+          const ctx=c.getContext('2d');ctx.drawImage(img,0,0,w,h);
+          const id=ctx.getImageData(0,0,w,h);
+          for(let p=0;p<id.data.length;p+=4){const v=id.data[p+idx];id.data[p]=id.data[p+1]=id.data[p+2]=v;id.data[p+3]=255;}
+          ctx.putImageData(id,0,0);
+          const blob=await new Promise(r=>c.toBlob(r,'image/png'));
+          const bdu=await blobToDataURL(blob);
+          const nm=entry.file.name.replace(/\.[^.]+$/,'')+lbl+'.png';
+          splitRes.push({name:nm,dataUrl:bdu,blob,origSize:blob.size,status:'done'});
+        }
+        res();
+      };
+      img.src=du;
+    });
+  }
+  blobs=splitRes.map(r=>({name:r.name,blob:r.blob,dataUrl:r.dataUrl}));
+  renderCol3(splitRes);showDlBar(blobs.length>1);
+  setStatus(splitRes.length+' '+t('done'),false);
+});
+
+// MAIN CONVERT
+async function doConvert(){
+  // If nothing selected → convert all files
+  const targets = sel.size>0
+    ? [...sel].map(i=>files[i]).filter(Boolean)
+    : [...files].filter(Boolean);
+  if(!targets.length) return;
+  ripInner.classList.add('disabled');
+  blobs=[];showDlBar(false);
+  $('pw').style.display='block';$('pb').style.width='0%';
+  setStatus(t('converting'),true);
+  const results=targets.map(e=>({name:outName(e.file),origSize:e.file.size,blob:null,dataUrl:null,status:'wait'}));
+  renderCol3(results);
+  let tO=0,tN=0;
+  for(let i=0;i<targets.length;i++){
+    results[i].status='processing';renderCol3(results);
+    $('pb').style.width=Math.round(i/targets.length*100)+'%';
+    try{
+      const b=await convertFile(targets[i].file,targets[i].settings);
+      $('pb').style.width=Math.round((i+1)/targets.length*100)+'%';
+      if(b){tO+=targets[i].file.size;tN+=b.size;results[i].blob=b;results[i].dataUrl=await blobToDataURL(b);results[i].status='done';blobs.push({name:results[i].name,blob:b,dataUrl:results[i].dataUrl});}
+      else results[i].status='error';
+    }catch(e){results[i].status='error';}
+    renderCol3(results);
+  }
+  setTimeout(()=>$('pw').style.display='none',600);
+  const sv=tO>0?Math.round((1-tN/tO)*100):0;
+  setStatus(blobs.length+' '+t('done'),false);
+  $('ss').textContent=sv>0?'−'+sv+'% '+t('totalSaving'):'';
+  ripInner.classList.remove('disabled');
+  showDlBar(blobs.length>1);
+}
+
+// RENDER COL 3
+function renderCol3(results){
+  col3Results = results; // keep track
+  col3.innerHTML='';
+  if(!results.length){
+    const e=document.createElement('div');
+    e.style.cssText='flex:1;display:flex;align-items:center;justify-content:center;font-size:12px;color:#ccc;text-align:center;line-height:2';
+    e.innerHTML='No converted<br>files yet';col3.appendChild(e);$('outCount').textContent='';return;
+  }
+  $('outCount').textContent=results.filter(r=>r.status==='done').length+t('of')+results.length;
+  results.forEach(r=>{
+    const el=document.createElement('div');
+    el.className='result-item '+(r.status==='done'?'done':r.status==='error'?'error':'pending');
+    const sv=r.blob?Math.round((1-r.blob.size/r.origSize)*100):null;
+    const svS=r.blob?` <span class="${sv>0?'sp':sv<0?'sn':''}">${sv>0?'−'+sv+'%':sv<0?'+'+Math.abs(sv)+'%':'±0%'}</span>`:'';
+    const szL=r.blob?`${fb(r.origSize)} → ${fb(r.blob.size)}${svS}`:'';
+    const tH=r.dataUrl?`<div class="rt"><img src="${r.dataUrl}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:2px;"></div>`:`<div class="rt">${r.name.split('.').pop().toUpperCase()}</div>`;
+    let bH='',dlH=`<div style="width:28px"></div>`;
+    if(r.status==='wait')       bH=`<span class="st-badge wait">${t('statusWait')}</span>`;
+    else if(r.status==='processing') bH=`<span class="st-badge processing">${t('statusProcessing')}</span>`;
+    else if(r.status==='done')  {bH=`<span class="st-badge done-b">${t('statusDone')}</span>`;dlH=`<button class="dl-item-btn" title="Download" onclick="window._dl('${r.dataUrl}','${r.name}')">↓</button>`;}
+    else if(r.status==='error') bH=`<span class="st-badge error-b">${t('statusError')}</span>`;
+    el.innerHTML=`${tH}<div class="ri"><div class="rn">${r.name}</div><div class="rm">${szL}</div><div>${bH}</div></div>${dlH}`;
     col3.appendChild(el);
   });
 }
 
-// ── DOWNLOAD ──
-window._app.dlDataUrl = function(dataUrl, name) {
-  const a = document.createElement('a');
-  a.href = dataUrl; a.download = name;
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-};
-
-$('dlAllBtn').addEventListener('click', async () => {
-  $('dlAllBtn').querySelector('[data-t]').textContent = lang === 'de' ? 'ZIP erstellen…' : 'Creating ZIP…';
-  const zip = new JSZip();
-  blobs.forEach(x => zip.file(x.name, x.blob));
-  const zipBlob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE' });
-  const zipDataUrl = await blobToDataURL(zipBlob);
-  window._app.dlDataUrl(zipDataUrl, 'converted.zip');
-  $('dlAllBtn').querySelector('[data-t]').textContent = t('dlAll');
-});
-
-function setStatus(msg, running) {
-  $('st').textContent = msg;
-  $('sd').className = 'sd' + (running ? ' run' : '');
+function showDlBar(show){
+  $('col3DlBar').classList.toggle('show',show);
+  $('dlAllTopbar').classList.toggle('active',show);
+  // click guard
+  $('dlAllTopbar').onclick = show ? ()=>blobs.forEach(b=>window._dl(b.dataUrl,b.name)) : null;
 }
 
-// ── INIT ──
-renderCol1();
-updateRipBtn();
-applyLang();
-setTimeout(setRipAnchor, 200);
+window._dl=function(url,name){const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();document.body.removeChild(a);};
+$('col3DlAllBtn').addEventListener('click',()=>blobs.forEach(b=>window._dl(b.dataUrl,b.name)));
+$('col3DlZipBtn').addEventListener('click',async()=>{
+  $('col3DlZipBtn').querySelector('[data-t]').textContent='Creating ZIP…';
+  const zip=new JSZip();blobs.forEach(x=>zip.file(x.name,x.blob));
+  const zb=await zip.generateAsync({type:'blob',compression:'DEFLATE'});
+  const du=await blobToDataURL(zb);window._dl(du,'converted.zip');
+  $('col3DlZipBtn').querySelector('[data-t]').textContent=t('dlZip');
+});
+function setStatus(msg,running){$('st').textContent=msg;$('sd').className='sd'+(running?' run':'');}
 
+// INIT
+renderCol1();updateRipBtn();applyLang();
+setTimeout(setRipAnchor,150);
 })();
 </script>
 </body>
