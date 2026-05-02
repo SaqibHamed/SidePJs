@@ -62,7 +62,7 @@ html, body { height: 100%; font-family: 'Roboto', sans-serif; background: #f2f2f
 .rip-inner.disabled { background: #aac4f0; box-shadow: none; cursor: not-allowed; }
 .rip-label { font-family: 'Roboto', sans-serif; font-size: 7px; font-weight: 500; letter-spacing: 3px; text-transform: uppercase; fill: #1a73e8; }
 @keyframes spinRing { to { transform: rotate(360deg); } }
-.rip-outer:hover .rip-svg-ring { animation-duration: 1.8s; }
+.rip-outer:hover .rip-svg-ring { animation-duration: 0.9s; }
 
 /* COL BODY */
 .col-body { flex: 1; overflow-y: auto; padding: 8px; display: flex; flex-direction: column; gap: 3px; }
@@ -273,28 +273,39 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px;
 }
 .merge-node.expanded .merge-node-body { display: flex; }
 
-/* Each channel row */
+/* Each channel row — styled like file-item */
 .merge-node-slot {
+  height: 44px;
   display: grid;
-  grid-template-columns: 18px 1fr;
+  grid-template-columns: 22px 38px 1fr;
   align-items: center;
-  gap: 6px;
-  padding: 3px 8px;
+  gap: 7px;
+  padding: 0 5px;
   border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: background .1s;
+  user-select: none;
+  position: relative;
 }
+.merge-node-slot:hover { background: #f5f5f5; }
 .merge-node-slot:last-child { border-bottom: none; }
 .merge-node-slot-lbl {
-  font-size: 9px; font-weight: 700; text-align: center;
-  padding: 2px 0; border-radius: 2px; letter-spacing: .3px;
-}
-.slot-r { color: #e53935; }
-.slot-g { color: #388e3c; }
-.slot-b { color: #1565c0; }
-.merge-node-drop {
-  border-radius: 3px; height: 36px; position: relative;
+  width: 18px; height: 18px;
+  border-radius: 3px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 10px; cursor: pointer; transition: background .1s, border-color .1s;
-  overflow: hidden;
+  font-size: 9px; font-weight: 700; letter-spacing: .3px;
+  flex-shrink: 0;
+}
+.slot-r { background: #ffebee; color: #e53935; border: 1px solid #ef9a9a; }
+.slot-g { background: #e8f5e9; color: #388e3c; border: 1px solid #a5d6a7; }
+.slot-b { background: #e3f2fd; color: #1565c0; border: 1px solid #90caf9; }
+/* Drop zone fills the thumb column */
+.merge-node-drop {
+  width: 38px; height: 38px;
+  border-radius: 3px; position: relative;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; cursor: pointer; transition: background .1s, border-color .1s;
+  overflow: hidden; flex-shrink: 0;
 }
 .merge-node-drop input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
 .drop-r { border: 1.5px dashed #ef9a9a; background: #fff8f8; color: #e57373; }
@@ -328,6 +339,29 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px;
 .toggle-knob { width: 14px; height: 14px; border-radius: 50%; background: #fff; position: absolute; top: 3px; left: 3px; transition: left .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
 .toggle-switch.on .toggle-knob { left: 19px; }
 
+/* EDITABLE SLIDER VALUE */
+.slider-number {
+  width: 70px; height: 20px; border: 1px solid #ddd; border-radius: 3px;
+  background: #fff; font-family: 'Roboto Mono', monospace; font-size: 11px;
+  color: #1a73e8; text-align: left; padding: 0 4px; outline: none;
+  transition: border-color .1s;
+}
+.slider-number:focus { border-color: #1a73e8; }
+
+/* TRIM DUAL RANGE */
+#gStartSlider::-webkit-slider-thumb,
+#gEndSlider::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 14px; height: 24px;
+  background: #1a73e8; border-radius: 3px; cursor: pointer;
+  pointer-events: all; border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(26,115,232,.4);
+}
+#gStartSlider::-moz-range-thumb,
+#gEndSlider::-moz-range-thumb {
+  width: 14px; height: 22px; background: #1a73e8; border-radius: 3px;
+  cursor: pointer; pointer-events: all; border: 2px solid #fff;
+}
+
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #ddd; border-radius: 3px; }
@@ -336,12 +370,6 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px;
 <body>
 
 <div class="topbar">
-  <button class="tb-btn" id="uploadBtn">
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-    <span data-t="upload">Load files</span>
-    <input type="file" id="fileInput" multiple accept="image/*,.avif,.webp,.gif,.svg">
-  </button>
-  <div class="tb-sep"></div>
   <button class="modal-trigger" id="btnReason">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
     <span data-t="why">Why</span>
@@ -395,33 +423,38 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px;
 
       <div id="perFileIndicator" class="per-file-indicator" style="display:none"></div>
 
-      <!-- FORMAT & QUALITY -->
+      <!-- FORMAT & QUALITY + SIZE side by side -->
       <div class="sg">
         <div class="sg-title" data-t="sgFormat">Format & Quality</div>
-        <div class="field">
-          <div class="fl" data-t="labelFormat">Format</div>
-          <select id="fmtSel">
-            <option value="image/jpeg">JPG</option>
-            <option value="image/png">PNG</option>
-            <option value="image/webp">WebP</option>
-          </select>
-        </div>
-        <div class="field" id="qField">
-          <div class="fl"><span data-t="labelQuality">Quality</span><span class="fv" id="qVal">82%</span></div>
-          <input type="range" min="1" max="100" value="82" id="qSlider" step="1">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+          <div class="field">
+            <div class="fl" style="font-size:11px;color:#666" data-t="labelFormat">Format</div>
+            <select id="fmtSel">
+              <option value="image/jpeg">JPG</option>
+              <option value="image/png">PNG</option>
+              <option value="image/webp">WebP</option>
+              <option value="image/gif">GIF</option>
+            </select>
+          </div>
+          <div class="field" id="qField">
+            <div class="fl" style="font-size:11px;color:#666"><span data-t="labelQuality">Quality</span><input class="slider-number" id="qVal" value="82" min="1" max="100" type="number" title="Quality %" style="width:52px"></div>
+            <input type="range" min="1" max="100" value="82" id="qSlider" step="1">
+          </div>
         </div>
       </div>
 
-      <!-- SIZE -->
+      <!-- SIZE side by side -->
       <div class="sg">
         <div class="sg-title" data-t="sgSize">Size</div>
-        <div class="field">
-          <div class="fl"><span data-t="labelScale">Scale</span><span class="fv" id="scVal">100%</span></div>
-          <input type="range" min="10" max="100" value="100" id="scSlider" step="1">
-        </div>
-        <div class="field">
-          <div class="fl"><span data-t="labelMaxW">Max width</span><span style="color:#bbb;font-size:11px">(0 = orig)</span></div>
-          <input type="number" id="mxW" value="0" min="0" max="8192">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+          <div class="field">
+            <div class="fl" style="font-size:11px;color:#666"><span data-t="labelScale">Scale %</span><input class="slider-number" id="scVal" value="100" min="10" max="100" type="number" title="Scale %" style="width:52px"></div>
+            <input type="range" min="10" max="100" value="100" id="scSlider" step="1">
+          </div>
+          <div class="field">
+            <div class="fl" style="font-size:11px;color:#666"><span data-t="labelMaxW">Max w.</span><span style="color:#bbb;font-size:10px">px</span></div>
+            <input type="number" id="mxW" value="0" min="0" max="8192" style="width:100%">
+          </div>
         </div>
       </div>
 
@@ -438,16 +471,69 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px;
         </div>
       </div>
 
-      <!-- GIF -->
+      <!-- GIF / VIDEO -->
       <div class="sg gif-sg" id="gifSg">
-        <div class="sg-title">GIF</div>
+        <div class="sg-title">GIF / Video</div>
         <div class="field">
-          <div class="fl"><span data-t="labelFps">Framerate</span><span class="fv" id="gfVal">10 fps</span></div>
+          <div class="fl"><span data-t="labelFps">Framerate</span><input class="slider-number" id="gfVal"></div>
           <input type="range" min="1" max="30" value="10" id="gfSlider" step="1">
         </div>
         <div class="field">
-          <div class="fl"><span data-t="labelColors">Color palette</span><span class="fv" id="gcVal">128</span></div>
+          <div class="fl"><span data-t="labelColors">Color palette</span><input class="slider-number" id="gcVal"></div>
           <input type="range" min="8" max="256" value="128" id="gcSlider" step="8">
+        </div>
+        <div class="field">
+          <div class="fl">
+            <span>Loop</span>
+            <div style="display:flex;align-items:center;gap:6px">
+              <label class="toggle-row" id="gLoopToggleRow" style="margin:0">
+                <span class="toggle-label" id="gLoopToggleLabel" style="font-size:11px;color:#1a73e8;font-family:Roboto Mono,monospace">∞</span>
+                <div class="toggle-switch on" id="gLoopToggle"><div class="toggle-knob"></div></div>
+              </label>
+            </div>
+          </div>
+          <div id="gLoopCountField" style="display:none;margin-top:4px">
+            <div class="fl"><span style="font-size:11px;color:#666">Loop count</span><span class="fv" id="gLoopVal">1</span></div>
+            <input type="range" min="1" max="20" value="1" id="gLoopSlider" step="1">
+          </div>
+        </div>
+        <div class="field">
+          <div class="fl"><span>Frame delay</span><input class="slider-number" id="gDelayVal"></div>
+          <input type="range" min="20" max="500" value="100" id="gDelaySlider" step="10">
+        </div>
+        <div class="field">
+          <div class="fl"><span>Dither</span></div>
+          <select id="gDitherSel">
+            <option value="none">None</option>
+            <option value="floyd" selected>Floyd–Steinberg</option>
+            <option value="ordered">Ordered</option>
+          </select>
+        </div>
+        <!-- TRIM — shown only for video/gif files -->
+        <div class="field" id="trimField" style="display:none">
+          <div class="fl" style="font-weight:500;font-size:11px;color:#444">Trim</div>
+          <div style="display:grid;grid-template-columns:1fr 8px 1fr;align-items:center;gap:4px;margin-top:4px">
+            <div style="display:flex;flex-direction:column;gap:2px">
+              <span style="font-size:10px;color:#888">Start (s)</span>
+              <input type="number" class="slider-number" id="gStartVal" value="0" min="0" step="0.1" style="width:100%">
+            </div>
+            <span style="text-align:center;color:#bbb;font-size:11px">→</span>
+            <div style="display:flex;flex-direction:column;gap:2px">
+              <span style="font-size:10px;color:#888">End (s)</span>
+              <input type="number" class="slider-number" id="gEndVal" value="" min="0" step="0.1" placeholder="full" style="width:100%">
+            </div>
+          </div>
+          <!-- Visual trim bar -->
+          <div id="trimBarWrap" style="margin-top:8px;position:relative;height:24px;background:#f0f0f0;border-radius:4px;overflow:visible">
+            <div id="trimBarActive" style="position:absolute;top:0;bottom:0;background:#c5d8fb;border-radius:4px;pointer-events:none"></div>
+            <input type="range" id="gStartSlider" min="0" max="100" value="0" step="0.1"
+              style="-webkit-appearance:none;appearance:none;position:absolute;inset:0;width:100%;height:100%;background:transparent;pointer-events:none;padding:0;margin:0;z-index:2;">
+            <input type="range" id="gEndSlider" min="0" max="100" value="100" step="0.1"
+              style="-webkit-appearance:none;appearance:none;position:absolute;inset:0;width:100%;height:100%;background:transparent;pointer-events:none;padding:0;margin:0;z-index:3;">
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:2px;font-size:10px;color:#bbb">
+            <span>0s</span><span id="trimDurLabel">?s</span>
+          </div>
         </div>
       </div>
 
@@ -460,24 +546,24 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px;
         </div>
         <div id="textureBody">
           <div class="field">
-            <div class="fl" style="font-size:11px;color:#444" data-t="labelRgbSplit">RGB Channel Split</div>
+            <div style="font-size:12px;color:#444;font-weight:500">RGB Channel Split</div>
+            <div style="font-size:10px;color:#999;margin-top:2px;margin-bottom:6px">Splits into R / G / B greyscale images on convert</div>
             <label class="toggle-row" id="splitToggleRow">
               <span class="toggle-label" id="splitToggleLabel">Off</span>
               <div class="toggle-switch" id="splitToggle" data-on="false">
                 <div class="toggle-knob"></div>
               </div>
             </label>
-            <div style="font-size:10px;color:#888;margin-top:3px">Splits into R / G / B greyscale images on convert</div>
           </div>
-          <div class="field">
-            <div class="fl" style="font-size:11px;color:#444">Normal Map — Flip G</div>
+          <div class="field" style="margin-top:6px">
+            <div style="font-size:12px;color:#444;font-weight:500">Normalmap Flip: DirectX ⇌ OpenGL</div>
+            <div style="font-size:10px;color:#999;margin-top:2px;margin-bottom:6px">Inverts the G channel (Y axis) on convert</div>
             <label class="toggle-row" id="nmToggleRow">
               <span class="toggle-label" id="nmToggleLabel">Off</span>
               <div class="toggle-switch" id="nmToggle" data-on="false">
                 <div class="toggle-knob"></div>
               </div>
             </label>
-            <div style="font-size:10px;color:#888;margin-top:3px">Inverts the G channel (Y axis) on convert</div>
           </div>
         </div>
       </div>
@@ -554,8 +640,15 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px;
 <div class="modal-overlay" id="modalReason">
   <div class="modal">
     <button class="modal-close" onclick="closeModal('modalReason')">✕</button>
-    <h2 data-t="reasonTitle">Why this tool exists</h2>
-    <p data-t="reasonBody">Everything runs locally in your browser — nothing is uploaded. Supports bulk conversion, quality control, scaling, GIF optimization, RGB channel split/merge, and power-of-2 texture detection for 3D workflows.</p>
+    <h2 id="reasonTitleEl">Why this tool exists</h2>
+    <p style="margin-bottom:12px;line-height:1.7;font-size:13px;color:#444">Most online converters upload your files to a server. This tool does everything <strong>locally in your browser</strong> — your files never leave your device.</p>
+    <p style="margin-bottom:10px;font-size:13px;font-weight:500;color:#1a1a1a">What it handles:</p>
+    <ul style="padding-left:16px;display:flex;flex-direction:column;gap:5px">
+      <li style="font-size:13px;color:#444;line-height:1.6"><strong>Bulk conversion</strong> — JPG, PNG, WebP, GIF output from any image or MP4 input</li>
+      <li style="font-size:13px;color:#444;line-height:1.6"><strong>Per-file settings</strong> — quality, scale, format, colour space per image</li>
+      <li style="font-size:13px;color:#444;line-height:1.6"><strong>Texture workflow</strong> — RGB channel split &amp; merge, normalmap DirectX ↔ OpenGL conversion</li>
+      <li style="font-size:13px;color:#444;line-height:1.6"><strong>GIF / video</strong> — framerate, palette, loop, dither control</li>
+    </ul>
   </div>
 </div>
 <div class="modal-overlay" id="modalHow">
@@ -574,6 +667,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px;
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.js"></script>
 <script>
 (function(){
 'use strict';
@@ -649,6 +743,8 @@ function applyLang(){
   document.querySelectorAll('[data-t]').forEach(el=>el.textContent=t(el.getAttribute('data-t')));
   const howTitleEl=document.getElementById('howTitleEl');
   if(howTitleEl) howTitleEl.textContent=t('howTitle');
+  const reasonTitleEl=document.getElementById('reasonTitleEl');
+  if(reasonTitleEl) reasonTitleEl.textContent=t('reasonTitle');
   updateSel(); updateSettingsIndicator();
 }
 document.querySelectorAll('.lang-opt').forEach(btn=>{
@@ -681,19 +777,20 @@ const col1=$('col1Body'), col3=$('col3Body');
 
 // DEFAULT SETTINGS factory
 function defaultSettings(){
-  return {format:'image/jpeg',quality:82,scale:100,maxWidth:0,outputChannel:'rgb',gifFps:10,gifColors:128,splitRGB:false,nmFlip:false};
+  return {format:'image/jpeg',quality:82,scale:100,maxWidth:0,outputChannel:'rgb',gifFps:10,gifColors:128,gifLoop:0,gifDelay:100,gifDither:'floyd',gifStart:0,gifEnd:null,splitRGB:false,nmFlip:false};
 }
 
 // UTILS
 function ext(f){return f.name.split('.').pop().toLowerCase();}
 function fb(b){return b<1024?b+' B':b<1048576?(b/1024).toFixed(1)+' KB':(b/1048576).toFixed(2)+' MB';}
-function isImgExt(f){return ['jpg','jpeg','png','gif','webp','avif','svg','bmp','tiff','tif','ico'].includes(ext(f));}
+function isImgExt(f){return ['jpg','jpeg','png','gif','webp','avif','svg','bmp','tiff','tif','ico','mp4','mov','webm'].includes(ext(f));}
 function isPow2(n){return n>0&&(n&(n-1))===0;}
 function nearestPow2(n){return Math.pow(2,Math.round(Math.log2(n)));}
-function outName(f,suffix){
+function outName(f, suffix, fileSettings){
   const base=f.name.replace(/\.[^.]+$/,'');
-  const map={'image/jpeg':'jpg','image/png':'png','image/webp':'webp'};
-  const e=map[getActiveSettings().format]||'jpg';
+  const s = fileSettings || defaultSettings();
+  const map={'image/jpeg':'jpg','image/png':'png','image/webp':'webp','image/gif':'gif'};
+  const e=map[s.format]||'jpg';
   return base+(suffix||'')+'.'+e;
 }
 function fileToDataURL(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file);});}
@@ -754,6 +851,11 @@ function saveActiveSettings(){
     outputChannel:document.querySelector('.ch-opt.active[data-ch]')?.dataset.ch||'rgb',
     gifFps:parseInt($('gfSlider').value),
     gifColors:parseInt($('gcSlider').value),
+    gifLoop:parseInt($('gLoopSlider').value),
+    gifDelay:parseInt($('gDelaySlider').value),
+    gifDither:$('gDitherSel').value,
+    gifStart:parseFloat($('gStartVal').value)||0,
+    gifEnd:$('gEndVal').value===''?null:parseFloat($('gEndVal').value),
     splitRGB:$('splitToggle').classList.contains('on'),
     nmFlip:$('nmToggle').classList.contains('on'),
   };
@@ -770,12 +872,23 @@ function saveActiveSettings(){
 }
 function loadSettingsToUI(s){
   $('fmtSel').value=s.format;
-  $('qSlider').value=s.quality; $('qVal').textContent=s.quality+'%';
-  $('scSlider').value=s.scale;  $('scVal').textContent=s.scale+'%';
+  $('qSlider').value=s.quality; $('qVal').value=s.quality;
+  $('scSlider').value=s.scale;  $('scVal').value=s.scale;
   $('mxW').value=s.maxWidth;
-  $('gfSlider').value=s.gifFps; $('gfVal').textContent=s.gifFps+' fps';
-  $('gcSlider').value=s.gifColors; $('gcVal').textContent=s.gifColors;
-  $('qField').style.opacity=s.format==='image/png'?'.4':'1';
+  $('gfSlider').value=s.gifFps||10; $('gfVal').value=s.gifFps||10;
+  $('gcSlider').value=s.gifColors||128; $('gcVal').value=s.gifColors||128;
+  const isInf=(s.gifLoop||0)===0;
+  $('gLoopToggle').classList.toggle('on',isInf);
+  const gll=$('gLoopToggleLabel');
+  if(gll){ gll.textContent=isInf?'∞':'count'; gll.style.color=isInf?'#1a73e8':'#999'; }
+  const gcf=$('gLoopCountField'); if(gcf) gcf.style.display=isInf?'none':'block';
+  $('gLoopSlider').value=s.gifLoop||1; const gv=$('gLoopVal'); if(gv) gv.textContent=s.gifLoop||1;
+  $('gDelaySlider').value=s.gifDelay||100; $('gDelayVal').value=s.gifDelay||100;
+  $('gDitherSel').value=s.gifDither||'floyd';
+  $('gStartVal').value=s.gifStart||0;
+  $('gEndVal').value=s.gifEnd!=null?s.gifEnd:'';
+  $('qField').style.opacity=(s.format==='image/png'||s.format==='image/gif')?'.4':'1';
+  if(typeof updateGifSgVisibility === 'function') updateGifSgVisibility();
   document.querySelectorAll('.ch-opt[data-ch]').forEach(b=>b.classList.toggle('active',b.dataset.ch===s.outputChannel));
   // texture toggles
   setToggleUI('splitToggle','splitToggleLabel', !!s.splitRGB);
@@ -811,12 +924,103 @@ function onSettingChange(){
   saveActiveSettings();
   schedulePreview();
 }
-$('fmtSel').addEventListener('change',()=>{ $('qField').style.opacity=$('fmtSel').value==='image/png'?'.4':'1'; onSettingChange(); });
-$('qSlider').addEventListener('input',()=>{ $('qVal').textContent=$('qSlider').value+'%'; onSettingChange(); });
-$('scSlider').addEventListener('input',()=>{ $('scVal').textContent=$('scSlider').value+'%'; onSettingChange(); });
+$('fmtSel').addEventListener('change',()=>{
+  const fmt=$('fmtSel').value;
+  $('qField').style.opacity=(fmt==='image/png'||fmt==='image/gif')?'.4':'1';
+  // Show GIF/Video settings only when GIF output is chosen
+  updateGifSgVisibility();
+  onSettingChange();
+});
+
+function updateGifSgVisibility(){
+  const fmt = $('fmtSel').value;
+  const isGif = fmt === 'image/gif';
+  // gifSg visibility: GIF format selected OR file is gif/video
+  const hasGifFile = files.some(e => e && (ext(e.file)==='gif'||isVideoFile(e.file)));
+  const gifSg = $('gifSg');
+  if(gifSg) gifSg.classList.toggle('on', isGif || hasGifFile);
+  // If non-gif format forcibly hide
+  if(!isGif && gifSg) gifSg.style.display = 'none';
+  else if(isGif) { if(gifSg) gifSg.style.display = ''; }
+  else if(hasGifFile) { if(gifSg) gifSg.style.display = ''; }
+}
 $('mxW').addEventListener('input',()=>onSettingChange());
-$('gfSlider').addEventListener('input',()=>{ $('gfVal').textContent=$('gfSlider').value+' fps'; onSettingChange(); });
-$('gcSlider').addEventListener('input',()=>{ $('gcVal').textContent=$('gcSlider').value; onSettingChange(); });
+$('gDitherSel').addEventListener('change',()=>onSettingChange());
+
+// ── TRIM UI ──
+let trimDuration = 0; // total duration in seconds for active file
+
+function updateTrimBar(){
+  const dur = trimDuration || 100;
+  const s = parseFloat($('gStartVal').value) || 0;
+  const e = $('gEndVal').value === '' ? dur : (parseFloat($('gEndVal').value) || dur);
+  const pStart = Math.max(0, Math.min(100, s / dur * 100));
+  const pEnd   = Math.max(0, Math.min(100, e / dur * 100));
+  $('trimBarActive').style.left  = pStart + '%';
+  $('trimBarActive').style.width = Math.max(0, pEnd - pStart) + '%';
+  // Sync sliders
+  $('gStartSlider').value = pStart;
+  $('gEndSlider').value   = pEnd;
+}
+
+function setTrimDuration(dur){
+  trimDuration = dur || 0;
+  $('trimDurLabel').textContent = dur ? dur.toFixed(1) + 's' : '?s';
+  $('gStartSlider').max = 100;
+  $('gEndSlider').max   = 100;
+  if(!$('gEndVal').value) $('gEndVal').value = dur ? dur.toFixed(1) : '';
+  updateTrimBar();
+}
+
+function showTrimField(show){ $('trimField').style.display = show ? 'block' : 'none'; }
+
+// Number inputs → update bar
+$('gStartVal').addEventListener('input', ()=>{ updateTrimBar(); onSettingChange(); });
+$('gEndVal').addEventListener('input',   ()=>{ updateTrimBar(); onSettingChange(); });
+
+// Slider handles → update number inputs
+$('gStartSlider').addEventListener('input', ()=>{
+  if(!trimDuration) return;
+  const v = parseFloat($('gStartSlider').value) / 100 * trimDuration;
+  const end = $('gEndVal').value === '' ? trimDuration : parseFloat($('gEndVal').value);
+  $('gStartVal').value = Math.min(v, end - 0.1).toFixed(1);
+  updateTrimBar(); onSettingChange();
+});
+$('gEndSlider').addEventListener('input', ()=>{
+  if(!trimDuration) return;
+  const v = parseFloat($('gEndSlider').value) / 100 * trimDuration;
+  const start = parseFloat($('gStartVal').value) || 0;
+  $('gEndVal').value = Math.max(v, start + 0.1).toFixed(1);
+  updateTrimBar(); onSettingChange();
+});
+
+// Two-way sync: slider ↔ editable number input
+function syncSlider(sliderId, inputId, min, max){
+  const sl=$(sliderId), inp=$(inputId);
+  if(!sl||!inp) return;
+  sl.addEventListener('input',()=>{ inp.value=sl.value; onSettingChange(); });
+  function applyInput(){ let v=Math.max(min,Math.min(max,parseInt(inp.value)||min)); sl.value=v; inp.value=v; onSettingChange(); }
+  inp.addEventListener('change', applyInput);
+  inp.addEventListener('keydown', e=>{ if(e.key==='Enter') applyInput(); });
+}
+syncSlider('qSlider','qVal',1,100);
+syncSlider('scSlider','scVal',10,100);
+syncSlider('gfSlider','gfVal',1,30);
+syncSlider('gcSlider','gcVal',8,256);
+syncSlider('gDelaySlider','gDelayVal',20,500);
+
+// GIF loop — ∞ toggle (on by default) vs finite count
+$('gLoopToggle').parentElement.addEventListener('click',()=>{
+  const tog=$('gLoopToggle');
+  const isInf=!tog.classList.contains('on');
+  tog.classList.toggle('on',!isInf);
+  const lbl=$('gLoopToggleLabel');
+  if(lbl){ lbl.textContent=!isInf?'∞':'count'; lbl.style.color=!isInf?'#1a73e8':'#999'; }
+  const cf=$('gLoopCountField');
+  if(cf) cf.style.display=!isInf?'none':'block';
+  onSettingChange();
+});
+$('gLoopSlider').addEventListener('input',()=>{ const v=parseInt($('gLoopSlider').value); const lv=$('gLoopVal'); if(lv) lv.textContent=v; onSettingChange(); });
 document.querySelectorAll('.ch-opt[data-ch]').forEach(btn=>{
   btn.addEventListener('click',()=>{
     document.querySelectorAll('.ch-opt[data-ch]').forEach(b=>b.classList.remove('active'));
@@ -862,7 +1066,7 @@ document.addEventListener('mousemove',e=>{
   const mouseY = e.clientY;
   const btnCenterY = ripCY; // current rendered center
   const vertDist = Math.abs(mouseY - btnCenterY);
-  if(vertDist > 100){
+  if(vertDist > 200){
     // clamp within workspace bounds
     ripTY = Math.max(r.top+44, Math.min(r.top+r.height-44, mouseY));
     if(!rafOn){rafOn=true;animRip();}
@@ -891,11 +1095,11 @@ function makeDZ(isEmpty){
   const dz=document.createElement('div');
   dz.className='drop-zone';
   dz.innerHTML=isEmpty
-    ?`<input type="file" multiple accept="image/*,.avif,.webp,.gif,.svg">
+    ?`<input type="file" multiple accept="image/*,.avif,.webp,.gif,.svg,.mp4,.mov,.webm,video/mp4,video/quicktime,video/webm">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
       <span>${t('upload')}</span>
-      <span style="font-size:11px;color:#bbb">WebP · AVIF · GIF · PNG · JPG · SVG</span>`
-    :`<input type="file" multiple accept="image/*,.avif,.webp,.gif,.svg">
+      <span style="font-size:11px;color:#bbb">JPG · PNG · WebP · AVIF · GIF · MP4 · MOV · WebM</span>`
+    :`<input type="file" multiple accept="image/*,.avif,.webp,.gif,.svg,.mp4,.mov,.webm,video/mp4,video/quicktime,video/webm">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
       <span>+ more files</span>`;
   dz.querySelector('input').addEventListener('change',function(){addFiles(this.files);});
@@ -1072,15 +1276,24 @@ function buildMergeNodeEl(nodeState) {
 }
 
 function mkNodeSlotHTML(ch, cls, nid, currentFile) {
-  // Drop fills available space; when filled, shows thumb as 40×40 square
-  return `<div class="merge-node-slot">
-    <span class="merge-node-slot-lbl slot-${cls}">${ch}</span>
+  const hasFile = !!currentFile;
+  const fname = hasFile ? currentFile.name : '';
+  const fsize = hasFile ? fb(currentFile.size) : '';
+  const shortName = fname.length > 22 ? fname.substring(0,20)+'…' : fname;
+
+  const thumbContent = hasFile
+    ? `<img id="nthumb_${nid}_${ch}" src="" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:2px;display:block;pointer-events:none;">`
+    : `<span style="pointer-events:none;font-size:8px;color:inherit;text-align:center;line-height:1.3">drop<br>click</span>`;
+
+  return `<div class="merge-node-slot" id="mslot_${nid}_${ch}">
+    <div class="merge-node-slot-lbl slot-${cls}">${ch}</div>
     <div id="nd2_${nid}_${ch}" class="merge-node-drop drop-${cls}">
       <input type="file" accept="image/*" id="nf2_${nid}_${ch}" style="position:absolute;inset:0;opacity:0;cursor:pointer;z-index:1;">
-      ${currentFile
-        ? `<img id="nthumb_${nid}_${ch}" src="" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:3px;display:block;pointer-events:none;">`
-        : `<span id="nthumb_${nid}_${ch}" style="pointer-events:none;font-size:9px">drop / click</span>`
-      }
+      ${thumbContent}
+    </div>
+    <div style="min-width:0;">
+      <div style="font-size:12px;color:${hasFile?'#1a1a1a':'#bbb'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${hasFile?shortName:'no file'}</div>
+      <div style="font-size:10px;color:#999;font-family:Roboto Mono,monospace;margin-top:1px">${fsize}</div>
     </div>
   </div>`;
 }
@@ -1128,7 +1341,10 @@ function addFiles(newFiles){
   const added=[];
   Array.from(newFiles).forEach(f=>{
     if(!files.find(x=>x&&x.file.name===f.name&&x.file.size===f.size)){
-      files.push({file:f,settings:defaultSettings(),dataUrl:null,dims:null,channel:null});
+      const s = defaultSettings();
+      // Auto-switch format to GIF for gif/mp4 input
+      if(ext(f)==='gif'||ext(f)==='mp4'||ext(f)==='mov'||ext(f)==='webm') s.format='image/gif';
+      files.push({file:f,settings:s,dataUrl:null,dims:null,channel:null});
       added.push(files.length-1);
     }
   });
@@ -1157,7 +1373,7 @@ function addFiles(newFiles){
   renderCol1(); updateSel(); showSettings(); renderCol3([]); updateRipBtn();
   setStatus(t('ready'),false);
 }
-$('fileInput').addEventListener('change',function(){addFiles(this.files);});
+// File input wired via drop zones in col1
 
 // RENDER COL 1
 function renderCol1(){
@@ -1194,7 +1410,7 @@ function renderCol1(){
     }
   });
 
-  $('gifSg').classList.toggle('on',files.some(e=>e&&ext(e.file)==='gif'));
+  updateGifSgVisibility();
   // check pow2 for selected
   checkPow2ForSelection();
 
@@ -1340,7 +1556,40 @@ async function doPreview(){
     if(body) body.style.display='block';
     if(arrow) arrow.textContent='▴';
   }
-  if(ext(file)==='gif'){$('prevPh').style.display='flex';$('prevPh').textContent='GIF';$('prevToolbar').classList.remove('visible');prevOrigUrl=null;return;}
+  if(ext(file)==='gif'||ext(file)==='mp4'||ext(file)==='mov'){
+    // Show video/gif preview differently
+    $('prevPh').style.display='none';
+    $('prevToolbar').classList.add('visible');
+    const videoUrl = URL.createObjectURL(file);
+    prevOrigUrl = videoUrl;
+    prevOrigSize = file.size;
+    prevOutUrl = null; prevOutSize = 0;
+    prevMode = 'orig';
+    $('prevBtnOrig').classList.add('active');
+    $('prevBtnOut').classList.remove('active');
+    // Show video element in preview
+    const cont = $('prevContainer');
+    cont.querySelectorAll('img,video,.prev-ph').forEach(el=>{if(el.id!=='prevPh')el.remove();});
+    const vid = document.createElement('video');
+    vid.src = videoUrl; vid.muted = true; vid.loop = true; vid.autoplay = true;
+    vid.style.cssText = 'max-width:100%;max-height:200px;display:block;border-radius:2px;';
+    // Get duration for trim UI
+    vid.addEventListener('loadedmetadata', ()=>{
+      const dur = isFinite(vid.duration) ? vid.duration : 0;
+      showTrimField(dur > 0);
+      setTrimDuration(dur);
+      // Load per-file trim settings into UI
+      const s = entry.settings;
+      $('gStartVal').value = s.gifStart || 0;
+      $('gEndVal').value   = s.gifEnd != null ? s.gifEnd : (dur ? dur.toFixed(1) : '');
+      updateTrimBar();
+    }, {once:true});
+    cont.appendChild(vid);
+    $('prevInfo').textContent = fb(file.size);
+    return;
+  }
+  // Hide trim for non-video/gif files
+  showTrimField(false);
   prevOrigUrl = entry.dataUrl||(await fileToDataURL(file));
   prevOrigSize = file.size;
   prevOutUrl = null; prevOutSize = 0;
@@ -1353,11 +1602,116 @@ async function doPreview(){
   if(b){ prevOutUrl=await blobToDataURL(b); prevOutSize=b.size; renderPreview(); }
 }
 
+// ── GIF CONVERSION via gif.js ──
+function isVideoFile(file){
+  return ['mp4','mov','webm'].includes(ext(file));
+}
+
+// Build gif.js worker URL inline to avoid CORS issues
+function getGifWorkerUrl(){
+  // Use the global GIF worker script path from gif.js CDN
+  return 'https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.worker.js';
+}
+
+async function convertToGif(file, s){
+  const fps       = Math.max(1, s.gifFps || 10);
+  const colors    = Math.min(256, Math.max(2, s.gifColors || 128));
+  const loop      = (s.gifLoop === 0 || s.gifLoop === undefined) ? 0 : s.gifLoop;
+  const delay     = Math.round(1000 / fps);
+  const dither    = s.gifDither === 'none' ? false : (s.gifDither === 'ordered' ? 'Ordered' : 'FloydSteinberg');
+  const scale     = (s.scale || 100) / 100;
+  const maxW      = s.maxWidth || 0;
+  const quality   = Math.max(1, Math.min(30, Math.round((100 - (s.quality || 82)) / 3.3) + 1));
+  const trimStart = s.gifStart || 0;
+  const trimEnd   = s.gifEnd != null ? s.gifEnd : null; // null = to end
+
+  return new Promise(async (resolve) => {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    let gifInst = null;
+    let resolved = false;
+
+    function finish(blob){ if(!resolved){ resolved=true; resolve(blob); } }
+
+    function setupGif(w, h){
+      canvas.width = w; canvas.height = h;
+      gifInst = new GIF({
+        workers: 2,
+        quality,
+        width: w,
+        height: h,
+        workerScript: getGifWorkerUrl(),
+        repeat: loop,
+        dither,
+      });
+      gifInst.on('finished', finish);
+      gifInst.on('error', ()=>finish(null));
+    }
+
+    function calcDims(natW, natH){
+      let w = natW, h = natH;
+      if(scale < 1){ w = Math.round(w * scale); h = Math.round(h * scale); }
+      if(maxW > 0 && w > maxW){ h = Math.round(h * maxW / w); w = maxW; }
+      return {w: Math.max(1,w), h: Math.max(1,h)};
+    }
+
+    if(isVideoFile(file)){
+      // VIDEO → sample frames via HTML5 video
+      const videoUrl = URL.createObjectURL(file);
+      const video = document.createElement('video');
+      video.muted = true; video.crossOrigin = 'anonymous';
+      video.src = videoUrl;
+
+      await new Promise(r => { video.onloadedmetadata = r; video.onerror = r; video.load(); });
+
+      const duration = video.duration || 5;
+      const startSec = Math.max(0, trimStart);
+      const endSec   = (trimEnd != null && trimEnd > startSec) ? Math.min(trimEnd, duration) : duration;
+      const clipLen  = endSec - startSec;
+      const totalFrames = Math.min(Math.round(clipLen * fps), 200);
+      const {w, h} = calcDims(video.videoWidth || 320, video.videoHeight || 240);
+      setupGif(w, h);
+
+      setStatus(`Extracting ${totalFrames} frames (${startSec.toFixed(1)}s → ${endSec.toFixed(1)}s)…`, true);
+      for(let i = 0; i < totalFrames; i++){
+        const t = startSec + (i / fps);
+        video.currentTime = t;
+        await new Promise(r => { const onSeeked = ()=>{ video.removeEventListener('seeked', onSeeked); r(); }; video.addEventListener('seeked', onSeeked); });
+        ctx.clearRect(0, 0, w, h);
+        ctx.drawImage(video, 0, 0, w, h);
+        gifInst.addFrame(canvas, {copy: true, delay});
+        if(i % 10 === 0) setStatus(`Processing frame ${i+1}/${totalFrames}…`, true);
+      }
+      URL.revokeObjectURL(videoUrl);
+      setStatus('Encoding GIF…', true);
+      gifInst.render();
+
+    } else {
+      // GIF / image → single frame or extract frames from animated GIF
+      const du = await fileToDataURL(file);
+      const img = new Image();
+      await new Promise(r => { img.onload = r; img.onerror = r; img.src = du; });
+      const {w, h} = calcDims(img.naturalWidth, img.naturalHeight);
+      setupGif(w, h);
+      ctx.clearRect(0,0,w,h);
+      ctx.drawImage(img, 0, 0, w, h);
+      // For static images / non-animated GIF, add single frame
+      gifInst.addFrame(canvas, {copy: true, delay});
+      gifInst.render();
+    }
+  });
+}
+
 // CONVERT ENGINE
-async function convertFile(file,settings){
-  const s=settings||defaultSettings();
-  const fmt=s.format,q=fmt==='image/png'?1:s.quality/100;
-  let sc=s.scale/100, mw=s.maxWidth;
+async function convertFile(file, settings){
+  const s = settings || defaultSettings();
+  // GIF output → use gif.js pipeline
+  if(s.format === 'image/gif'){
+    return convertToGif(file, s);
+  }
+  const fmt = s.format;
+  const q = fmt === 'image/png' ? 1 : s.quality / 100;
+  let sc = s.scale / 100, mw = s.maxWidth;
   const entry=files.find(e=>e&&e.file===file);
   const du=entry?.dataUrl||(await fileToDataURL(file));
   return new Promise(res=>{
@@ -1417,17 +1771,21 @@ async function doConvert(){
   const hasNodeSel = activeSelection?.type === 'node';
   const hasMergeNodes = mergeNodes.length > 0 && !hasNodeSel && sel.size === 0;
 
-  // Determine file targets
-  const fileTargets = sel.size>0
+  // Only convert selected files — nothing selected = nothing converts
+  const fileTargets = sel.size > 0
     ? [...sel].map(i=>files[i]).filter(Boolean)
-    : (hasNodeSel ? [] : [...files].filter(Boolean));
+    : [];
 
-  // Determine node targets
+  // Node targets: selected node only, or all ready nodes if no file selected and no node selected
   const nodeTargets = hasNodeSel
     ? mergeNodes.filter(n => n.id === activeSelection.idx)
     : (sel.size === 0 ? mergeNodes.filter(n => n.files.R && n.files.G && n.files.B) : []);
 
-  if (!fileTargets.length && !nodeTargets.length) return;
+  if (!fileTargets.length && !nodeTargets.length) {
+    setStatus('Select files to convert', false);
+    setTimeout(()=>setStatus(t('ready'),false), 2500);
+    return;
+  }
 
   ripInner.classList.add('disabled');
   blobs=[]; showDlBar(false);
@@ -1447,7 +1805,7 @@ async function doConvert(){
   const results=[
     ...expandedFileTargets.map(e=>{
       const base = e.file.name.replace(/\.[^.]+$/,'');
-      const name = e.splitCh ? base+'_'+e.splitCh+'.png' : outName(e.file);
+      const name = e.splitCh ? base+'_'+e.splitCh+'.png' : outName(e.file, null, e.settings);
       return {name, origSize:e.file.size, blob:null, dataUrl:null, status:'wait', isMerge:false, entry:e};
     }),
     ...nodeTargets.map(n=>({name:n.name+'.png',origSize:0,blob:null,dataUrl:null,status:'wait',isMerge:true,node:n}))
