@@ -478,7 +478,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px;
           <div class="fl"><span data-t="labelFps">Framerate</span><input class="slider-number" id="gfVal"></div>
           <div style="position:relative">
             <input type="range" min="1" max="30" value="10" id="gfSlider" step="1">
-            <div id="gfMarker" style="display:none;position:absolute;top:-1px;width:2px;height:10px;background:#e65100;border-radius:1px;pointer-events:none;transform:translateX(-50%)"></div>
+            <div id="gfMarker" style="display:none;position:absolute;top:50%;width:3px;height:14px;background:#e65100;border-radius:2px;pointer-events:none;transform:translateX(-50%) translateY(-50%);box-shadow:0 0 3px rgba(230,81,0,.5)"></div>
           </div>
           <div id="gfSourceInfo" style="display:none;font-size:10px;color:#e65100;margin-top:2px;font-family:'Roboto Mono',monospace"></div>
         </div>
@@ -486,7 +486,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px;
           <div class="fl"><span data-t="labelColors">Color palette</span><input class="slider-number" id="gcVal"></div>
           <div style="position:relative">
             <input type="range" min="8" max="256" value="128" id="gcSlider" step="8">
-            <div id="gcMarker" style="display:none;position:absolute;top:-1px;width:2px;height:10px;background:#e65100;border-radius:1px;pointer-events:none;transform:translateX(-50%)"></div>
+            <div id="gcMarker" style="display:none;position:absolute;top:50%;width:3px;height:14px;background:#e65100;border-radius:2px;pointer-events:none;transform:translateX(-50%) translateY(-50%);box-shadow:0 0 3px rgba(230,81,0,.5)"></div>
           </div>
           <div id="gcSourceInfo" style="display:none;font-size:10px;color:#e65100;margin-top:2px;font-family:'Roboto Mono',monospace"></div>
         </div>
@@ -1741,6 +1741,15 @@ function updateSettingsIndicator(){
 function onSettingChange(){
   saveActiveSettings();
   schedulePreview();
+  refreshGifMarkerLabels(_currentGifMeta);
+  // Re-schedule GIF output preview when settings change for a GIF file
+  const activeEntry = sel.size>0 ? files[[...sel][0]] : files[0];
+  if(activeEntry && ext(activeEntry.file)==='gif' && activeEntry.settings?.format==='image/gif'){
+    const outBtn=$('prevBtnOut');
+    if(outBtn && outBtn.style.display!=='none'){ outBtn.textContent='out…'; outBtn.disabled=true; }
+    prevOutUrl=null; prevOutSize=0;
+    scheduleGifPreview(activeEntry.file, activeEntry);
+  }
 }
 $('fmtSel').addEventListener('change',()=>{
   const fmt=$('fmtSel').value;
@@ -2189,6 +2198,11 @@ function addFiles(newFiles){
 
   blobs=[];
   renderCol1(); updateSel(); showSettings(); renderCol3([]); updateRipBtn();
+  // Auto-select the first file if nothing is selected
+  if(sel.size===0 && files.length>0){
+    sel.add(0);
+    renderCol1(); updateSel(); updateSettingsUI();
+  }
   setStatus(t('ready'),false);
 }
 // File input wired via drop zones in col1
@@ -2523,7 +2537,9 @@ function showGifMarkers(meta) {
     const fpsPct = Math.max(0, Math.min(100, (meta.fps - fpsMin) / (fpsMax - fpsMin) * 100));
     // Position needs to account for thumb width (~7px each side)
     fpsMarker.style.display = 'block';
-    fpsMarker.style.left = `calc(${fpsPct}% + ${7 - fpsPct * 14 / 100}px)`;
+    // Account for webkit slider thumb offset (~7px padding each side)
+    const fpsOff = 7 - (fpsPct / 100) * 14;
+    fpsMarker.style.left = `calc(${fpsPct}% + ${fpsOff}px)`;
     fpsInfo.style.display = 'block';
     const curFps = parseInt($('gfVal').value)||10;
     fpsInfo.textContent = `source: ${meta.fps} fps · ${meta.numFrames} frames${curFps < meta.fps ? ' · ↓ reducing fps' : curFps > meta.fps ? ' · ↑ upscaling fps' : ''}`;
@@ -2537,7 +2553,8 @@ function showGifMarkers(meta) {
     const gcMin=8, gcMax=256;
     const gcPct = Math.max(0, Math.min(100, (meta.colors - gcMin) / (gcMax - gcMin) * 100));
     gcMarker.style.display = 'block';
-    gcMarker.style.left = `calc(${gcPct}% + ${7 - gcPct * 14 / 100}px)`;
+    const gcOff = 7 - (gcPct / 100) * 14;
+    gcMarker.style.left = `calc(${gcPct}% + ${gcOff}px)`;
     gcInfo.style.display = 'block';
     const curColors = parseInt($('gcVal').value)||128;
     gcInfo.textContent = `source: ${meta.colors} colors${curColors < meta.colors ? ' · ↓ reducing palette' : ''}`;
@@ -2566,9 +2583,7 @@ function refreshGifMarkerLabels(meta) {
 
 let _currentGifMeta = null;
 
-// Hook into syncSlider to refresh labels
-const _origOnSettingChange = onSettingChange;
-function onSettingChange(){ _origOnSettingChange(); refreshGifMarkerLabels(_currentGifMeta); }
+// refreshGifMarkerLabels is called from onSettingChange directly
 
 // ── GIF OUTPUT PREVIEW ──
 let gifPreviewTimer = null;
@@ -3038,5 +3053,5 @@ renderCol1();updateRipBtn();applyLang();
 setTimeout(setRipAnchor,150);
 })();
 </script>
-<div style="position:fixed;bottom:6px;right:8px;font-size:10px;color:#bbb;font-family:'Roboto Mono',monospace;pointer-events:none;z-index:50;letter-spacing:.3px">v0.30</div>
+<div style="position:fixed;bottom:6px;right:8px;font-size:10px;color:#bbb;font-family:'Roboto Mono',monospace;pointer-events:none;z-index:50;letter-spacing:.3px">v0.31</div>
 </html>
