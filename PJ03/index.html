@@ -512,6 +512,10 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px;
             <option value="ordered">Ordered</option>
           </select>
         </div>
+        <div class="field">
+          <div class="fl"><span>Frame delay</span><input class="slider-number" id="gDelayVal" value="100" min="20" max="500" type="number" style="width:52px"></div>
+          <input type="range" min="20" max="500" value="100" id="gDelaySlider" step="10">
+        </div>
       </div>
 
       <!-- Video settings — shown for MP4/MOV/WebM input -->
@@ -1780,7 +1784,9 @@ $('fmtSel').addEventListener('change',()=>{
 });
 
 function updateGifSgVisibility(){
-  const fmt = $('fmtSel').value;
+  const fmtEl = $('fmtSel');
+  if(!fmtEl) return;
+  const fmt = fmtEl.value;
   const isGif = fmt === 'image/gif';
   const activeEntry = sel.size>0 ? files[[...sel][0]] : files[0];
   const activeExt = activeEntry ? ext(activeEntry.file) : '';
@@ -1859,7 +1865,7 @@ $('gEndSlider').addEventListener('input', ()=>{
 // Two-way sync: slider ↔ editable number input
 function syncSlider(sliderId, inputId, min, max){
   const sl=$(sliderId), inp=$(inputId);
-  if(!sl||!inp) return;
+  if(!sl||!inp) return; // element missing — skip silently
   sl.addEventListener('input',()=>{ inp.value=sl.value; onSettingChange(); });
   function applyInput(){ let v=Math.max(min,Math.min(max,parseInt(inp.value)||min)); sl.value=v; inp.value=v; onSettingChange(); }
   inp.addEventListener('change', applyInput);
@@ -1921,6 +1927,7 @@ function setRipAnchor(){
   const ws=document.querySelector('.workspace');
   if(!ws)return;
   const r=ws.getBoundingClientRect();
+  if(r.width===0||r.height===0)return;
   ripTX=r.left+r.width*(2/3); ripTY=r.top+r.height/2;
   if(!rafOn){ripCX=ripTX;ripCY=ripTY;posRip();}
 }
@@ -1963,7 +1970,9 @@ function updateRipBtn(){
   ripInner.classList.toggle('disabled',!hasFiles);
 }
 window.addEventListener('resize',setRipAnchor);
-setTimeout(setRipAnchor,150);
+setTimeout(setRipAnchor,100);
+setTimeout(setRipAnchor,500);
+setTimeout(setRipAnchor,1500);
 
 // DROP ZONE factory
 function makeDZ(isEmpty){
@@ -3143,5 +3152,5 @@ renderCol1();updateRipBtn();applyLang();
 setTimeout(setRipAnchor,150);
 })();
 </script>
-<div style="position:fixed;bottom:6px;right:8px;font-size:10px;color:#bbb;font-family:'Roboto Mono',monospace;pointer-events:none;z-index:50;letter-spacing:.3px">v0.34</div>
+<div style="position:fixed;bottom:6px;right:8px;font-size:10px;color:#bbb;font-family:'Roboto Mono',monospace;pointer-events:none;z-index:50;letter-spacing:.3px">v0.37</div>
 </html>
