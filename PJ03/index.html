@@ -476,11 +476,19 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px;
         <div class="sg-title">GIF / Video</div>
         <div class="field">
           <div class="fl"><span data-t="labelFps">Framerate</span><input class="slider-number" id="gfVal"></div>
-          <input type="range" min="1" max="30" value="10" id="gfSlider" step="1">
+          <div style="position:relative">
+            <input type="range" min="1" max="30" value="10" id="gfSlider" step="1">
+            <div id="gfMarker" style="display:none;position:absolute;top:-1px;width:2px;height:10px;background:#e65100;border-radius:1px;pointer-events:none;transform:translateX(-50%)"></div>
+          </div>
+          <div id="gfSourceInfo" style="display:none;font-size:10px;color:#e65100;margin-top:2px;font-family:'Roboto Mono',monospace"></div>
         </div>
         <div class="field">
           <div class="fl"><span data-t="labelColors">Color palette</span><input class="slider-number" id="gcVal"></div>
-          <input type="range" min="8" max="256" value="128" id="gcSlider" step="8">
+          <div style="position:relative">
+            <input type="range" min="8" max="256" value="128" id="gcSlider" step="8">
+            <div id="gcMarker" style="display:none;position:absolute;top:-1px;width:2px;height:10px;background:#e65100;border-radius:1px;pointer-events:none;transform:translateX(-50%)"></div>
+          </div>
+          <div id="gcSourceInfo" style="display:none;font-size:10px;color:#e65100;margin-top:2px;font-family:'Roboto Mono',monospace"></div>
         </div>
         <div class="field">
           <div class="fl">
@@ -579,6 +587,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px;
           <div class="prev-wrap" id="prevWrap">
             <div class="prev-toolbar-bar" id="prevToolbar">
               <button class="prev-btn active" id="prevBtnOrig">orig</button>
+              <button class="prev-btn" id="prevBtnOut" style="display:none">out</button>
               <button class="prev-btn" id="prevBtn1to1">1:1</button>
               <span class="prev-info" id="prevInfo"></span>
             </div>
@@ -2324,38 +2333,63 @@ function showSettings(){
 
 // PREVIEW
 $('prevBtnOrig').addEventListener('click',()=>setPrevMode('orig'));
+$('prevBtnOut').addEventListener('click',()=>setPrevMode('out'));
 $('prevBtn1to1').addEventListener('click',()=>{prevActual=!prevActual;$('prevBtn1to1').classList.toggle('active',prevActual);renderPreview();});
 
 function setPrevMode(m){
   prevMode=m;
   $('prevBtnOrig').classList.toggle('active',m==='orig');
+  const outBtn=$('prevBtnOut');
+  if(outBtn) outBtn.classList.toggle('active',m==='out');
   renderPreview();
 }
 function renderPreview(){
   const cont=$('prevContainer'), ph=$('prevPh'), tb=$('prevToolbar'), info=$('prevInfo');
   if(!prevOrigUrl){ph.style.display='flex';tb.classList.remove('visible');return;}
   ph.style.display='none'; tb.classList.add('visible');
-  cont.querySelectorAll('img').forEach(i=>i.remove());
-  const url=prevMode==='out'?prevOutUrl:prevOrigUrl;
-  const sz=prevMode==='out'?prevOutSize:prevOrigSize;
-  if(url){
-    const img=document.createElement('img');
-    if(prevActual){
-      cont.classList.remove('fit'); cont.classList.add('actual');
+
+  // Show/hide video and img elements based on mode
+  const vid = cont.querySelector('video');
+  const imgs = cont.querySelectorAll('img');
+
+  if(prevMode==='out'){
+    // Hide video if present, show out img
+    if(vid) vid.style.display='none';
+    imgs.forEach(i=>i.remove());
+    if(prevOutUrl){
+      const img=document.createElement('img');
+      if(prevActual){ cont.classList.remove('fit'); cont.classList.add('actual'); }
+      else {
+        cont.classList.add('fit'); cont.classList.remove('actual');
+        img.onload=()=>{ const cw=cont.clientWidth; if(img.naturalWidth<cw) img.style.maxWidth=img.naturalWidth+'px'; };
+      }
+      img.src=prevOutUrl;
+      cont.insertBefore(img,cont.firstChild);
+      const sv=prevOrigSize&&prevOutSize?Math.round((1-prevOutSize/prevOrigSize)*100):0;
+      info.textContent=fb(prevOrigSize)+' → '+fb(prevOutSize)+(sv>0?' (−'+sv+'%)':sv<0?' (+'+Math.abs(sv)+'%)':'');
     } else {
-      cont.classList.add('fit'); cont.classList.remove('actual');
-      img.onload=()=>{
-        const cw=cont.clientWidth;
-        if(img.naturalWidth<cw){img.style.maxWidth=img.naturalWidth+'px';}
-      };
+      // Not yet computed
+      const ph2=document.createElement('div');
+      ph2.className='prev-ph'; ph2.textContent='Computing…';
+      cont.insertBefore(ph2,cont.firstChild);
+      info.textContent='';
     }
-    img.src=url;
-    cont.insertBefore(img,cont.firstChild);
-  }
-  info.textContent=sz?fb(sz):'';
-  if(prevMode==='out'&&prevOutUrl&&prevOrigSize&&prevOutSize){
-    const sv=Math.round((1-prevOutSize/prevOrigSize)*100);
-    info.textContent=fb(prevOrigSize)+' → '+fb(prevOutSize)+(sv>0?' (−'+sv+'%)':sv<0?' (+'+Math.abs(sv)+'%)':'');
+  } else {
+    // orig mode — restore original element
+    if(vid) vid.style.display='';  // show video again
+    imgs.forEach(i=>i.remove());
+    // For non-video orig (images), re-render from prevOrigUrl
+    if(!vid && prevOrigUrl){
+      const img=document.createElement('img');
+      if(prevActual){ cont.classList.remove('fit'); cont.classList.add('actual'); }
+      else {
+        cont.classList.add('fit'); cont.classList.remove('actual');
+        img.onload=()=>{ const cw=cont.clientWidth; if(img.naturalWidth<cw) img.style.maxWidth=img.naturalWidth+'px'; };
+      }
+      img.src=prevOrigUrl;
+      cont.insertBefore(img,cont.firstChild);
+    }
+    info.textContent=prevOrigSize?fb(prevOrigSize):'';
   }
 }
 function schedulePreview(){clearTimeout(previewTimer);previewTimer=setTimeout(doPreview,360);}
@@ -2392,6 +2426,23 @@ async function doPreview(){
       img.style.cssText = 'max-width:100%;max-height:200px;display:block;border-radius:2px;';
       cont.appendChild(img);
       showTrimField(false);
+      // Show out button, mark as computing
+      const outBtn = $('prevBtnOut');
+      if(outBtn){ outBtn.style.display=''; outBtn.textContent='out…'; outBtn.disabled=true; }
+      prevOutUrl = null; prevOutSize = 0;
+      // Load markers from cached meta immediately if available, else read
+      if(entry.gifMeta){
+        _currentGifMeta = entry.gifMeta;
+        showGifMarkers(entry.gifMeta);
+      } else {
+        readGifMeta(file).then(meta => {
+          entry.gifMeta = meta;  // store per-file
+          _currentGifMeta = meta;
+          showGifMarkers(meta);
+        });
+      }
+      // Compute output GIF preview in background
+      scheduleGifPreview(file, entry);
     } else {
       // Video (mp4/mov/webm): use <video>
       const videoUrl = URL.createObjectURL(file);
@@ -2417,8 +2468,12 @@ async function doPreview(){
     $('prevInfo').textContent = fb(file.size);
     return;
   }
-  // Hide trim for non-video/gif files
+  // Hide trim and markers for non-video/gif files
   showTrimField(false);
+  hideGifMarkers();
+  _currentGifMeta = null;
+  const outBtnNonGif = $('prevBtnOut');
+  if(outBtnNonGif) outBtnNonGif.style.display='none';
   prevOrigUrl = entry.dataUrl||(await fileToDataURL(file));
   prevOrigSize = file.size;
   prevOutUrl = null; prevOutSize = 0;
@@ -2430,12 +2485,95 @@ async function doPreview(){
   if(b){ prevOutUrl=await blobToDataURL(b); prevOutSize=b.size; renderPreview(); }
 }
 
+// ── GIF SOURCE METADATA MARKERS ──
+async function readGifMeta(file) {
+  try {
+    const buf = await file.arrayBuffer();
+    const reader = new GifReader(new Uint8Array(buf));
+    const numFrames = reader.numFrames();
+    // Avg delay across first 10 frames for stability
+    let totalDelay = 0, count = 0;
+    for(let i = 0; i < Math.min(numFrames, 10); i++){
+      const info = reader.frameInfo(i);
+      if(info.delay > 0){ totalDelay += info.delay; count++; }
+    }
+    const avgDelayCentisec = count > 0 ? totalDelay / count : 10;
+    const fps = Math.round(100 / avgDelayCentisec);
+    // Palette size from global color table flag
+    // omggif exposes it via frameInfo color_table_size or global_palette_size
+    // Fall back to reading the header byte directly
+    const byte10 = buf.byteLength > 10 ? new Uint8Array(buf)[10] : 0;
+    const hasGCT = (byte10 & 0x80) !== 0;
+    const gctSize = hasGCT ? Math.pow(2, (byte10 & 0x07) + 1) : 256;
+    return { fps: Math.max(1, Math.min(30, fps)), colors: gctSize, numFrames };
+  } catch(e) {
+    return null;
+  }
+}
+
+function showGifMarkers(meta) {
+  if(!meta) return hideGifMarkers();
+
+  // FPS marker
+  const fpsSlider = $('gfSlider');
+  const fpsMarker = $('gfMarker');
+  const fpsInfo   = $('gfSourceInfo');
+  if(fpsSlider && fpsMarker){
+    const fpsMin=1, fpsMax=30;
+    const fpsPct = Math.max(0, Math.min(100, (meta.fps - fpsMin) / (fpsMax - fpsMin) * 100));
+    // Position needs to account for thumb width (~7px each side)
+    fpsMarker.style.display = 'block';
+    fpsMarker.style.left = `calc(${fpsPct}% + ${7 - fpsPct * 14 / 100}px)`;
+    fpsInfo.style.display = 'block';
+    const curFps = parseInt($('gfVal').value)||10;
+    fpsInfo.textContent = `source: ${meta.fps} fps · ${meta.numFrames} frames${curFps < meta.fps ? ' · ↓ reducing fps' : curFps > meta.fps ? ' · ↑ upscaling fps' : ''}`;
+  }
+
+  // Colors marker
+  const gcSlider = $('gcSlider');
+  const gcMarker = $('gcMarker');
+  const gcInfo   = $('gcSourceInfo');
+  if(gcSlider && gcMarker){
+    const gcMin=8, gcMax=256;
+    const gcPct = Math.max(0, Math.min(100, (meta.colors - gcMin) / (gcMax - gcMin) * 100));
+    gcMarker.style.display = 'block';
+    gcMarker.style.left = `calc(${gcPct}% + ${7 - gcPct * 14 / 100}px)`;
+    gcInfo.style.display = 'block';
+    const curColors = parseInt($('gcVal').value)||128;
+    gcInfo.textContent = `source: ${meta.colors} colors${curColors < meta.colors ? ' · ↓ reducing palette' : ''}`;
+  }
+}
+
+function hideGifMarkers() {
+  [$('gfMarker'),$('gcMarker')].forEach(el=>{ if(el) el.style.display='none'; });
+  [$('gfSourceInfo'),$('gcSourceInfo')].forEach(el=>{ if(el) el.style.display='none'; });
+}
+
+// Refresh marker labels when slider changes
+function refreshGifMarkerLabels(meta) {
+  if(!meta) return;
+  const fpsInfo = $('gfSourceInfo');
+  const gcInfo  = $('gcSourceInfo');
+  if(fpsInfo && fpsInfo.style.display !== 'none'){
+    const curFps = parseInt($('gfVal').value)||10;
+    fpsInfo.textContent = `source: ${meta.fps} fps · ${meta.numFrames} frames${curFps < meta.fps ? ' · ↓ reducing fps' : curFps > meta.fps ? ' · ↑ upscaling fps' : ''}`;
+  }
+  if(gcInfo && gcInfo.style.display !== 'none'){
+    const curColors = parseInt($('gcVal').value)||128;
+    gcInfo.textContent = `source: ${meta.colors} colors${curColors < meta.colors ? ' · ↓ reducing palette' : ''}`;
+  }
+}
+
+let _currentGifMeta = null;
+
+// Hook into syncSlider to refresh labels
+const _origOnSettingChange = onSettingChange;
+function onSettingChange(){ _origOnSettingChange(); refreshGifMarkerLabels(_currentGifMeta); }
+
 // ── GIF OUTPUT PREVIEW ──
 let gifPreviewTimer = null;
 function scheduleGifPreview(file, entry) {
   clearTimeout(gifPreviewTimer);
-  // Show computing state on "out" button
-
   gifPreviewTimer = setTimeout(async () => {
     if (!entry || !entry.settings) return;
     setStatus('Computing GIF preview…', true);
@@ -2444,14 +2582,17 @@ function scheduleGifPreview(file, entry) {
       if (blob) {
         prevOutUrl = await blobToDataURL(blob);
         prevOutSize = blob.size;
-            // If user has already clicked "out", update now
+        const outBtn = $('prevBtnOut');
+        if(outBtn){ outBtn.textContent='out'; outBtn.disabled=false; }
         if (prevMode === 'out') renderPreview();
         setStatus('GIF preview ready', false);
       }
     } catch(e) {
       setStatus('GIF preview failed', false);
+      const outBtn = $('prevBtnOut');
+      if(outBtn) outBtn.style.display='none';
     }
-  }, 600);
+  }, 500);
 }
 
 // ── THUMBNAIL HOVER PREVIEW ──
@@ -2897,5 +3038,5 @@ renderCol1();updateRipBtn();applyLang();
 setTimeout(setRipAnchor,150);
 })();
 </script>
-<div style="position:fixed;bottom:6px;right:8px;font-size:10px;color:#bbb;font-family:'Roboto Mono',monospace;pointer-events:none;z-index:50;letter-spacing:.3px">v1.0.0</div>
+<div style="position:fixed;bottom:6px;right:8px;font-size:10px;color:#bbb;font-family:'Roboto Mono',monospace;pointer-events:none;z-index:50;letter-spacing:.3px">v0.30</div>
 </html>
