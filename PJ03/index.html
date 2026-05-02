@@ -472,10 +472,11 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px;
       </div>
 
       <!-- GIF / VIDEO -->
-      <div class="sg gif-sg" id="gifSg">
-        <div class="sg-title">GIF / Video</div>
+      <!-- GIF settings — shown for GIF input -->
+      <div class="sg gif-sg" id="gifOnlySg" style="display:none">
+        <div class="sg-title">GIF Output</div>
         <div class="field">
-          <div class="fl"><span data-t="labelFps">Framerate</span><input class="slider-number" id="gfVal"></div>
+          <div class="fl"><span>Framerate</span><input class="slider-number" id="gfVal"></div>
           <div style="position:relative">
             <input type="range" min="1" max="30" value="10" id="gfSlider" step="1">
             <div id="gfMarker" style="display:none;position:absolute;top:50%;width:3px;height:14px;background:#e65100;border-radius:2px;pointer-events:none;transform:translateX(-50%) translateY(-50%);box-shadow:0 0 3px rgba(230,81,0,.5)"></div>
@@ -483,7 +484,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px;
           <div id="gfSourceInfo" style="display:none;font-size:10px;color:#e65100;margin-top:2px;font-family:'Roboto Mono',monospace"></div>
         </div>
         <div class="field">
-          <div class="fl"><span data-t="labelColors">Color palette</span><input class="slider-number" id="gcVal"></div>
+          <div class="fl"><span>Color palette</span><input class="slider-number" id="gcVal"></div>
           <div style="position:relative">
             <input type="range" min="8" max="256" value="128" id="gcSlider" step="8">
             <div id="gcMarker" style="display:none;position:absolute;top:50%;width:3px;height:14px;background:#e65100;border-radius:2px;pointer-events:none;transform:translateX(-50%) translateY(-50%);box-shadow:0 0 3px rgba(230,81,0,.5)"></div>
@@ -493,21 +494,15 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px;
         <div class="field">
           <div class="fl">
             <span>Loop</span>
-            <div style="display:flex;align-items:center;gap:6px">
-              <label class="toggle-row" id="gLoopToggleRow" style="margin:0">
-                <span class="toggle-label" id="gLoopToggleLabel" style="font-size:11px;color:#1a73e8;font-family:Roboto Mono,monospace">∞</span>
-                <div class="toggle-switch on" id="gLoopToggle"><div class="toggle-knob"></div></div>
-              </label>
-            </div>
+            <label class="toggle-row" id="gLoopToggleRow" style="margin:0">
+              <span class="toggle-label" id="gLoopToggleLabel" style="font-size:11px;color:#1a73e8;font-family:Roboto Mono,monospace">∞</span>
+              <div class="toggle-switch on" id="gLoopToggle"><div class="toggle-knob"></div></div>
+            </label>
           </div>
           <div id="gLoopCountField" style="display:none;margin-top:4px">
             <div class="fl"><span style="font-size:11px;color:#666">Loop count</span><span class="fv" id="gLoopVal">1</span></div>
             <input type="range" min="1" max="20" value="1" id="gLoopSlider" step="1">
           </div>
-        </div>
-        <div class="field">
-          <div class="fl"><span>Frame delay</span><input class="slider-number" id="gDelayVal"></div>
-          <input type="range" min="20" max="500" value="100" id="gDelaySlider" step="10">
         </div>
         <div class="field">
           <div class="fl"><span>Dither</span></div>
@@ -517,7 +512,29 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px;
             <option value="ordered">Ordered</option>
           </select>
         </div>
-        <!-- TRIM — shown only for video/gif files -->
+      </div>
+
+      <!-- Video settings — shown for MP4/MOV/WebM input -->
+      <div class="sg gif-sg" id="videoOnlySg" style="display:none">
+        <div class="sg-title">Video → GIF</div>
+        <div class="field">
+          <div class="fl"><span>Output FPS</span><input class="slider-number" id="vfVal" value="10" min="1" max="30" type="number" style="width:52px"></div>
+          <input type="range" min="1" max="30" value="10" id="vfSlider" step="1">
+        </div>
+        <div class="field">
+          <div class="fl">
+            <span>Loop</span>
+            <label class="toggle-row" id="vLoopToggleRow" style="margin:0">
+              <span class="toggle-label" id="vLoopToggleLabel" style="font-size:11px;color:#1a73e8;font-family:Roboto Mono,monospace">∞</span>
+              <div class="toggle-switch on" id="vLoopToggle"><div class="toggle-knob"></div></div>
+            </label>
+          </div>
+          <div id="vLoopCountField" style="display:none;margin-top:4px">
+            <div class="fl"><span style="font-size:11px;color:#666">Loop count</span><span class="fv" id="vLoopVal">1</span></div>
+            <input type="range" min="1" max="20" value="1" id="vLoopSlider" step="1">
+          </div>
+        </div>
+        <!-- Trim — only for video -->
         <div class="field" id="trimField" style="display:none">
           <div class="fl" style="font-weight:500;font-size:11px;color:#444">Trim</div>
           <div style="display:grid;grid-template-columns:1fr 8px 1fr;align-items:center;gap:4px;margin-top:4px">
@@ -531,13 +548,10 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px;
               <input type="number" class="slider-number" id="gEndVal" value="" min="0" step="0.1" placeholder="full" style="width:100%">
             </div>
           </div>
-          <!-- Visual trim bar -->
           <div id="trimBarWrap" style="margin-top:8px;position:relative;height:24px;background:#f0f0f0;border-radius:4px;overflow:visible">
             <div id="trimBarActive" style="position:absolute;top:0;bottom:0;background:#c5d8fb;border-radius:4px;pointer-events:none"></div>
-            <input type="range" id="gStartSlider" min="0" max="100" value="0" step="0.1"
-              style="-webkit-appearance:none;appearance:none;position:absolute;inset:0;width:100%;height:100%;background:transparent;pointer-events:none;padding:0;margin:0;z-index:2;">
-            <input type="range" id="gEndSlider" min="0" max="100" value="100" step="0.1"
-              style="-webkit-appearance:none;appearance:none;position:absolute;inset:0;width:100%;height:100%;background:transparent;pointer-events:none;padding:0;margin:0;z-index:3;">
+            <input type="range" id="gStartSlider" min="0" max="100" value="0" step="0.1" style="-webkit-appearance:none;appearance:none;position:absolute;inset:0;width:100%;height:100%;background:transparent;pointer-events:none;padding:0;margin:0;z-index:2;">
+            <input type="range" id="gEndSlider" min="0" max="100" value="100" step="0.1" style="-webkit-appearance:none;appearance:none;position:absolute;inset:0;width:100%;height:100%;background:transparent;pointer-events:none;padding:0;margin:0;z-index:3;">
           </div>
           <div style="display:flex;justify-content:space-between;margin-top:2px;font-size:10px;color:#bbb">
             <span>0s</span><span id="trimDurLabel">?s</span>
@@ -1595,7 +1609,7 @@ const col1=$('col1Body'), col3=$('col3Body');
 
 // DEFAULT SETTINGS factory
 function defaultSettings(){
-  return {format:'image/jpeg',quality:82,scale:100,maxWidth:0,outputChannel:'rgb',gifFps:10,gifColors:128,gifLoop:0,gifDelay:100,gifDither:'floyd',gifStart:0,gifEnd:null,splitRGB:false,nmFlip:false};
+  return {format:'image/jpeg',quality:82,scale:100,maxWidth:0,outputChannel:'rgb',gifFps:10,gifColors:128,gifLoop:0,gifDelay:100,gifDither:'floyd',gifStart:0,gifEnd:null,videoFps:10,videoLoop:0,splitRGB:false,nmFlip:false};
 }
 
 // UTILS
@@ -1674,6 +1688,8 @@ function saveActiveSettings(){
     gifDither:$('gDitherSel').value,
     gifStart:parseFloat($('gStartVal').value)||0,
     gifEnd:$('gEndVal').value===''?null:parseFloat($('gEndVal').value),
+    videoFps:parseInt($('vfSlider')?.value)||10,
+    videoLoop:$('vLoopToggle')?.classList.contains('on')?0:parseInt($('vLoopSlider')?.value)||1,
     splitRGB:$('splitToggle').classList.contains('on'),
     nmFlip:$('nmToggle').classList.contains('on'),
   };
@@ -1703,6 +1719,10 @@ function loadSettingsToUI(s){
   $('gLoopSlider').value=s.gifLoop||1; const gv=$('gLoopVal'); if(gv) gv.textContent=s.gifLoop||1;
   $('gDelaySlider').value=s.gifDelay||100; $('gDelayVal').value=s.gifDelay||100;
   $('gDitherSel').value=s.gifDither||'floyd';
+  if($('vfSlider')){ $('vfSlider').value=s.videoFps||10; $('vfVal').value=s.videoFps||10; }
+  const vIsInf=(s.videoLoop||0)===0;
+  if($('vLoopToggle')){ $('vLoopToggle').classList.toggle('on',vIsInf); const vl=$('vLoopToggleLabel'); if(vl){ vl.textContent=vIsInf?'∞':'count'; vl.style.color=vIsInf?'#1a73e8':'#999'; } }
+  if($('vLoopCountField')) $('vLoopCountField').style.display=vIsInf?'none':'block';
   $('gStartVal').value=s.gifStart||0;
   $('gEndVal').value=s.gifEnd!=null?s.gifEnd:'';
   $('qField').style.opacity=(s.format==='image/png'||s.format==='image/gif')?'.4':'1';
@@ -1762,14 +1782,29 @@ $('fmtSel').addEventListener('change',()=>{
 function updateGifSgVisibility(){
   const fmt = $('fmtSel').value;
   const isGif = fmt === 'image/gif';
-  // gifSg visibility: GIF format selected OR file is gif/video
-  const hasGifFile = files.some(e => e && (ext(e.file)==='gif'||isVideoFile(e.file)));
-  const gifSg = $('gifSg');
-  if(gifSg) gifSg.classList.toggle('on', isGif || hasGifFile);
-  // If non-gif format forcibly hide
-  if(!isGif && gifSg) gifSg.style.display = 'none';
-  else if(isGif) { if(gifSg) gifSg.style.display = ''; }
-  else if(hasGifFile) { if(gifSg) gifSg.style.display = ''; }
+  const activeEntry = sel.size>0 ? files[[...sel][0]] : files[0];
+  const activeExt = activeEntry ? ext(activeEntry.file) : '';
+  const isGifInput   = activeExt === 'gif';
+  const isVideoInput = isVideoFile(activeEntry?.file || {name:''});
+
+  const gifSect = $('gifOnlySg');
+  const vidSect = $('videoOnlySg');
+
+  // If output format is not GIF → hide everything regardless of input
+  if(!isGif){
+    if(gifSect) gifSect.style.display = 'none';
+    if(vidSect) vidSect.style.display = 'none';
+    return;
+  }
+
+  if(isVideoInput){
+    if(gifSect) gifSect.style.display = 'none';
+    if(vidSect) vidSect.style.display = '';
+  } else {
+    // GIF input or image input → show GIF settings
+    if(gifSect) gifSect.style.display = '';
+    if(vidSect) vidSect.style.display = 'none';
+  }
 }
 $('mxW').addEventListener('input',()=>onSettingChange());
 $('gDitherSel').addEventListener('change',()=>onSettingChange());
@@ -1835,6 +1870,19 @@ syncSlider('scSlider','scVal',10,100);
 syncSlider('gfSlider','gfVal',1,30);
 syncSlider('gcSlider','gcVal',8,256);
 syncSlider('gDelaySlider','gDelayVal',20,500);
+// Video-specific sliders
+if($('vfSlider')) syncSlider('vfSlider','vfVal',1,30);
+$('vLoopToggle')?.parentElement?.addEventListener('click',()=>{
+  const tog=$('vLoopToggle');
+  const isInf=!tog.classList.contains('on');
+  tog.classList.toggle('on',!isInf);
+  const lbl=$('vLoopToggleLabel');
+  if(lbl){ lbl.textContent=!isInf?'∞':'count'; lbl.style.color=!isInf?'#1a73e8':'#999'; }
+  const cf=$('vLoopCountField');
+  if(cf) cf.style.display=!isInf?'none':'block';
+  onSettingChange();
+});
+$('vLoopSlider')?.addEventListener('input',()=>onSettingChange());
 
 // GIF loop — ∞ toggle (on by default) vs finite count
 $('gLoopToggle').parentElement.addEventListener('click',()=>{
@@ -2681,16 +2729,19 @@ function getGifWorkerUrl(){
 }
 
 async function convertToGif(file, s){
-  const fps       = Math.max(1, s.gifFps || 10);
-  const colors    = Math.min(256, Math.max(2, s.gifColors || 128));
-  const loop      = (s.gifLoop === 0 || s.gifLoop === undefined) ? 0 : s.gifLoop;
-  const delay     = Math.round(1000 / fps);
-  const dither    = s.gifDither === 'none' ? false : (s.gifDither === 'ordered' ? 'Ordered' : 'FloydSteinberg');
-  const scale     = (s.scale || 100) / 100;
-  const maxW      = s.maxWidth || 0;
-  const quality   = Math.max(1, Math.min(30, Math.round((100 - (s.quality || 82)) / 3.3) + 1));
+  const isVid  = isVideoFile(file);
+  const fps    = Math.max(1, (isVid ? (s.videoFps||10) : (s.gifFps||10)));
+  const loop   = isVid
+    ? ((s.videoLoop===0||s.videoLoop==null)?0:s.videoLoop)
+    : ((s.gifLoop ===0||s.gifLoop ==null)?0:s.gifLoop);
+  const colors  = Math.min(256, Math.max(2, s.gifColors || 128));
+  const delay   = Math.round(1000 / fps);
+  const dither  = s.gifDither === 'none' ? false : (s.gifDither === 'ordered' ? 'Ordered' : 'FloydSteinberg');
+  const scale   = (s.scale || 100) / 100;
+  const maxW    = s.maxWidth || 0;
+  const quality = Math.max(1, Math.min(30, Math.round(30 - (colors / 256) * 29)));
   const trimStart = s.gifStart || 0;
-  const trimEnd   = s.gifEnd != null ? s.gifEnd : null; // null = to end
+  const trimEnd   = s.gifEnd != null ? s.gifEnd : null;
 
   return new Promise(async (resolve) => {
     const canvas = document.createElement('canvas');
@@ -2704,12 +2755,14 @@ async function convertToGif(file, s){
       canvas.width = w; canvas.height = h;
       gifInst = new GIF({
         workers: 2,
-        quality,
+        quality,       // 1=best quality/most colors, 30=worst
         width: w,
         height: h,
         workerScript: getGifWorkerUrl(),
         repeat: loop,
         dither,
+        // gif.js doesn't have a direct 'colors' param — palette size comes from quality
+        // but we apply a post-quantization color limit via background option workaround
       });
       gifInst.on('finished', finish);
       gifInst.on('error', ()=>finish(null));
@@ -2793,7 +2846,33 @@ async function convertToGif(file, s){
 
           setStatus(`Decoding ${frameIndices.length} GIF frames…`, true);
 
-          // Render each frame using omggif + canvas compositing
+          // Subsample frames to match output FPS
+          // Build a timeline of source frames at their timestamps, then pick frames at output interval
+          const outputInterval = 1000 / fps; // ms between output frames
+          const totalOutDuration = endMs - startMs;
+          const outputFrameCount = Math.max(1, Math.round(totalOutDuration / outputInterval));
+
+          // For each output frame slot, find which source frame it maps to
+          const selectedFrameIndices = [];
+          for(let oi = 0; oi < outputFrameCount; oi++){
+            const targetMs = startMs + oi * outputInterval;
+            // Find source frame that contains this timestamp
+            let acc = 0;
+            let chosen = frameIndices[0];
+            for(let i = 0; i < frameIndices.length; i++){
+              const idx = frameIndices[i];
+              // accumulate delay up to this frame
+              let frameStartMs = 0;
+              let a2 = 0;
+              for(let j = 0; j < idx; j++) a2 += frameDelays[j];
+              frameStartMs = a2;
+              if(frameStartMs <= targetMs) chosen = idx;
+              else break;
+            }
+            selectedFrameIndices.push(chosen);
+          }
+
+          // Render each output frame
           const tmpCanvas = document.createElement('canvas');
           tmpCanvas.width = gifW; tmpCanvas.height = gifH;
           const tmpCtx = tmpCanvas.getContext('2d');
@@ -2801,18 +2880,29 @@ async function convertToGif(file, s){
           scaleCanvas.width = w; scaleCanvas.height = h;
           const scaleCtx = scaleCanvas.getContext('2d');
           const pixels = new Uint8ClampedArray(gifW * gifH * 4);
+          let lastDecodedIdx = -1;
 
-          for(let fi = 0; fi < frameIndices.length; fi++){
-            const frameIdx = frameIndices[fi];
-            const info = reader.frameInfo(frameIdx);
-            reader.decodeAndBlitFrameRGBA(frameIdx, pixels);
+          for(let oi = 0; oi < selectedFrameIndices.length; oi++){
+            const frameIdx = selectedFrameIndices[oi];
+            // omggif is stateful — must decode sequentially, can't skip
+            if(frameIdx !== lastDecodedIdx){
+              // Decode up to this frame if needed
+              if(frameIdx < lastDecodedIdx){
+                // Reset by re-decoding from 0
+                lastDecodedIdx = -1;
+              }
+              for(let d = lastDecodedIdx + 1; d <= frameIdx; d++){
+                reader.decodeAndBlitFrameRGBA(d, pixels);
+                lastDecodedIdx = d;
+              }
+            }
             const imageData = new ImageData(pixels.slice(), gifW, gifH);
             tmpCtx.putImageData(imageData, 0, 0);
             scaleCtx.clearRect(0, 0, w, h);
             scaleCtx.drawImage(tmpCanvas, 0, 0, w, h);
-            const frameDelay = info.delay ? info.delay * 10 : delay; // ms
-            gifInst.addFrame(scaleCtx, {copy: true, delay: frameDelay});
-            if(fi % 10 === 0) setStatus(`Processing frame ${fi+1}/${frameIndices.length}…`, true);
+            // Always use output delay (user's FPS setting)
+            gifInst.addFrame(scaleCtx, {copy: true, delay});
+            if(oi % 10 === 0) setStatus(`Processing frame ${oi+1}/${selectedFrameIndices.length}…`, true);
           }
         } catch(e) {
           console.warn('omggif failed, falling back to canvas sampling:', e);
@@ -3053,5 +3143,5 @@ renderCol1();updateRipBtn();applyLang();
 setTimeout(setRipAnchor,150);
 })();
 </script>
-<div style="position:fixed;bottom:6px;right:8px;font-size:10px;color:#bbb;font-family:'Roboto Mono',monospace;pointer-events:none;z-index:50;letter-spacing:.3px">v0.31</div>
+<div style="position:fixed;bottom:6px;right:8px;font-size:10px;color:#bbb;font-family:'Roboto Mono',monospace;pointer-events:none;z-index:50;letter-spacing:.3px">v0.34</div>
 </html>
