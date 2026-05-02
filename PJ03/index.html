@@ -578,8 +578,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px;
         <div id="prevPanelBody" style="display:none">
           <div class="prev-wrap" id="prevWrap">
             <div class="prev-toolbar-bar" id="prevToolbar">
-              <button class="prev-btn" id="prevBtnOrig">orig</button>
-              <button class="prev-btn active" id="prevBtnOut">out</button>
+              <button class="prev-btn active" id="prevBtnOrig">orig</button>
               <button class="prev-btn" id="prevBtn1to1">1:1</button>
               <span class="prev-info" id="prevInfo"></span>
             </div>
@@ -1406,7 +1405,17 @@ function renderCol1(){
     // thumbnail
     if(entry.dataUrl){
       const el=document.getElementById('th'+i);
-      if(el)el.innerHTML=`<img src="${entry.dataUrl}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:2px;">`;
+      if(el){
+        el.innerHTML=`<img src="${entry.dataUrl}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:2px;">`;
+        // Hover preview
+        const isVid = isVideoFile(entry.file);
+        if(isVid){
+          const vurl = URL.createObjectURL(entry.file);
+          attachThumbHover(el, vurl, true);
+        } else {
+          attachThumbHover(el, entry.dataUrl, false);
+        }
+      }
     }
   });
 
@@ -1505,13 +1514,11 @@ function showSettings(){
 
 // PREVIEW
 $('prevBtnOrig').addEventListener('click',()=>setPrevMode('orig'));
-$('prevBtnOut').addEventListener('click',()=>setPrevMode('out'));
 $('prevBtn1to1').addEventListener('click',()=>{prevActual=!prevActual;$('prevBtn1to1').classList.toggle('active',prevActual);renderPreview();});
 
 function setPrevMode(m){
   prevMode=m;
   $('prevBtnOrig').classList.toggle('active',m==='orig');
-  $('prevBtnOut').classList.toggle('active',m==='out');
   renderPreview();
 }
 function renderPreview(){
@@ -1566,7 +1573,6 @@ async function doPreview(){
     prevOutUrl = null; prevOutSize = 0;
     prevMode = 'orig';
     $('prevBtnOrig').classList.add('active');
-    $('prevBtnOut').classList.remove('active');
     // Show video element in preview
     const cont = $('prevContainer');
     cont.querySelectorAll('img,video,.prev-ph').forEach(el=>{if(el.id!=='prevPh')el.remove();});
@@ -1581,12 +1587,16 @@ async function doPreview(){
       // Load per-file trim settings into UI
       const s = entry.settings;
       $('gStartVal').value = s.gifStart || 0;
-      $('gEndVal').value   = s.gifEnd != null ? s.gifEnd : (dur ? dur.toFixed(1) : '');
+      // If gifEnd not yet set, default to full duration
+      if(s.gifEnd == null && dur) {
+        s.gifEnd = parseFloat(dur.toFixed(2));
+        entry.settings.gifEnd = s.gifEnd;
+      }
+      $('gEndVal').value = s.gifEnd != null ? s.gifEnd : (dur ? dur.toFixed(1) : '');
       updateTrimBar();
     }, {once:true});
     cont.appendChild(vid);
-    $('prevInfo').textContent = fb(file.size);
-    return;
+    $('prevInfo').textContent = fb(file.size);    return;
   }
   // Hide trim for non-video/gif files
   showTrimField(false);
@@ -1594,15 +1604,91 @@ async function doPreview(){
   prevOrigSize = file.size;
   prevOutUrl = null; prevOutSize = 0;
   // Default: show 'out' mode
-  prevMode = 'out';
-  $('prevBtnOrig').classList.remove('active');
-  $('prevBtnOut').classList.add('active');
+  prevMode = 'orig';
+  $('prevBtnOrig').classList.add('active');
   renderPreview();
   const b = await convertFile(file, entry.settings);
   if(b){ prevOutUrl=await blobToDataURL(b); prevOutSize=b.size; renderPreview(); }
 }
 
-// ── GIF CONVERSION via gif.js ──
+// ── GIF OUTPUT PREVIEW ──
+let gifPreviewTimer = null;
+function scheduleGifPreview(file, entry) {
+  clearTimeout(gifPreviewTimer);
+  // Show computing state on "out" button
+
+  gifPreviewTimer = setTimeout(async () => {
+    if (!entry || !entry.settings) return;
+    setStatus('Computing GIF preview…', true);
+    try {
+      const blob = await convertToGif(file, entry.settings);
+      if (blob) {
+        prevOutUrl = await blobToDataURL(blob);
+        prevOutSize = blob.size;
+            // If user has already clicked "out", update now
+        if (prevMode === 'out') renderPreview();
+        setStatus('GIF preview ready', false);
+      }
+    } catch(e) {
+      setStatus('GIF preview failed', false);
+    }
+  }, 600);
+}
+
+// ── THUMBNAIL HOVER PREVIEW ──
+const hoverPreviewEl = document.createElement('div');
+hoverPreviewEl.id = 'thumbHoverPreview';
+hoverPreviewEl.style.cssText = `
+  position:fixed; z-index:999; pointer-events:none;
+  background:#fff; border:1px solid #ddd; border-radius:5px;
+  box-shadow:0 4px 16px rgba(0,0,0,.15); padding:4px;
+  display:none; max-width:180px;
+`;
+document.body.appendChild(hoverPreviewEl);
+
+function showThumbPreview(e, src, isVideo) {
+  if (!src) return;
+  hoverPreviewEl.innerHTML = '';
+  if (isVideo) {
+    const v = document.createElement('video');
+    v.src = src; v.muted = true; v.loop = true; v.autoplay = true;
+    v.style.cssText = 'max-width:170px;max-height:170px;display:block;border-radius:3px;';
+    hoverPreviewEl.appendChild(v);
+  } else {
+    const img = document.createElement('img');
+    img.src = src;
+    img.style.cssText = 'max-width:170px;max-height:170px;display:block;border-radius:3px;';
+    hoverPreviewEl.appendChild(img);
+  }
+  positionHoverPreview(e);
+  hoverPreviewEl.style.display = 'block';
+}
+
+function positionHoverPreview(e) {
+  const pad = 12;
+  let x = e.clientX + pad, y = e.clientY + pad;
+  if (x + 190 > window.innerWidth)  x = e.clientX - 190;
+  if (y + 190 > window.innerHeight) y = e.clientY - 190;
+  hoverPreviewEl.style.left = x + 'px';
+  hoverPreviewEl.style.top  = y + 'px';
+}
+
+document.addEventListener('mousemove', e => {
+  if (hoverPreviewEl.style.display !== 'none') positionHoverPreview(e);
+});
+
+function hideThumbPreview() { hoverPreviewEl.style.display = 'none'; }
+
+// Wire hover to any .thumb or .rt element dynamically
+function attachThumbHover(el, dataUrl, isVideo) {
+  if (!el || !dataUrl) return;
+  el.addEventListener('mouseenter', e => showThumbPreview(e, dataUrl, isVideo));
+  el.addEventListener('mouseleave', hideThumbPreview);
+}
+
+// Override renderCol1 to attach hover after render
+const _origRenderCol1 = renderCol1;
+// (we attach hover in renderCol1 directly below)
 function isVideoFile(file){
   return ['mp4','mov','webm'].includes(ext(file));
 }
@@ -1897,6 +1983,10 @@ function renderCol3(results){
     else if(r.status==='done')  {bH=`<span class="st-badge done-b">${t('statusDone')}</span>`;dlH=`<button class="dl-item-btn" title="Download" onclick="window._dl('${r.dataUrl}','${r.name}')">↓</button>`;}
     else if(r.status==='error') bH=`<span class="st-badge error-b">${t('statusError')}</span>`;
     el.innerHTML=`${tH}<div class="ri"><div class="rn">${r.name}</div><div class="rm">${szL}</div><div>${bH}</div></div>${dlH}`;
+    const thumbEl = el.querySelector('.rt');
+    if(thumbEl && r.dataUrl) {
+      attachThumbHover(thumbEl, r.dataUrl, false);
+    }
     col3.appendChild(el);
   });
 }
@@ -1924,5 +2014,5 @@ renderCol1();updateRipBtn();applyLang();
 setTimeout(setRipAnchor,150);
 })();
 </script>
-</body>
+<div style="position:fixed;bottom:6px;right:8px;font-size:10px;color:#bbb;font-family:'Roboto Mono',monospace;pointer-events:none;z-index:50;letter-spacing:.3px">v1.0.0</div>
 </html>
