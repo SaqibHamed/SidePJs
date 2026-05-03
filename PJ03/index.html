@@ -469,7 +469,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px;
             </select>
           </div>
           <div class="field" id="qField">
-            <div class="fl" style="font-size:11px;color:#666"><span data-t="labelQuality" title="PNG: reduces color palette. JPG/WebP: compression quality.">Quality</span><input class="slider-number" id="qVal" value="82" min="1" max="100" type="number" title="Quality %" style="width:52px"></div>
+            <div class="fl" style="font-size:11px;color:#666"><span id="qLabel">Quality</span><input class="slider-number" id="qVal" value="82" min="1" max="100" type="number" title="Quality %" style="width:52px"></div>
             <input type="range" min="1" max="100" value="82" id="qSlider" step="1">
           </div>
         </div>
@@ -1790,7 +1790,8 @@ function loadSettingsToUI(s){
   if($('vLoopCountField')) $('vLoopCountField').style.display=vIsInf?'none':'block';
   $('gStartVal').value=s.gifStart||0;
   $('gEndVal').value=s.gifEnd!=null?s.gifEnd:'';
-  $('qField').style.opacity=s.format==='image/gif'?'.4':'1';
+  $('qField').style.opacity=(s.format==='image/png'||s.format==='image/gif')?'.4':'1';
+  $('qField').style.pointerEvents=(s.format==='image/png'||s.format==='image/gif')?'none':'';
   if(typeof updateGifSgVisibility === 'function') updateGifSgVisibility();
   document.querySelectorAll('.ch-opt[data-ch]').forEach(b=>b.classList.toggle('active',b.dataset.ch===s.outputChannel));
   // texture toggles
@@ -1837,12 +1838,19 @@ function onSettingChange(){
   }
 }
 $('fmtSel').addEventListener('change',()=>{
-  const fmt=$('fmtSel').value;
-  $('qField').style.opacity=fmt==='image/gif'?'.4':'1'; // PNG quality now reduces colors
-  // Show GIF/Video settings only when GIF output is chosen
+  updateQualityFieldForFormat();
   updateGifSgVisibility();
   onSettingChange();
 });
+function updateQualityFieldForFormat(){
+  const fmt = $('fmtSel').value;
+  const isPng = fmt==='image/png';
+  const isGif = fmt==='image/gif';
+  $('qField').style.opacity = (isPng||isGif) ? '.4' : '1';
+  $('qField').style.pointerEvents = (isPng||isGif) ? 'none' : '';
+  const lbl = $('qLabel');
+  if(lbl) lbl.textContent = isGif ? 'Quality' : isPng ? 'Quality' : 'Quality';
+}
 
 function updateGifSgVisibility(){
   const fmtEl = $('fmtSel');
@@ -2482,15 +2490,16 @@ function renderPreview(){
   const cont=$('prevContainer'), ph=$('prevPh'), tb=$('prevToolbar'), info=$('prevInfo');
   if(!prevOrigUrl){ph.style.display='flex';tb.classList.remove('visible');return;}
   ph.style.display='none'; tb.classList.add('visible');
-  // Show out button whenever there is output
-  const _ob=$('prevBtnOut'); if(_ob) _ob.style.display = prevOutUrl ? '' : 'none';
+  const _ob=$('prevBtnOut');
+  if(_ob) _ob.style.display = (prevOutUrl || prevMode==='out') ? '' : 'none';
 
-  // Show/hide video and img elements based on mode
+  // Clear any stale computing placeholders
+  cont.querySelectorAll('.prev-ph:not(#prevPh)').forEach(el=>el.remove());
+
   const vid = cont.querySelector('video');
   const imgs = cont.querySelectorAll('img');
 
   if(prevMode==='out'){
-    // Hide video if present, show out img
     if(vid) vid.style.display='none';
     imgs.forEach(i=>i.remove());
     if(prevOutUrl){
@@ -2505,7 +2514,7 @@ function renderPreview(){
       const sv=prevOrigSize&&prevOutSize?Math.round((1-prevOutSize/prevOrigSize)*100):0;
       info.textContent=fb(prevOrigSize)+' → '+fb(prevOutSize)+(sv>0?' (−'+sv+'%)':sv<0?' (+'+Math.abs(sv)+'%)':'');
     } else {
-      // Not yet computed
+      // Not yet computed — show single placeholder
       const ph2=document.createElement('div');
       ph2.className='prev-ph'; ph2.textContent='Computing…';
       cont.insertBefore(ph2,cont.firstChild);
@@ -3079,20 +3088,21 @@ async function convertFile(file, settings){
         for(let p=0;p<id.data.length;p+=4) id.data[p+1]=255-id.data[p+1];
         ctx.putImageData(id,0,0);
       }
-      // PNG quality reduction via color quantization (quality 100=lossless, lower=fewer colors)
-      if(fmt==='image/png' && s.quality < 100){
-        const levels = Math.max(2, Math.round(2 + (s.quality / 100) * 254)); // 2–256 levels
-        const step = 255 / (levels - 1);
-        const id = ctx.getImageData(0,0,w,h);
-        const d = id.data;
-        for(let p=0;p<d.length;p+=4){
-          d[p]   = Math.min(255, Math.round(Math.round(d[p]   / step) * step));
-          d[p+1] = Math.min(255, Math.round(Math.round(d[p+1] / step) * step));
-          d[p+2] = Math.min(255, Math.round(Math.round(d[p+2] / step) * step));
+
+      c.toBlob(blob=>{
+        if(fmt==='image/png' && blob && entry?.file){
+          // PNG is lossless — browser encoder may produce larger file than optimized originals
+          // Return smaller of: new encoding vs original (only if no transformations changed content)
+          const noTransform = (s.scale>=100||!s.scale) && !s.maxWidth && s.outputChannel==='rgb' && !s.nmFlip && !s.splitRGB;
+          if(noTransform && blob.size > entry.file.size){
+            res(entry.file);
+          } else {
+            res(blob);
+          }
+        } else {
+          res(blob);
         }
-        ctx.putImageData(id,0,0);
-      }
-      c.toBlob(res,fmt,q);
+      },fmt,q);
     };
     img.onerror=()=>res(null);
     img.src=du;
@@ -3294,5 +3304,5 @@ renderCol1();updateRipBtn();applyLang();updateEmptyOverlays();
 setTimeout(setRipAnchor,150);
 })();
 </script>
-<div style="position:fixed;bottom:6px;right:8px;font-size:10px;color:#bbb;font-family:'Roboto Mono',monospace;pointer-events:none;z-index:50;letter-spacing:.3px">v0.43</div>
+<div style="position:fixed;bottom:6px;right:8px;font-size:10px;color:#bbb;font-family:'Roboto Mono',monospace;pointer-events:none;z-index:50;letter-spacing:.3px">v0.49</div>
 </html>
