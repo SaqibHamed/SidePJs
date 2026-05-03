@@ -539,7 +539,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px;
           <select id="gDitherSel">
             <option value="none">None</option>
             <option value="floyd" selected>Floyd–Steinberg</option>
-            <option value="ordered">Ordered</option>
+            <option value="stucki">Stucki</option>
           </select>
         </div>
         <div class="field">
@@ -590,6 +590,11 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px;
           <div style="display:flex;justify-content:space-between;margin-top:2px;font-size:10px;color:#bbb">
             <span>0s</span><span id="trimDurLabel">?s</span>
           </div>
+        </div>
+        <!-- Saturation/Color -->
+        <div class="field">
+          <div class="fl"><span>Saturation</span><input class="slider-number" id="vSatVal" value="100" min="0" max="200" type="number" style="width:52px"></div>
+          <input type="range" min="0" max="200" value="100" id="vSatSlider" step="1">
         </div>
       </div>
 
@@ -1654,7 +1659,7 @@ const col1=$('col1Body'), col3=$('col3Body');
 
 // DEFAULT SETTINGS factory
 function defaultSettings(){
-  return {format:'image/jpeg',quality:82,scale:100,maxWidth:0,outputChannel:'rgb',gifFps:10,gifColors:128,gifLoop:0,gifDelay:100,gifDither:'floyd',gifStart:0,gifEnd:null,videoFps:10,videoLoop:0,splitRGB:false,nmFlip:false};
+  return {format:'image/jpeg',quality:82,scale:100,maxWidth:0,outputChannel:'rgb',gifFps:10,gifColors:128,gifLoop:0,gifDelay:100,gifDither:'floyd',gifStart:0,gifEnd:null,videoFps:10,videoLoop:0,videoSat:100,splitRGB:false,nmFlip:false};
 }
 
 // UTILS
@@ -1747,6 +1752,7 @@ function saveActiveSettings(){
     gifStart:parseFloat($('gStartVal').value)||0,
     gifEnd:$('gEndVal').value===''?null:parseFloat($('gEndVal').value),
     videoFps:parseInt($('vfSlider')?.value)||10,
+    videoSat:parseInt($('vSatSlider')?.value)||100,
     videoLoop:$('vLoopToggle')?.classList.contains('on')?0:parseInt($('vLoopSlider')?.value)||1,
     splitRGB:$('splitToggle').classList.contains('on'),
     nmFlip:$('nmToggle').classList.contains('on'),
@@ -1776,8 +1782,9 @@ function loadSettingsToUI(s){
   const gcf=$('gLoopCountField'); if(gcf) gcf.style.display=isInf?'none':'block';
   $('gLoopSlider').value=s.gifLoop||1; const gv=$('gLoopVal'); if(gv) gv.textContent=s.gifLoop||1;
   $('gDelaySlider').value=s.gifDelay||100; $('gDelayVal').value=s.gifDelay||100;
-  $('gDitherSel').value=s.gifDither||'floyd';
+  $('gDitherSel').value=(s.gifDither==='ordered'?'stucki':s.gifDither)||'floyd';
   if($('vfSlider')){ $('vfSlider').value=s.videoFps||10; $('vfVal').value=s.videoFps||10; }
+  if($('vSatSlider')){ $('vSatSlider').value=s.videoSat||100; $('vSatVal').value=s.videoSat||100; }
   const vIsInf=(s.videoLoop||0)===0;
   if($('vLoopToggle')){ $('vLoopToggle').classList.toggle('on',vIsInf); const vl=$('vLoopToggleLabel'); if(vl){ vl.textContent=vIsInf?'∞':'count'; vl.style.color=vIsInf?'#1a73e8':'#999'; } }
   if($('vLoopCountField')) $('vLoopCountField').style.display=vIsInf?'none':'block';
@@ -1942,6 +1949,9 @@ $('vLoopToggle')?.parentElement?.addEventListener('click',()=>{
   onSettingChange();
 });
 $('vLoopSlider')?.addEventListener('input',()=>onSettingChange());
+if($('vSatSlider')) syncSlider('vSatSlider','vSatVal',0,200);
+// Apply CSS filter to video preview on sat change
+$('vSatSlider')?.addEventListener('input',()=>{ const vid=document.querySelector('#prevContainer video'); if(vid) vid.style.filter=`saturate(${$('vSatSlider').value}%)`; });
 
 // GIF loop — ∞ toggle (on by default) vs finite count
 $('gLoopToggle').parentElement.addEventListener('click',()=>{
@@ -2577,6 +2587,7 @@ async function doPreview(){
       const vid = document.createElement('video');
       vid.src = videoUrl; vid.muted = true; vid.loop = true; vid.autoplay = true;
       vid.style.cssText = 'max-width:100%;max-height:200px;display:block;border-radius:2px;';
+      const initSat = entry.settings?.videoSat||100; if(initSat!==100) vid.style.filter=`saturate(${initSat}%)`;
       vid.addEventListener('loadedmetadata', ()=>{
         const dur = isFinite(vid.duration) ? vid.duration : 0;
         showTrimField(dur > 0);
@@ -2590,6 +2601,16 @@ async function doPreview(){
         $('gEndVal').value = s.gifEnd != null ? s.gifEnd : (dur ? dur.toFixed(1) : '');
         updateTrimBar();
       }, {once:true});
+      // Clamp playback to trim range
+      vid.addEventListener('timeupdate', ()=>{
+        const s=entry.settings;
+        const st=s.gifStart||0, en=s.gifEnd!=null?s.gifEnd:vid.duration;
+        if(vid.currentTime>en){ vid.currentTime=st; }
+        if(vid.currentTime<st){ vid.currentTime=st; }
+      });
+      vid.addEventListener('loadedmetadata',()=>{
+        if(entry.settings.gifStart) vid.currentTime=entry.settings.gifStart||0;
+      },{once:true});
       cont.appendChild(vid);
     }
     $('prevInfo').textContent = fb(file.size);
@@ -2801,10 +2822,13 @@ async function convertToGif(file, s){
     : ((s.gifLoop ===0||s.gifLoop ==null)?0:s.gifLoop);
   const colors  = Math.min(256, Math.max(2, s.gifColors || 128));
   const delay   = Math.round(1000 / fps);
-  const dither  = s.gifDither === 'none' ? false : (s.gifDither === 'ordered' ? 'Ordered' : 'FloydSteinberg');
+  const dither  = s.gifDither === 'none' ? false : (s.gifDither === 'stucki' ? 'Stucki' : 'FloydSteinberg');
   const scale   = (s.scale || 100) / 100;
   const maxW    = s.maxWidth || 0;
-  const quality = Math.max(1, Math.min(30, Math.round(30 - (colors / 256) * 29)));
+  // Round colors to nearest power of 2 (gif.js requirement: 2,4,8,16,32,64,128,256)
+  const colorsPow2 = Math.pow(2, Math.round(Math.log2(Math.max(2, Math.min(256, colors)))));
+  // gif.js quality: 1=best, 30=worst (affects dithering precision, not palette size)
+  const quality = 1;
   const trimStart = s.gifStart || 0;
   const trimEnd   = s.gifEnd != null ? s.gifEnd : null;
 
@@ -2820,14 +2844,13 @@ async function convertToGif(file, s){
       canvas.width = w; canvas.height = h;
       gifInst = new GIF({
         workers: 2,
-        quality,       // 1=best quality/most colors, 30=worst
+        quality,
         width: w,
         height: h,
         workerScript: getGifWorkerUrl(),
         repeat: loop,
         dither,
-        // gif.js doesn't have a direct 'colors' param — palette size comes from quality
-        // but we apply a post-quantization color limit via background option workaround
+        colors: colorsPow2,   // palette size, must be power of 2 (2–256)
       });
       gifInst.on('finished', finish);
       gifInst.on('error', ()=>finish(null));
@@ -2863,7 +2886,11 @@ async function convertToGif(file, s){
         video.currentTime = t;
         await new Promise(r => { const onSeeked = ()=>{ video.removeEventListener('seeked', onSeeked); r(); }; video.addEventListener('seeked', onSeeked); });
         ctx.clearRect(0, 0, w, h);
+        // Apply saturation filter if set
+        const satPct = (s.videoSat||100);
+        if(satPct !== 100) { ctx.filter = `saturate(${satPct}%)`; } else { ctx.filter = 'none'; }
         ctx.drawImage(video, 0, 0, w, h);
+        ctx.filter = 'none';
         gifInst.addFrame(canvas, {copy: true, delay});
         if(i % 10 === 0) setStatus(`Processing frame ${i+1}/${totalFrames}…`, true);
       }
@@ -3225,5 +3252,5 @@ renderCol1();updateRipBtn();applyLang();updateEmptyOverlays();
 setTimeout(setRipAnchor,150);
 })();
 </script>
-<div style="position:fixed;bottom:6px;right:8px;font-size:10px;color:#bbb;font-family:'Roboto Mono',monospace;pointer-events:none;z-index:50;letter-spacing:.3px">v0.39</div>
+<div style="position:fixed;bottom:6px;right:8px;font-size:10px;color:#bbb;font-family:'Roboto Mono',monospace;pointer-events:none;z-index:50;letter-spacing:.3px">v0.40</div>
 </html>
