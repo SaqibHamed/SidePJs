@@ -54,6 +54,7 @@ html, body { height: 100%; font-family: 'Roboto', sans-serif; background: #f2f2f
 /* FLOATING RIP */
 #ripBtn { position: fixed; z-index: 100; pointer-events: none; opacity: 0; transition: opacity .25s; }
 #ripBtn.ready { pointer-events: auto; opacity: 1; }
+#ripBtn.processing { opacity: 0; pointer-events: none; transition: opacity .4s; }
 .rip-outer { width: 72px; height: 72px; position: relative; display: flex; align-items: center; justify-content: center; }
 .rip-svg-ring { position: absolute; inset: 0; pointer-events: none; animation: spinRing 5s linear infinite; transform-origin: 36px 36px; }
 .rip-inner { width: 50px; height: 50px; border-radius: 50%; background: #1a73e8; border: 3px solid #fff; box-shadow: 0 2px 12px rgba(26,115,232,.5); display: flex; align-items: center; justify-content: center; cursor: pointer; color: #fff; transition: background .15s, box-shadow .15s, transform .12s; position: relative; z-index: 1; }
@@ -299,6 +300,10 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px;
 .slot-r { background: #ffebee; color: #e53935; border: 1px solid #ef9a9a; }
 .slot-g { background: #e8f5e9; color: #388e3c; border: 1px solid #a5d6a7; }
 .slot-b { background: #e3f2fd; color: #1565c0; border: 1px solid #90caf9; }
+.slot-a { background: #f3e5f5; color: #7b1fa2; border: 1px solid #ce93d8; }
+.drop-a { border: 1.5px dashed #ce93d8; background: #fdf5ff; color: #7b1fa2; }
+.drop-a:hover,.drop-a.over { background: #f3e5f5; border-color: #7b1fa2; }
+.drop-optional { opacity: .7; }
 /* Drop zone fills the thumb column */
 .merge-node-drop {
   width: 38px; height: 38px;
@@ -362,6 +367,32 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px;
   cursor: pointer; pointer-events: all; border: 2px solid #fff;
 }
 
+/* EMPTY STATE OVERLAY — col2+col3 when no files loaded */
+.col-empty-overlay {
+  position: absolute; inset: 0; z-index: 10;
+  background: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 6px,
+    rgba(0,0,0,.025) 6px,
+    rgba(0,0,0,.025) 7px
+  );
+  pointer-events: none;
+  transition: opacity .3s;
+}
+.col.has-content .col-empty-overlay { opacity: 0; pointer-events: none; }
+
+/* CONVERT BUTTON — converting state: shrink ring, keep arrow */
+#ripBtn.converting .rip-label { opacity: 0; }
+#ripBtn.converting .rip-svg-ring { animation-duration: 0.4s; }
+#ripBtn.converting .rip-outer { width: 40px; height: 40px; }
+#ripBtn.converting .rip-svg-ring { transform-origin: 20px 20px; }
+#ripBtn.converting .rip-inner { width: 34px; height: 34px; }
+/* hover 360 spin on inner */
+.rip-inner { transition: background .15s, box-shadow .15s, transform .3s; }
+.rip-outer:hover .rip-inner:not(.disabled) { transform: rotate(360deg); }
+.rip-inner:active { transform: scale(.88) rotate(360deg) !important; }
+
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #ddd; border-radius: 3px; }
@@ -413,7 +444,8 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px;
   </div><!-- /col-1 -->
 
   <!-- COL 2: SETTINGS -->
-  <div class="col col-2">
+  <div class="col col-2" id="col2" style="position:relative">
+    <div class="col-empty-overlay" id="col2Overlay"></div>
     <div class="col-head">
       <span data-t="col2">Settings</span>
       <span id="scope" style="font-weight:400;color:#1a73e8;font-size:11px"></span>
@@ -446,15 +478,13 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px;
       <!-- SIZE side by side -->
       <div class="sg">
         <div class="sg-title" data-t="sgSize">Size</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-          <div class="field">
-            <div class="fl" style="font-size:11px;color:#666"><span data-t="labelScale">Scale %</span><input class="slider-number" id="scVal" value="100" min="10" max="100" type="number" title="Scale %" style="width:52px"></div>
-            <input type="range" min="10" max="100" value="100" id="scSlider" step="1">
-          </div>
-          <div class="field">
-            <div class="fl" style="font-size:11px;color:#666"><span data-t="labelMaxW">Max w.</span><span style="color:#bbb;font-size:10px">px</span></div>
-            <input type="number" id="mxW" value="0" min="0" max="8192" style="width:100%">
-          </div>
+        <div class="field">
+          <div class="fl"><span data-t="labelScale">Scale</span><input class="slider-number" id="scVal" value="100" min="10" max="100" type="number" title="Scale %" style="width:52px"></div>
+          <input type="range" min="10" max="100" value="100" id="scSlider" step="1">
+        </div>
+        <div class="field">
+          <div class="fl"><span data-t="labelMaxW">Max width</span><span style="color:#bbb;font-size:11px;margin-left:3px">(0 = off)</span></div>
+          <input type="number" id="mxW" value="0" min="0" max="8192">
         </div>
       </div>
 
@@ -620,10 +650,21 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px;
   </div>
 
   <!-- COL 3: OUTPUT -->
-  <div class="col col-3">
+  <div class="col col-3" id="col3Wrap" style="position:relative">
+    <div class="col-empty-overlay" id="col3Overlay"></div>
     <div class="col-head">
       <span data-t="col3">Output</span>
       <span id="outCount" style="font-weight:400;font-size:11px;color:#aaa"></span>
+    </div>
+    <!-- Filename options -->
+    <div style="flex-shrink:0;display:flex;align-items:center;gap:5px;padding:5px 8px;border-bottom:1px solid #eee;background:#fafafa;flex-wrap:wrap;">
+      <input type="text" id="fnPrefix" placeholder="prefix_" style="width:72px;height:26px;border:1px solid #ddd;border-radius:3px;font-size:11px;font-family:'Roboto Mono',monospace;padding:0 5px;color:#555;outline:none;">
+      <span style="font-size:10px;color:#bbb">filename</span>
+      <input type="text" id="fnSuffix" placeholder="_suffix" style="width:72px;height:26px;border:1px solid #ddd;border-radius:3px;font-size:11px;font-family:'Roboto Mono',monospace;padding:0 5px;color:#555;outline:none;">
+      <label class="toggle-row" style="margin-left:auto;gap:5px" title="Prepend date YYYYMMDD_">
+        <span style="font-size:10px;color:#888;font-family:'Roboto Mono',monospace">date</span>
+        <div class="toggle-switch" id="fnDateToggle" style="width:28px;height:16px;"><div class="toggle-knob" style="width:10px;height:10px;top:3px;left:3px;"></div></div>
+      </label>
     </div>
     <div class="col3-dl-bar" id="col3DlBar">
       <button class="col3-dl-btn primary" id="col3DlAllBtn">
@@ -1623,12 +1664,25 @@ function isImgExt(f){return ['jpg','jpeg','png','gif','webp','avif','svg','bmp',
 function isPow2(n){return n>0&&(n&(n-1))===0;}
 function nearestPow2(n){return Math.pow(2,Math.round(Math.log2(n)));}
 function outName(f, suffix, fileSettings){
-  const base=f.name.replace(/\.[^.]+$/,'');
+  const base = f.name.replace(/\.[^.]+$/,'');
   const s = fileSettings || defaultSettings();
-  const map={'image/jpeg':'jpg','image/png':'png','image/webp':'webp','image/gif':'gif'};
-  const e=map[s.format]||'jpg';
-  return base+(suffix||'')+'.'+e;
+  const map = {'image/jpeg':'jpg','image/png':'png','image/webp':'webp','image/gif':'gif'};
+  const e = map[s.format] || 'jpg';
+  const prefix  = ($('fnPrefix')?.value  || '').trim();
+  const sfx     = ($('fnSuffix')?.value  || '').trim();
+  const useDate = $('fnDateToggle')?.classList.contains('on');
+  const dateStr = useDate ? (()=>{const d=new Date();return d.getFullYear()+''+String(d.getMonth()+1).padStart(2,'0')+''+String(d.getDate()).padStart(2,'0')+'_';})() : '';
+  return dateStr + prefix + base + (suffix||'') + sfx + '.' + e;
 }
+
+// Wire date toggle
+$('fnDateToggle').addEventListener('click', ()=>{
+  const tog=$('fnDateToggle');
+  const on=!tog.classList.contains('on');
+  tog.classList.toggle('on',on);
+  const knob=tog.querySelector('.toggle-knob');
+  if(knob) knob.style.left=on?'15px':'3px';
+});
 function fileToDataURL(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file);});}
 function blobToDataURL(blob){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(blob);});}
 
@@ -1798,18 +1852,17 @@ function updateGifSgVisibility(){
 
   // If output format is not GIF → hide everything regardless of input
   if(!isGif){
-    if(gifSect) gifSect.style.display = 'none';
-    if(vidSect) vidSect.style.display = 'none';
+    if(gifSect){ gifSect.style.display='none'; gifSect.classList.remove('on'); }
+    if(vidSect){ vidSect.style.display='none'; vidSect.classList.remove('on'); }
     return;
   }
 
   if(isVideoInput){
-    if(gifSect) gifSect.style.display = 'none';
-    if(vidSect) vidSect.style.display = '';
+    if(gifSect){ gifSect.style.display='none'; gifSect.classList.remove('on'); }
+    if(vidSect){ vidSect.style.display=''; vidSect.classList.add('on'); }
   } else {
-    // GIF input or image input → show GIF settings
-    if(gifSect) gifSect.style.display = '';
-    if(vidSect) vidSect.style.display = 'none';
+    if(gifSect){ gifSect.style.display=''; gifSect.classList.add('on'); }
+    if(vidSect){ vidSect.style.display='none'; vidSect.classList.remove('on'); }
   }
 }
 $('mxW').addEventListener('input',()=>onSettingChange());
@@ -2006,7 +2059,7 @@ function addMergeNode() {
   nodeCounter++;
   const nid = 'n' + nodeCounter;
   const defaultName = 'merge_' + String(nodeCounter).padStart(2,'0');
-  const nodeState = {id:nid, name:defaultName, files:{R:null,G:null,B:null}, expanded:true, settings:defaultSettings()};
+  const nodeState = {id:nid, name:defaultName, files:{R:null,G:null,B:null,A:null}, expanded:true, settings:defaultSettings()};
   mergeNodes.push(nodeState);
   $('settingsEmpty').style.display='none';
   $('settingsBody').style.display='flex';
@@ -2069,8 +2122,8 @@ function buildMergeNodeEl(nodeState) {
   if (isNodeSel) node.classList.add('sel');
 
   // Compute status label
-  const {R,G,B} = nodeState.files;
-  const filled = [R,G,B].filter(Boolean).length;
+  const {R,G,B,A} = nodeState.files;
+  const filled = [R,G,B].filter(Boolean).length; // A is optional
   const statusStr = filled === 3 ? 'ready to merge' : filled + '/3 channels';
 
   node.innerHTML = `
@@ -2088,6 +2141,7 @@ function buildMergeNodeEl(nodeState) {
       ${mkNodeSlotHTML('R','r',nid, nodeState.files.R)}
       ${mkNodeSlotHTML('G','g',nid, nodeState.files.G)}
       ${mkNodeSlotHTML('B','b',nid, nodeState.files.B)}
+      ${mkNodeSlotHTML('A','a',nid, nodeState.files.A, true)}
     </div>`;
 
   // Toggle expand on header click
@@ -2159,24 +2213,22 @@ function buildMergeNodeEl(nodeState) {
   return node;
 }
 
-function mkNodeSlotHTML(ch, cls, nid, currentFile) {
+function mkNodeSlotHTML(ch, cls, nid, currentFile, optional=false) {
   const hasFile = !!currentFile;
   const fname = hasFile ? currentFile.name : '';
   const fsize = hasFile ? fb(currentFile.size) : '';
   const shortName = fname.length > 22 ? fname.substring(0,20)+'…' : fname;
-
   const thumbContent = hasFile
     ? `<img id="nthumb_${nid}_${ch}" src="" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:2px;display:block;pointer-events:none;">`
-    : `<span style="pointer-events:none;font-size:8px;color:inherit;text-align:center;line-height:1.3">drop<br>click</span>`;
-
+    : `<span style="pointer-events:none;font-size:8px;color:inherit;text-align:center;line-height:1.3">${optional?'opt':''}<br>drop</span>`;
   return `<div class="merge-node-slot" id="mslot_${nid}_${ch}">
     <div class="merge-node-slot-lbl slot-${cls}">${ch}</div>
-    <div id="nd2_${nid}_${ch}" class="merge-node-drop drop-${cls}">
+    <div id="nd2_${nid}_${ch}" class="merge-node-drop drop-${cls}${optional?' drop-optional':''}">
       <input type="file" accept="image/*" id="nf2_${nid}_${ch}" style="position:absolute;inset:0;opacity:0;cursor:pointer;z-index:1;">
       ${thumbContent}
     </div>
     <div style="min-width:0;">
-      <div style="font-size:12px;color:${hasFile?'#1a1a1a':'#bbb'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${hasFile?shortName:'no file'}</div>
+      <div style="font-size:12px;color:${hasFile?'#1a1a1a':'#bbb'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${hasFile?shortName:(optional?'Alpha (optional)':'no file')}</div>
       <div style="font-size:10px;color:#999;font-family:Roboto Mono,monospace;margin-top:1px">${fsize}</div>
     </div>
   </div>`;
@@ -2184,7 +2236,7 @@ function mkNodeSlotHTML(ch, cls, nid, currentFile) {
 
 // After buildMergeNodeEl, load any existing thumbnails async
 function loadNodeThumbs(nodeState) {
-  ['R','G','B'].forEach(ch => {
+  ['R','G','B','A'].forEach(ch => {
     if (!nodeState.files[ch]) return;
     const img = document.querySelector(`#nthumb_${nodeState.id}_${ch}`);
     if (!img) return;
@@ -2259,7 +2311,9 @@ function addFiles(newFiles){
   if(sel.size===0 && files.length>0){
     sel.add(0);
     renderCol1(); updateSel(); updateSettingsUI();
+    updateGifSgVisibility();
   }
+  updateEmptyOverlays();
   setStatus(t('ready'),false);
 }
 // File input wired via drop zones in col1
@@ -2418,6 +2472,8 @@ function renderPreview(){
   const cont=$('prevContainer'), ph=$('prevPh'), tb=$('prevToolbar'), info=$('prevInfo');
   if(!prevOrigUrl){ph.style.display='flex';tb.classList.remove('visible');return;}
   ph.style.display='none'; tb.classList.add('visible');
+  // Show out button whenever there is output
+  const _ob=$('prevBtnOut'); if(_ob) _ob.style.display = prevOutUrl ? '' : 'none';
 
   // Show/hide video and img elements based on mode
   const vid = cont.querySelector('video');
@@ -3018,6 +3074,8 @@ async function doConvert(){
   }
 
   ripInner.classList.add('disabled');
+  ripBtn.classList.add('converting');
+  ripBtn.classList.add('processing');
   blobs=[]; showDlBar(false);
   $('pw').style.display='block'; $('pb').style.width='0%';
   setStatus(t('converting'),true);
@@ -3076,26 +3134,33 @@ async function doConvert(){
   setStatus(blobs.length+' '+t('done'),false);
   $('ss').textContent=sv>0?'−'+sv+'% '+t('totalSaving'):'';
   ripInner.classList.remove('disabled');
+  ripBtn.classList.remove('converting');
+  ripBtn.classList.remove('processing');
   showDlBar(blobs.length>1);
 }
 
 async function mergeNodeToBlob(nodeState, settings) {
-  const {R,G,B} = nodeState.files;
+  const {R,G,B,A} = nodeState.files;
   if(!R||!G||!B) return null;
   const fmt = settings?.format || 'image/png';
   const q = fmt==='image/png' ? 1 : (settings?.quality||82)/100;
-  const imgs = await Promise.all([R,G,B].map(f => fileToDataURL(f).then(du => new Promise(res => {
+  const channels = A ? [R,G,B,A] : [R,G,B];
+  const imgs = await Promise.all(channels.map(f => fileToDataURL(f).then(du => new Promise(res => {
     const i=new Image(); i.onload=()=>res(i); i.src=du;
   }))));
   const w=imgs[0].naturalWidth, h=imgs[0].naturalHeight;
-  const c=document.createElement('canvas'); c.width=w; c.height=h;
-  const ctx=c.getContext('2d');
+  const cv=document.createElement('canvas'); cv.width=w; cv.height=h;
+  const ctx=cv.getContext('2d');
   function gd(img){ const tmp=document.createElement('canvas');tmp.width=w;tmp.height=h;const tc=tmp.getContext('2d');tc.drawImage(img,0,0,w,h);return tc.getImageData(0,0,w,h); }
-  const [iR,iG,iB] = imgs.map(gd);
+  const [iR,iG,iB,iA] = imgs.map(gd);
   const out = ctx.createImageData(w,h);
-  for(let p=0;p<out.data.length;p+=4){ out.data[p]=iR.data[p]; out.data[p+1]=iG.data[p+1]; out.data[p+2]=iB.data[p+2]; out.data[p+3]=255; }
+  for(let p=0;p<out.data.length;p+=4){
+    out.data[p]=iR.data[p]; out.data[p+1]=iG.data[p+1]; out.data[p+2]=iB.data[p+2];
+    out.data[p+3]= iA ? iA.data[p] : 255;
+  }
   ctx.putImageData(out,0,0);
-  return new Promise(res => c.toBlob(res, fmt, q));
+  const outFmt = iA ? 'image/png' : fmt; // force PNG when alpha used
+  return new Promise(res => cv.toBlob(res, outFmt, q));
 }
 
 // RENDER COL 3
@@ -3147,10 +3212,18 @@ $('col3DlZipBtn').addEventListener('click',async()=>{
 });
 function setStatus(msg,running){$('st').textContent=msg;$('sd').className='sd'+(running?' run':'');}
 
+// EMPTY STATE OVERLAYS
+function updateEmptyOverlays(){
+  const hasFiles = files.length > 0 || mergeNodes.length > 0;
+  const o2=$('col2Overlay'), o3=$('col3Overlay');
+  if(o2) o2.style.opacity = hasFiles ? '0' : '1';
+  if(o3) o3.style.opacity = hasFiles ? '0' : '1';
+}
+
 // INIT
-renderCol1();updateRipBtn();applyLang();
+renderCol1();updateRipBtn();applyLang();updateEmptyOverlays();
 setTimeout(setRipAnchor,150);
 })();
 </script>
-<div style="position:fixed;bottom:6px;right:8px;font-size:10px;color:#bbb;font-family:'Roboto Mono',monospace;pointer-events:none;z-index:50;letter-spacing:.3px">v0.37</div>
+<div style="position:fixed;bottom:6px;right:8px;font-size:10px;color:#bbb;font-family:'Roboto Mono',monospace;pointer-events:none;z-index:50;letter-spacing:.3px">v0.39</div>
 </html>
