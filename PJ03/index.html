@@ -1652,7 +1652,7 @@ let blobs=[];
 let col3Results=[];
 let previewTimer=null;
 let prevOrigUrl=null, prevOutUrl=null, prevOrigSize=0, prevOutSize=0;
-let prevMode='orig', prevActual=false;
+let prevMode='orig', prevActual=false, prevFile=null;
 
 const $=id=>document.getElementById(id);
 const col1=$('col1Body'), col3=$('col3Body');
@@ -2549,8 +2549,9 @@ async function doPreview(){
     $('prevToolbar').classList.add('visible');
     prevOrigSize = file.size;
     prevOutUrl = null; prevOutSize = 0;
-    prevMode = 'orig';
-    $('prevBtnOrig').classList.add('active');
+    // Only reset to orig when switching to a different file
+    if(prevFile !== file){ prevMode = 'orig'; $('prevBtnOrig').classList.add('active'); }
+    prevFile = file;
     const cont = $('prevContainer');
     cont.querySelectorAll('img,video,.prev-ph').forEach(el=>{if(el.id!=='prevPh')el.remove();});
 
@@ -2625,9 +2626,8 @@ async function doPreview(){
   prevOrigUrl = entry.dataUrl||(await fileToDataURL(file));
   prevOrigSize = file.size;
   prevOutUrl = null; prevOutSize = 0;
-  // Default: show 'out' mode
-  prevMode = 'orig';
-  $('prevBtnOrig').classList.add('active');
+  if(prevFile !== file){ prevMode = 'orig'; $('prevBtnOrig').classList.add('active'); }
+  prevFile = file;
   renderPreview();
   const b = await convertFile(file, entry.settings);
   if(b){ prevOutUrl=await blobToDataURL(b); prevOutSize=b.size; renderPreview(); }
@@ -3282,5 +3282,5 @@ renderCol1();updateRipBtn();applyLang();updateEmptyOverlays();
 setTimeout(setRipAnchor,150);
 })();
 </script>
-<div style="position:fixed;bottom:6px;right:8px;font-size:10px;color:#bbb;font-family:'Roboto Mono',monospace;pointer-events:none;z-index:50;letter-spacing:.3px">v0.41</div>
+<div style="position:fixed;bottom:6px;right:8px;font-size:10px;color:#bbb;font-family:'Roboto Mono',monospace;pointer-events:none;z-index:50;letter-spacing:.3px">v0.42</div>
 </html>
