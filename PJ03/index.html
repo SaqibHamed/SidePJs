@@ -2141,8 +2141,8 @@ function buildMergeNodeEl(nodeState) {
 
   // Compute status label
   const {R,G,B,A} = nodeState.files;
-  const filled = [R,G,B].filter(Boolean).length; // A is optional
-  const statusStr = filled === 3 ? 'ready to merge' : filled + '/3 channels';
+  const filled = [R,G,B,A].filter(Boolean).length;
+  const statusStr = filled > 0 ? (filled===4?'R+G+B+A ready':filled===3?'R+G+B ready':filled+' channel'+(filled>1?'s':'')+' — rest → black') : 'drop channels to merge';
 
   node.innerHTML = `
     <div class="merge-node-header" id="mnh_${nid}">
@@ -2203,7 +2203,7 @@ function buildMergeNodeEl(nodeState) {
   // Execute merge
   node.querySelector('.merge-node-exec')?.addEventListener('click', async () => {
     const {R,G,B} = nodeState.files;
-    if (!R||!G||!B) return;
+    if (!R&&!G&&!B) return; // need at least one channel
     const nameVal = nodeState.name.trim() || defaultName;
     setStatus('Merging ' + nameVal + '…', true);
     const imgs = await Promise.all([R,G,B].map(f => fileToDataURL(f).then(du => new Promise(res => {
@@ -3220,25 +3220,42 @@ async function doConvert(){
 
 async function mergeNodeToBlob(nodeState, settings) {
   const {R,G,B,A} = nodeState.files;
-  if(!R||!G||!B) return null;
+  if(!R&&!G&&!B) return null; // need at least one channel
   const fmt = settings?.format || 'image/png';
   const q = fmt==='image/png' ? 1 : (settings?.quality||82)/100;
-  const channels = A ? [R,G,B,A] : [R,G,B];
-  const imgs = await Promise.all(channels.map(f => fileToDataURL(f).then(du => new Promise(res => {
-    const i=new Image(); i.onload=()=>res(i); i.src=du;
-  }))));
-  const w=imgs[0].naturalWidth, h=imgs[0].naturalHeight;
+
+  // Load only filled channels, others will default to black (0)
+  async function loadImg(f){
+    if(!f) return null;
+    const du = await fileToDataURL(f);
+    return new Promise(res=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=()=>res(null); i.src=du; });
+  }
+  const [imgR,imgG,imgB,imgA] = await Promise.all([R,G,B,A].map(loadImg));
+
+  // Determine dimensions from first available channel
+  const ref = imgR||imgG||imgB;
+  if(!ref) return null;
+  const w=ref.naturalWidth, h=ref.naturalHeight;
   const cv=document.createElement('canvas'); cv.width=w; cv.height=h;
   const ctx=cv.getContext('2d');
-  function gd(img){ const tmp=document.createElement('canvas');tmp.width=w;tmp.height=h;const tc=tmp.getContext('2d');tc.drawImage(img,0,0,w,h);return tc.getImageData(0,0,w,h); }
-  const [iR,iG,iB,iA] = imgs.map(gd);
+
+  function gd(img){
+    if(!img) return null;
+    const tmp=document.createElement('canvas');tmp.width=w;tmp.height=h;
+    const tc=tmp.getContext('2d');tc.drawImage(img,0,0,w,h);
+    return tc.getImageData(0,0,w,h);
+  }
+  const [iR,iG,iB,iA] = [imgR,imgG,imgB,imgA].map(gd);
+
   const out = ctx.createImageData(w,h);
   for(let p=0;p<out.data.length;p+=4){
-    out.data[p]=iR.data[p]; out.data[p+1]=iG.data[p+1]; out.data[p+2]=iB.data[p+2];
-    out.data[p+3]= iA ? iA.data[p] : 255;
+    out.data[p]   = iR ? iR.data[p]   : 0; // R or black
+    out.data[p+1] = iG ? iG.data[p+1] : 0; // G or black
+    out.data[p+2] = iB ? iB.data[p+2] : 0; // B or black
+    out.data[p+3] = iA ? iA.data[p]   : 255;
   }
   ctx.putImageData(out,0,0);
-  const outFmt = iA ? 'image/png' : fmt; // force PNG when alpha used
+  const outFmt = iA ? 'image/png' : fmt;
   return new Promise(res => cv.toBlob(res, outFmt, q));
 }
 
@@ -3304,5 +3321,5 @@ renderCol1();updateRipBtn();applyLang();updateEmptyOverlays();
 setTimeout(setRipAnchor,150);
 })();
 </script>
-<div style="position:fixed;bottom:6px;right:8px;font-size:10px;color:#bbb;font-family:'Roboto Mono',monospace;pointer-events:none;z-index:50;letter-spacing:.3px">v0.49</div>
+<div style="position:fixed;bottom:6px;right:8px;font-size:10px;color:#bbb;font-family:'Roboto Mono',monospace;pointer-events:none;z-index:50;letter-spacing:.3px">v0.50</div>
 </html>
