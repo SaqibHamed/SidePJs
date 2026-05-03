@@ -2850,10 +2850,40 @@ async function convertToGif(file, s){
         workerScript: getGifWorkerUrl(),
         repeat: loop,
         dither,
-        colors: colorsPow2,   // palette size, must be power of 2 (2–256)
       });
       gifInst.on('finished', finish);
-      gifInst.on('error', ()=>finish(null));
+      gifInst.on('error', e=>{ console.error('gif.js error',e); finish(null); });
+    }
+
+    // Pre-quantize ImageData to reduce unique colors before gif.js encoding
+    // This is the only reliable way to enforce palette size since gif.js ignores 'colors'
+    function posterizeImageData(imageData, numColors){
+      if(numColors >= 256) return imageData; // no-op at max
+      // Calculate levels per channel: cube-root of numColors (RGB cube)
+      const levels = Math.max(2, Math.round(Math.pow(numColors, 1/3)));
+      const step = 256 / (levels - 1);
+      const d = imageData.data;
+      for(let i = 0; i < d.length; i += 4){
+        d[i]   = Math.round(Math.round(d[i]   / step) * step);
+        d[i+1] = Math.round(Math.round(d[i+1] / step) * step);
+        d[i+2] = Math.round(Math.round(d[i+2] / step) * step);
+        // clamp
+        d[i]   = Math.min(255, d[i]);
+        d[i+1] = Math.min(255, d[i+1]);
+        d[i+2] = Math.min(255, d[i+2]);
+      }
+      return imageData;
+    }
+
+    // Helper: add a frame with optional posterization applied
+    function addFrameToGif(sourceCtx, frameDelay){
+      if(colorsPow2 < 256){
+        // Get pixel data, posterize, put back, then add
+        const id = sourceCtx.getImageData(0, 0, sourceCtx.canvas.width, sourceCtx.canvas.height);
+        posterizeImageData(id, colorsPow2);
+        sourceCtx.putImageData(id, 0, 0);
+      }
+      gifInst.addFrame(sourceCtx, {copy: true, delay: frameDelay});
     }
 
     function calcDims(natW, natH){
@@ -2891,7 +2921,7 @@ async function convertToGif(file, s){
         if(satPct !== 100) { ctx.filter = `saturate(${satPct}%)`; } else { ctx.filter = 'none'; }
         ctx.drawImage(video, 0, 0, w, h);
         ctx.filter = 'none';
-        gifInst.addFrame(canvas, {copy: true, delay});
+        addFrameToGif(ctx, delay);
         if(i % 10 === 0) setStatus(`Processing frame ${i+1}/${totalFrames}…`, true);
       }
       URL.revokeObjectURL(videoUrl);
@@ -2993,7 +3023,7 @@ async function convertToGif(file, s){
             scaleCtx.clearRect(0, 0, w, h);
             scaleCtx.drawImage(tmpCanvas, 0, 0, w, h);
             // Always use output delay (user's FPS setting)
-            gifInst.addFrame(scaleCtx, {copy: true, delay});
+            addFrameToGif(scaleCtx, delay);
             if(oi % 10 === 0) setStatus(`Processing frame ${oi+1}/${selectedFrameIndices.length}…`, true);
           }
         } catch(e) {
@@ -3001,13 +3031,13 @@ async function convertToGif(file, s){
           // Fallback: single frame
           ctx.clearRect(0,0,w,h);
           ctx.drawImage(img, 0, 0, w, h);
-          gifInst.addFrame(canvas, {copy: true, delay});
+          addFrameToGif(ctx, delay);
         }
       } else {
         // Static image (PNG, JPG etc) exported as GIF → single frame
         ctx.clearRect(0,0,w,h);
         ctx.drawImage(img, 0, 0, w, h);
-        gifInst.addFrame(canvas, {copy: true, delay});
+        addFrameToGif(ctx, delay);
       }
       setStatus('Encoding GIF…', true);
       gifInst.render();
@@ -3252,5 +3282,5 @@ renderCol1();updateRipBtn();applyLang();updateEmptyOverlays();
 setTimeout(setRipAnchor,150);
 })();
 </script>
-<div style="position:fixed;bottom:6px;right:8px;font-size:10px;color:#bbb;font-family:'Roboto Mono',monospace;pointer-events:none;z-index:50;letter-spacing:.3px">v0.40</div>
+<div style="position:fixed;bottom:6px;right:8px;font-size:10px;color:#bbb;font-family:'Roboto Mono',monospace;pointer-events:none;z-index:50;letter-spacing:.3px">v0.41</div>
 </html>
