@@ -469,7 +469,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px;
             </select>
           </div>
           <div class="field" id="qField">
-            <div class="fl" style="font-size:11px;color:#666"><span data-t="labelQuality">Quality</span><input class="slider-number" id="qVal" value="82" min="1" max="100" type="number" title="Quality %" style="width:52px"></div>
+            <div class="fl" style="font-size:11px;color:#666"><span data-t="labelQuality" title="PNG: reduces color palette. JPG/WebP: compression quality.">Quality</span><input class="slider-number" id="qVal" value="82" min="1" max="100" type="number" title="Quality %" style="width:52px"></div>
             <input type="range" min="1" max="100" value="82" id="qSlider" step="1">
           </div>
         </div>
@@ -1790,7 +1790,7 @@ function loadSettingsToUI(s){
   if($('vLoopCountField')) $('vLoopCountField').style.display=vIsInf?'none':'block';
   $('gStartVal').value=s.gifStart||0;
   $('gEndVal').value=s.gifEnd!=null?s.gifEnd:'';
-  $('qField').style.opacity=(s.format==='image/png'||s.format==='image/gif')?'.4':'1';
+  $('qField').style.opacity=s.format==='image/gif'?'.4':'1';
   if(typeof updateGifSgVisibility === 'function') updateGifSgVisibility();
   document.querySelectorAll('.ch-opt[data-ch]').forEach(b=>b.classList.toggle('active',b.dataset.ch===s.outputChannel));
   // texture toggles
@@ -1838,7 +1838,7 @@ function onSettingChange(){
 }
 $('fmtSel').addEventListener('change',()=>{
   const fmt=$('fmtSel').value;
-  $('qField').style.opacity=(fmt==='image/png'||fmt==='image/gif')?'.4':'1';
+  $('qField').style.opacity=fmt==='image/gif'?'.4':'1'; // PNG quality now reduces colors
   // Show GIF/Video settings only when GIF output is chosen
   updateGifSgVisibility();
   onSettingChange();
@@ -3074,10 +3074,22 @@ async function convertFile(file, settings){
         for(let p=0;p<id.data.length;p+=4){const g=Math.round(id.data[p]*.299+id.data[p+1]*.587+id.data[p+2]*.114);id.data[p]=id.data[p+1]=id.data[p+2]=g;}
         ctx.putImageData(id,0,0);
       }
-      // Normal map G-flip (applied after other ops, per-file setting)
       if(s.nmFlip){
         const id=ctx.getImageData(0,0,w,h);
         for(let p=0;p<id.data.length;p+=4) id.data[p+1]=255-id.data[p+1];
+        ctx.putImageData(id,0,0);
+      }
+      // PNG quality reduction via color quantization (quality 100=lossless, lower=fewer colors)
+      if(fmt==='image/png' && s.quality < 100){
+        const levels = Math.max(2, Math.round(2 + (s.quality / 100) * 254)); // 2–256 levels
+        const step = 255 / (levels - 1);
+        const id = ctx.getImageData(0,0,w,h);
+        const d = id.data;
+        for(let p=0;p<d.length;p+=4){
+          d[p]   = Math.min(255, Math.round(Math.round(d[p]   / step) * step));
+          d[p+1] = Math.min(255, Math.round(Math.round(d[p+1] / step) * step));
+          d[p+2] = Math.min(255, Math.round(Math.round(d[p+2] / step) * step));
+        }
         ctx.putImageData(id,0,0);
       }
       c.toBlob(res,fmt,q);
@@ -3282,5 +3294,5 @@ renderCol1();updateRipBtn();applyLang();updateEmptyOverlays();
 setTimeout(setRipAnchor,150);
 })();
 </script>
-<div style="position:fixed;bottom:6px;right:8px;font-size:10px;color:#bbb;font-family:'Roboto Mono',monospace;pointer-events:none;z-index:50;letter-spacing:.3px">v0.42</div>
+<div style="position:fixed;bottom:6px;right:8px;font-size:10px;color:#bbb;font-family:'Roboto Mono',monospace;pointer-events:none;z-index:50;letter-spacing:.3px">v0.43</div>
 </html>
