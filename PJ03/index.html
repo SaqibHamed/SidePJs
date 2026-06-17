@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>autofox · Manual</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --page:#EDEFF1;
+    --card:#FFFFFF;
+    --ink:#1F2328;
+    --muted:#566069;
+    --faint:#97A0A8;
+    --line:#EEF0F3;
+    --line2:#E1E5EA;
+    --accent:#E1342A;       /* autofox red */
+    --accent-soft:#FCEAE8;
+    --radius:14px;
+    --mono:"JetBrains Mono",ui-monospace,monospace;
+    --sans:"Rajdhani","Inter",-apple-system,system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:var(--sans);background:var(--page);color:var(--ink);
+    line-height:1.55;letter-spacing:.005em;font-size:16.5px;-webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;text-decoration:none}
+
+  .wrap{
+    max-width:1160px;margin:0 auto;padding:40px 28px 96px;
+    display:grid;grid-template-columns:minmax(0,1fr) 200px;gap:36px;align-items:start;
+  }
+
+  /* ---------- Content card ---------- */
+  .content{
+    background:var(--card);border:1px solid var(--line2);border-radius:var(--radius);
+    padding:48px 56px 60px;box-shadow:0 1px 2px rgba(20,30,45,.04);
+  }
+
+  /* ---------- Intro ---------- */
+  .doc-head{border-bottom:2px solid var(--ink);padding-bottom:34px;margin-bottom:8px}
+  .doc-title{font-size:30px;font-weight:700;text-transform:uppercase;letter-spacing:.015em;line-height:1.1;margin-bottom:22px}
+  .dl-sub{font-family:var(--mono);font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.16em;color:var(--faint);margin-bottom:18px}
+
+  .dl-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+  .dl-col{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;
+    border:1px solid var(--line2);border-radius:12px;padding:22px 18px;background:#FbFcFd}
+  .badge{display:inline-flex;align-items:center;gap:11px;background:#1A1A1A;color:#fff;border-radius:11px;padding:9px 18px;min-width:188px;justify-content:center;transition:transform .12s}
+  .badge:hover{transform:translateY(-1px)}
+  .badge svg{flex:none}
+  .b-txt{display:flex;flex-direction:column;align-items:flex-start;line-height:1.05}
+  .b-top{font-family:var(--sans);font-size:9.5px;text-transform:uppercase;letter-spacing:.08em;opacity:.85}
+  .b-main{font-size:19px;font-weight:600;letter-spacing:.01em}
+  .dl-url{font-family:var(--mono);font-size:11.5px;color:var(--accent);word-break:break-all;border-bottom:1px solid var(--accent-soft)}
+  .dl-url:hover{border-color:var(--accent)}
+  .qr{width:128px;height:128px;background:#fff;border:1px solid var(--line2);border-radius:10px;padding:9px;display:flex;align-items:center;justify-content:center}
+  .qr img,.qr canvas{display:block;width:108px;height:108px}
+  .qr-label{font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--faint)}
+
+  /* ---------- Groups & chapters ---------- */
+  .group-label{
+    font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.16em;
+    color:var(--faint);margin:84px 0 6px;padding-top:30px;border-top:1px solid var(--line);
+  }
+  .group-label:first-of-type{border-top:none;padding-top:0;margin-top:14px}
+
+  .chapter{scroll-margin-top:28px;padding-top:48px}
+  .chapter:first-of-type{padding-top:24px}
+  .ch-cap{font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px}
+  .chapter h2{font-size:25px;font-weight:700;letter-spacing:.005em;margin-bottom:10px}
+  .ch-lead{color:var(--muted);font-size:16px;margin-bottom:8px}
+
+  .chapter h3{font-size:17px;font-weight:600;color:var(--ink);margin:44px 0 12px;letter-spacing:.01em}
+  .chapter p{margin-bottom:15px;color:#333b44}
+  .chapter ul,.chapter ol{margin:0 0 16px 22px}
+  .chapter li{margin-bottom:6px;color:#333b44}
+  .chapter li::marker{color:var(--faint)}
+  code{font-family:var(--mono);font-size:.82em;background:var(--line);padding:2px 6px;border-radius:4px;color:#374151;letter-spacing:0}
+  mark{background:#FFE9A8;padding:0 3px;border-radius:2px}
+  a.ext{color:var(--accent);font-weight:500;border-bottom:1px solid var(--accent-soft);transition:border-color .12s}
+  a.ext:hover{border-color:var(--accent)}
+
+  .callout{border-left:3px solid var(--line2);background:#F7F8FA;padding:13px 16px;border-radius:0 8px 8px 0;margin:6px 0 18px;font-size:15px;color:var(--muted)}
+  .callout.warn{border-color:var(--accent);background:var(--accent-soft);color:#9a2218}
+  .callout b{color:inherit;font-weight:600}
+
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:6px 0 18px}
+  .card{border:1px solid var(--line2);border-radius:10px;padding:15px 16px}
+  .card h4{font-size:15px;font-weight:600;margin-bottom:5px;display:flex;align-items:center;gap:8px}
+  .card .pill{font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;padding:2px 7px;border-radius:20px;background:#EEF0F3;color:var(--muted)}
+  .card .pill.adv{background:var(--accent-soft);color:var(--accent)}
+  .card p{font-size:14px;color:var(--muted);margin:0}
+
+  .tree{font-family:var(--mono);font-size:12.5px;background:#F7F8FA;border:1px solid var(--line2);border-radius:8px;padding:15px 16px;margin:6px 0 18px;color:#374151;line-height:1.95;white-space:pre;letter-spacing:0}
+
+  .figure{
+    margin:20px 0 8px;border:1px solid var(--line2);border-radius:10px;background:#E7EAEE;
+    aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;
+    color:var(--faint);font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+  }
+
+  /* ---------- Floating chapter rail ---------- */
+  .rail{position:sticky;top:40px;align-self:start;max-height:calc(100vh - 80px);overflow-y:auto;padding:6px 4px 0 0}
+  .rail-group{margin-bottom:16px}
+  .rail-group .grp{font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--faint);margin-bottom:5px}
+  .rail-link{display:block;font-size:14px;color:var(--muted);padding:5px 0 5px 12px;border-left:2px solid var(--line2);cursor:pointer;transition:color .12s,border-color .12s}
+  .rail-link:hover{color:var(--ink)}
+  .rail-link.active{color:var(--accent);border-color:var(--accent);font-weight:600}
+
+  /* ---------- Responsive ---------- */
+  @media(max-width:760px){
+    .wrap{grid-template-columns:1fr;gap:0;padding:20px 14px 60px}
+    .rail{display:none}
+    .content{padding:30px 20px 40px}
+    .doc-title{font-size:24px}
+    .cards,.dl-grid{grid-template-columns:1fr}
+  }
+  @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ================= CONTENT (left, stacked) ================= -->
+  <main class="content">
+    <div class="doc-head">
+      <div class="doc-title">Step by step guide for the set up of the autofox app</div>
+      <div class="dl-sub">iOS &amp; Android App</div>
+      <div class="dl-grid">
+        <div class="dl-col">
+          <a class="badge" href="https://apps.apple.com/ch/app/autofox-ai/id1563750787" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="#fff" d="M16.365 1.43c0 1.14-.494 2.27-1.178 3.08-.735.9-1.93 1.6-3.1 1.5-.14-1.13.41-2.32 1.05-3.05.72-.85 2-1.49 3.06-1.53.02.03.17 0 .17 0zM20.93 17.14c-.03.07-.46 1.58-1.52 3.12-.92 1.34-1.88 2.67-3.39 2.7-1.48.03-1.96-.88-3.65-.88-1.69 0-2.22.85-3.62.91-1.45.06-2.56-1.45-3.49-2.78-1.9-2.75-3.35-7.78-1.4-11.17.97-1.69 2.7-2.76 4.58-2.79 1.43-.03 2.78.96 3.65.96.87 0 2.51-1.19 4.23-1.01.72.03 2.74.29 4.04 2.19-.1.07-2.41 1.41-2.39 4.2.03 3.34 2.92 4.45 2.95 4.46z"/></svg>
+            <span class="b-txt"><span class="b-top">Download on the</span><span class="b-main">App Store</span></span>
+          </a>
+          <a class="dl-url" href="https://apps.apple.com/ch/app/autofox-ai/id1563750787" target="_blank" rel="noopener">apps.apple.com/ch/app/autofox-ai</a>
+          <div class="qr" id="qr-ios"></div>
+          <div class="qr-label">Scan for iOS</div>
+        </div>
+        <div class="dl-col">
+          <a class="badge" href="https://play.google.com/store/apps/details?id=com.autofox.ai&hl=de_CH" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><defs><linearGradient id="gp" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#00C3FF"/><stop offset=".4" stop-color="#00E676"/><stop offset=".7" stop-color="#FFD600"/><stop offset="1" stop-color="#FF3D00"/></linearGradient></defs><path fill="url(#gp)" d="M3 2.3v19.4c0 .5.54.82.98.56l16.3-9.7c.46-.27.46-.94 0-1.21L3.98 1.74A.65.65 0 0 0 3 2.3z"/></svg>
+            <span class="b-txt"><span class="b-top">Get it on</span><span class="b-main">Google Play</span></span>
+          </a>
+          <a class="dl-url" href="https://play.google.com/store/apps/details?id=com.autofox.ai&hl=de_CH" target="_blank" rel="noopener">play.google.com/store/apps/details?id=com.autofox.ai</a>
+          <div class="qr" id="qr-android"></div>
+          <div class="qr-label">Scan for Android</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="doc"></div>
+  </main>
+
+  <!-- ================= FLOATING CHAPTER RAIL (right) ================= -->
+  <aside class="rail"><div id="rail"></div></aside>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+/* =================================================================
+   CONTENT
+   Each entry = a chapter { id, group, title, steps, lead, sections }.
+   sections = [{ id, title, html }]. Append a chapter and the document
+   plus the floating rail rebuild themselves.
+   ================================================================= */
+const CHAPTERS = [
+  /* ---------------- App (EN) ---------------- */
+  {
+    id:"setup", group:"Getting started", title:"App setup", steps:"Steps 1–2",
+    lead:"Install the app and sign in with your token.",
+    sections:[
+      { id:"download", title:"Download the app", html:`
+        <p>Download the autofox app from the App Store or Google Play — use the badges and QR codes at the top of this page.</p>`},
+      { id:"token", title:"Enter your token", html:`
+        <p>Open the app and enter the token you received by email under <b>Account Settings → Enter Token</b>, then tap <b>Login</b>.</p>
+        <div class="callout">The token is valid for multiple users in your organisation and can be shared accordingly.</div>
+        <p>Trouble accessing your account? Contact <a class="ext" href="mailto:hello@autofox.ai">hello@autofox.ai</a>.</p>`}
+    ]
+  },
+  {
+    id:"capture", group:"Getting started", title:"Capture a vehicle", steps:"Steps 3–4",
+    lead:"Create the vehicle record, then photograph it with on-screen guidance.",
+    sections:[
+      { id:"new-vehicle", title:"Create the vehicle", html:`
+        <p>Tap the red <b>+</b> button at the bottom of the screen. Then either <b>scan the VIN</b>, or enter the make, model and internal stock number manually.</p>`},
+      { id:"photos", title:"Take the photos", html:`
+        <p>Hold your smartphone straight and use the visual navigation to line up each shot. When you see the message that everything is perfectly aligned, save the photo.</p>
+        <p>After <b>5–20 seconds</b>, the AI cuts the vehicle automatically. Repeat until every required perspective has been photographed.</p>
+        <div class="callout">You can repeat the process for any perspective that doesn't fit.</div>`}
+    ]
+  },
+  {
+    id:"editing", group:"App features", title:"Editing photos", steps:"Steps 5–6",
+    lead:"Re-cut backgrounds and force a shot from an awkward angle.",
+    sections:[
+      { id:"crop-again", title:"Crop again / change background", html:`
+        <p>You can refresh or change the existing background at any time:</p>
+        <ol>
+          <li><b>Home</b> → tap the vehicle photo</li>
+          <li>Tap the <b>three-dot</b> button (top right) → <b>Cut Again</b></li>
+          <li>Select a background → <b>Next</b> → <b>Done</b></li>
+        </ol>`},
+      { id:"force", title:"Force photography", html:`
+        <p>Hold the shutter button for <b>3–4 seconds</b> to capture a photo even at an unusual angle. This lets you take images however you like, outside the guided perspectives.</p>`}
+    ]
+  },
+  {
+    id:"crm", group:"CRM & downloads", title:"CRM & downloads", steps:"Steps 7–8",
+    lead:"Log in to the web CRM to retrieve finished images.",
+    sections:[
+      { id:"login", title:"Log in to the CRM", html:`
+        <p>Open <a class="ext" href="https://crm.autofox.ai" target="_blank" rel="noopener">crm.autofox.ai</a> and log in with the token from your email. From there you can download images and publish them on online platforms.</p>`},
+      { id:"download-img", title:"Download images", html:`
+        <p>Use the <b>Download all</b> button to save every captured view of a vehicle locally in a single click.</p>`}
+    ]
+  },
+  {
+    id:"webupload", group:"Web upload", title:"Web upload (optional)", steps:"Step 9",
+    lead:"An alternative to the app — submit DSLR images through the CRM.",
+    sections:[
+      { id:"overview", title:"Two upload methods", html:`
+        <p>If you prefer shooting with a DSLR instead of a smartphone, you can submit all your images through the autofox CRM. There are two methods:</p>
+        <div class="cards">
+          <div class="card"><h4>Web Upload <span class="pill">Easy</span></h4><p>Upload one image set for a single vehicle. You keep full control over the image order.</p></div>
+          <div class="card"><h4>Zip Upload <span class="pill adv">Advanced</span></h4><p>Upload several vehicle sets in one ZIP file. Best for bulk uploads, but it needs more preparation upfront.</p></div>
+        </div>`},
+      { id:"steps", title:"Web upload — step by step", html:`
+        <ol>
+          <li>Enter a valid <b>VIN / Name</b></li>
+          <li>Select your <b>background</b></li>
+          <li>Upload your images in the correct <b>image order</b></li>
+          <li>Check the images and swap any that landed in the wrong slot</li>
+          <li><b>Apply &amp; Finish</b></li>
+        </ol>`},
+      { id:"zip", title:"Zip upload", html:`
+        <p>Zip Upload lets you submit images from multiple vehicles at once in a single ZIP file. For ZIP uploads, a manual retouch within four hours cannot be guaranteed.</p>
+        <div class="callout warn"><b>Important:</b> use only alphanumeric characters (A–Z, 0–9) for the <code>&lt;VIN&gt;</code> name.</div>`}
+    ]
+  },
+  {
+    id:"files", group:"Web upload", title:"Files & storage", steps:"Steps 10–12",
+    lead:"Locate, extract and organise your downloaded files.",
+    sections:[
+      { id:"localize", title:"Locate the ZIP file", html:`
+        <p>A ZIP folder is generated that you can unpack locally on your computer, e.g. <code>WF0FXXWPMHMR36973-images.zip</code>.</p>`},
+      { id:"extract", title:"Extract the ZIP folder", html:`
+        <p>Extract the folder to see all vehicle images. The extracted content is stored in the same folder as the ZIP file.</p>
+        <p>Files follow this naming pattern:</p>
+        <div class="tree">&lt;Name&gt;.zip
+  &lt;VIN1&gt;_01.jpg
+  &lt;VIN1&gt;_02.jpg
+  &lt;VIN2&gt;_01.jpg
+  &lt;VIN2&gt;_02.jpg
+  &lt;VIN3&gt;_01.jpg</div>`},
+      { id:"clean", title:"Keep storage clean", html:`
+        <p>Maintain a uniform, clean folder structure so vehicle sets stay easy to find.</p>`}
+    ]
+  },
+  /* ---------------- Inserate Manager (DE) — erweiterter Teil ---------------- */
+  {
+    id:"im-platforms", group:"Inserate Manager · Einrichtung", title:"Online-Plattformen einrichten", steps:"Einrichtung · 1",
+    lead:"Richten Sie die gewünschten Online-Plattformen ein, bevor Sie Fahrzeuge erfassen.",
+    sections:[
+      { id:"im-config", title:"Einmalige Konfiguration", html:`
+        <div class="callout">Zum Inserieren wird der Inserate Manager nicht zwingend benötigt — Ihre Bilder können Sie auch direkt auf <a class="ext" href="https://crm.autofox.ai" target="_blank" rel="noopener">crm.autofox.ai</a> herunterladen.</div>
+        <p>Öffnen Sie <b>Einstellungen → Online-Plattformen</b>. Hier verwalten Sie alle Verbindungen zu den Online-Plattformen (sofern ein Insertions-Vertrag mit der jeweiligen Plattform besteht).</p>`},
+      { id:"im-export", title:"Datenexport zu", html:`
+        <p>Gesamtübersicht aller verfügbaren Online-Plattformen. Sie wählen genau eine Plattform als Standard — jederzeit anpassbar.</p>`},
+      { id:"im-credentials", title:"Zugangsdaten", html:`
+        <p><b>autolina.ch</b> hat eine direkte Schnittstelle zur Datenbank — Sie geben nur die Zugangsdaten ein.</p>
+        <p><b>carcloud.ch</b> verbindet autofox mit den Plattformen <b>AutoScout24</b> und <b>CarforYou</b>.</p>
+        <div class="callout warn"><b>Autoscout:</b> [IN ARBEIT – Release geplant für Oktober 2022]</div>
+        <p>Falls Sie Ihre „Auto-I-Nummer" nicht kennen, hilft autofox beim Herausfinden oder Generieren einer neuen Nummer.</p>`},
+      { id:"im-interface", title:"Schnittstellen aktivieren", html:`
+        <div class="callout warn"><b>Wichtig:</b> Erst wenn die Schnittstelle aktiviert ist, können Daten über carcloud.ch an die Online-Börse geliefert werden.</div>
+        <p><b>Autoscout:</b> Senden Sie eine E-Mail an <a class="ext" href="mailto:info@autoscout24.ch">info@autoscout24.ch</a> mit Ihren vollständigen Angaben (Garagen-Name, Auto-i-dat-Nummer), um die Verbindung zwischen CarCloud und AutoScout24 herzustellen.</p>
+        <p><b>Car4You:</b> Kontaktieren Sie die Support-Abteilung telefonisch und teilen Sie Ihre Auto-i-Nummer mit, damit die auto-i-dat-Schnittstelle aktiviert wird.</p>`}
+    ]
+  },
+  {
+    id:"im-carcloud", group:"Inserate Manager · Einrichtung", title:"CarCloud einrichten", steps:"Einrichtung · 2",
+    lead:"Konto bei CarCloud registrieren und die Plattform-Logins hinterlegen.",
+    sections:[
+      { id:"im-register", title:"Registrierung", html:`
+        <p>Registrieren unter <a class="ext" href="https://www.carcloud.ch/Account/Register" target="_blank" rel="noopener">carcloud.ch/Account/Register</a>:</p>
+        <ol>
+          <li>Formular vollständig ausfüllen und auf <b>Registrieren</b> klicken.</li>
+          <li>Sie werden zu <b>Konto verwalten</b> weitergeleitet.</li>
+          <li>Restliche Felder ausfüllen und einreichen.</li>
+          <li>Über den Link unten links können Sie Ihr Konto löschen.</li>
+          <li>Auf <b>Fahrzeugplattformen</b> klicken.</li>
+          <li>Login-Daten aller bereitgestellten Online-Plattformen hinterlegen.</li>
+        </ol>`},
+      { id:"im-platforms-login", title:"Fahrzeug-Plattformen", html:`
+        <p>Als neuer Benutzer erhalten Sie eine persönliche, sechsstellige <b>Benutzer-Nr.</b> Die <b>auto-i Kunden-Nr.</b> tragen Sie im zweiten Feld ein.</p>
+        <p>Sind alle Login-Daten eingegeben, ist das Setup abgeschlossen. Geben Sie die Login-Daten anschliessend in der autofox App ein — und schon können Sie inserieren.</p>`}
+    ]
+  },
+  {
+    id:"im-overview", group:"Inserate Manager · Inserieren", title:"Überblick & Start", steps:"Inserieren · 1–3",
+    lead:"Wo Sie den Inserate Manager finden und was Sie dort sehen.",
+    sections:[
+      { id:"im-about", title:"Allgemeines", html:`
+        <p>Der Inserate Manager wurde entwickelt, damit Sie in einer App mehr als nur Fahrzeuge freistellen können: Er unterstützt auch das Inserieren auf verschiedenen Plattformen.</p>`},
+      { id:"im-start", title:"Start", html:`
+        <p>Den Inserate Manager finden Sie im Hauptmenü in der Toolbar — zwischen <b>Bilder</b> und <b>Einstellungen</b>.</p>`},
+      { id:"im-list", title:"Meine Inserate", html:`
+        <p>Beim ersten Öffnen ist die Liste leer, da noch keine Inserate aufgeschaltet wurden. Die wichtigsten Infos sind direkt aufgelistet:</p>
+        <ul>
+          <li><b>Online-Status</b> — zeigt, ob das Inserat aktiv ist.</li>
+          <li><b>Bearbeiten</b> — führt Sie erneut durch den Manager; alle Angaben lassen sich anpassen.</li>
+          <li><b>Fotos</b> — zugewiesene Fotos ansehen und ändern.</li>
+          <li><b>+</b> — neues Inserat erstellen.</li>
+        </ul>`}
+    ]
+  },
+  {
+    id:"im-create", group:"Inserate Manager · Inserieren", title:"Inserat erstellen", steps:"Inserieren · 4–6",
+    lead:"Fahrzeug erfassen, Typ wählen und die Eckdaten ergänzen.",
+    sections:[
+      { id:"im-three-ways", title:"Drei Wege, ein Ziel", html:`
+        <p>Sie erfassen ein Fahrzeug auf drei Arten:</p>
+        <ul>
+          <li><b>Fahrzeugausweis</b> — fotografieren oder die nötigen Infos hochladen.</li>
+          <li><b>Typengenehmigung / Marke &amp; Modell</b> — siehe unten.</li>
+          <li><b>Fahrgestellnummer (VIN)</b> — VIN des Fahrzeugs angeben.</li>
+        </ul>
+        <div class="callout warn"><b>Vollständig manuelles Inserieren:</b> [IN ARBEIT – Release geplant für Oktober 2022]. Für Fahrzeuge, die nicht automatisiert erfasst werden können, können Sie bald alle Angaben selbst eintippen.</div>
+        <p><b>VIN-Abfrage</b> ist nur für folgende Marken möglich: Abarth, Alfa Romeo, Audi, BMW, Cadillac, Chevrolet, Citroën, Dacia, Fiat, Ford, Lancia, Mercedes-Benz, Mini, Nissan, Opel, Peugeot, Porsche, Seat, Skoda, Smart, Volkswagen, Volvo.</p>
+        <p><b>Typengenehmigung:</b> Code im ersten Feld eingeben, dann Inverkehrsetzung sowie Monat und Jahr angeben.</p>
+        <p><b>Marke &amp; Modell:</b> Marke und Modell angeben. Beachten Sie, dass die Marke einen offiziellen Schweizer Importeur haben muss.</p>`},
+      { id:"im-type", title:"Fahrzeug-Typ", html:`
+        <p>Da ein Fahrzeug viele Unterkategorien hat, wählen Sie das passende Modell. Zur Orientierung werden neben dem Namen folgende Daten angezeigt:</p>
+        <ul><li>PS</li><li>Türen</li><li>Getriebeart</li><li>Treibstoff</li></ul>`},
+      { id:"im-details", title:"Letzte Angaben", html:`
+        <p>Zum Schluss ergänzen Sie drei Angaben:</p>
+        <ul>
+          <li><b>Kilometerstand</b> — hilft Kundinnen und Kunden bei der Kaufentscheidung.</li>
+          <li><b>Preis</b> — je nach Zustand des Fahrzeugs.</li>
+          <li><b>Farbe</b> — sollte der Farbe des fotografierten Fahrzeugs entsprechen.</li>
+        </ul>`}
+    ]
+  },
+  {
+    id:"im-publish", group:"Inserate Manager · Inserieren", title:"Veröffentlichen", steps:"Inserieren · 7–8",
+    lead:"Fotos zuweisen und das Inserat aufschalten.",
+    sections:[
+      { id:"im-photos", title:"Fotos zuweisen", html:`
+        <p>Verknüpfen Sie das Inserat mit den passenden Fotos:</p>
+        <ol><li>Feld antippen</li><li>Foto-Set auswählen</li><li>mit <b>Fotos zuweisen</b> bestätigen</li></ol>`},
+      { id:"im-activate", title:"Inserat aktivieren & Status", html:`
+        <p>Geben Sie einmalig an, auf welcher Plattform das Inserat aufgeschaltet wird. Verfügbar sind:</p>
+        <ul><li>AutoScout24</li><li>Autolina</li><li>CarforYou</li></ul>
+        <p>Danach werden Sie zur Übersicht weitergeleitet und das Inserat ist erstellt.</p>
+        <p><b>Autolina (LiveLink):</b> Aufschaltung in 2–5 Minuten. Im Status-Fenster erscheint zusätzlich ein blauer Button zum aktiven Inserat.</p>
+        <p><b>CarCloud (AutoScout24 &amp; CarforYou):</b> Import und Aufschaltung über die Schnittstelle dauern bis zu 30 Minuten.</p>
+        <p><b>Inserat aktualisieren:</b> Nach einer Änderung im Inserate Manager das Häkchen im Status-Fenster entfernen und auf <b>Aktualisieren</b> tippen.</p>`}
+    ]
+  },
+
+  /* ---------------- Help (EN) — zuletzt ---------------- */
+  {
+    id:"troubleshooting", group:"Help", title:"Troubleshooting", steps:"Step 13",
+    lead:"When images don't reach the server.",
+    sections:[
+      { id:"not-on-server", title:"Images are not on the server", html:`
+        <ol>
+          <li>Open the app and let it run for <b>5–10 minutes</b>.</li>
+          <li>If some images start submitting, the app is working normally.</li>
+          <li>If nothing submits, follow the steps below.</li>
+        </ol>`},
+      { id:"not-uploaded", title:"Images are not uploaded for editing", html:`
+        <ul>
+          <li>Restart the autofox app</li>
+          <li>Move to a location with a more stable connection</li>
+          <li>Update the autofox app</li>
+          <li>Switch between Wi-Fi and mobile data</li>
+          <li>Restart your phone</li>
+        </ul>`}
+    ]
+  },
+  {
+    id:"browser", group:"Help", title:"Browsers & photo tips", steps:"Step 14",
+    lead:"Recommended browsers and how to get clean vehicle images.",
+    sections:[
+      { id:"browsers", title:"Recommended browsers", html:`
+        <p>For smooth use of the platform we recommend <b>Google Chrome</b> or <b>Mozilla Firefox</b>. Set your browser to prompt you for the location every time you save a file.</p>
+        <ul>
+          <li><b>Chrome:</b> open Settings and search for <code>download</code></li>
+          <li><b>Firefox:</b> open Settings and search for <code>save</code></li>
+        </ul>`},
+      { id:"tips", title:"Tips for perfect images", html:`
+        <ol>
+          <li><b>Good lighting</b> is essential — it's at the heart of good vehicle images.</li>
+          <li>If a result isn't satisfactory, simply <b>re-shoot</b> that view.</li>
+          <li>Hold your phone at the level of the vehicle's <b>window line</b>.</li>
+        </ol>
+        <div class="callout">Keep the camera level with the window line. Both spirit-level bubbles must be centred — vertically and horizontally — before you shoot. At a half or three-quarter angle, three wheels should always be visible.</div>`},
+      { id:"video", title:"Intro video", html:`
+        <p>Short introductory video: <a class="ext" href="https://autofox.ai/video" target="_blank" rel="noopener">autofox.ai/video</a></p>`}
+    ]
+  }
+];
+
+/* =================================================================
+   RENDER
+   ================================================================= */
+const docEl=document.getElementById("doc");
+const railEl=document.getElementById("rail");
+
+let docHtml="", lastGroup=null;
+CHAPTERS.forEach(c=>{
+  if(c.group!==lastGroup){ docHtml+=`<div class="group-label">${c.group}</div>`; lastGroup=c.group; }
+  let inner=`<div class="ch-cap">${c.steps}</div><h2>${c.title}</h2><p class="ch-lead">${c.lead}</p>`;
+  c.sections.forEach(s=>{ inner+=`<h3 id="${s.id}">${s.title}</h3>${s.html}<div class="figure">Grafik</div>`; });
+  docHtml+=`<section class="chapter" id="${c.id}">${inner}</section>`;
+});
+docEl.innerHTML=docHtml;
+
+let railHtml=""; lastGroup=null;
+CHAPTERS.forEach(c=>{
+  if(c.group!==lastGroup){
+    if(lastGroup!==null) railHtml+=`</div>`;
+    railHtml+=`<div class="rail-group"><div class="grp">${c.group}</div>`;
+    lastGroup=c.group;
+  }
+  railHtml+=`<a class="rail-link" data-target="${c.id}">${c.title}</a>`;
+});
+railHtml+=`</div>`;
+railEl.innerHTML=railHtml;
+
+const links=[...railEl.querySelectorAll(".rail-link")];
+links.forEach(l=>l.addEventListener("click",()=>{
+  const el=document.getElementById(l.dataset.target);
+  if(el) el.scrollIntoView({behavior:"smooth",block:"start"});
+}));
+
+const spy=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{ if(e.isIntersecting){
+    links.forEach(l=>l.classList.toggle("active",l.dataset.target===e.target.id));
+  }});
+},{rootMargin:"-12% 0px -78% 0px"});
+CHAPTERS.forEach(c=>{ const el=document.getElementById(c.id); if(el) spy.observe(el); });
+
+/* QR codes for the store links */
+function makeQR(id,url){
+  const el=document.getElementById(id); if(!el||typeof QRCode==="undefined") return;
+  new QRCode(el,{text:url,width:108,height:108,colorDark:"#1F2328",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M});
+}
+makeQR("qr-ios","https://apps.apple.com/ch/app/autofox-ai/id1563750787");
+makeQR("qr-android","https://play.google.com/store/apps/details?id=com.autofox.ai&hl=de_CH");
+</script>
+</body>
+</html>
