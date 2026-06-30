@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,114 +9,124 @@
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root{
-    --page:#EDEFF1;
-    --card:#FFFFFF;
-    --ink:#1F2328;
-    --muted:#566069;
-    --faint:#97A0A8;
-    --line:#EEF0F3;
-    --line2:#E1E5EA;
-    --accent:#E1342A;       /* autofox red */
-    --accent-soft:#FCEAE8;
-    --radius:14px;
-    --mono:"JetBrains Mono",ui-monospace,monospace;
+    --page:#EDEFF1;--card:#FFFFFF;--ink:#1F2328;--muted:#566069;--faint:#97A0A8;
+    --line:#EEF0F3;--line2:#E1E5EA;--accent:#E1342A;--accent-soft:#FCEAE8;
+    --radius:14px;--mono:"JetBrains Mono",ui-monospace,monospace;
     --sans:"Rajdhani","Inter",-apple-system,system-ui,sans-serif;
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  html{scroll-behavior:smooth}
-  body{
-    font-family:var(--sans);background:var(--page);color:var(--ink);
-    line-height:1.55;letter-spacing:.005em;font-size:16.5px;-webkit-font-smoothing:antialiased;
-  }
+  html,body{height:100%}
+  body{font-family:var(--sans);background:var(--page);color:var(--ink);line-height:1.55;letter-spacing:.005em;font-size:16.5px;-webkit-font-smoothing:antialiased;overflow:hidden}
   a{color:inherit;text-decoration:none}
 
-  .wrap{
-    max-width:1160px;margin:0 auto;padding:40px 28px 96px;
-    display:grid;grid-template-columns:minmax(0,1fr) 200px;gap:36px;align-items:start;
-  }
+  .wrap{height:100vh;max-width:1160px;margin:0 auto;padding:24px 28px;display:grid;grid-template-columns:minmax(0,1fr) 210px;gap:32px;align-items:stretch}
 
-  /* ---------- Content card ---------- */
-  .content{
+  /* ---------- Viewer = scroll-snap container ---------- */
+  .viewer{
+    height:100%;overflow-y:auto;overflow-x:hidden;
+    scroll-snap-type:y mandatory;overscroll-behavior:contain;
     background:var(--card);border:1px solid var(--line2);border-radius:var(--radius);
-    padding:48px 56px 60px;box-shadow:0 1px 2px rgba(20,30,45,.04);
+    box-shadow:0 1px 2px rgba(20,30,45,.04);scrollbar-width:thin;
   }
+  .viewer::-webkit-scrollbar{width:8px}
+  .viewer::-webkit-scrollbar-thumb{background:var(--line2);border-radius:8px}
 
-  /* ---------- Intro ---------- */
-  .doc-head{border-bottom:2px solid var(--ink);padding-bottom:34px;margin-bottom:8px}
-  .doc-title{font-size:30px;font-weight:700;text-transform:uppercase;letter-spacing:.015em;line-height:1.1;margin-bottom:22px}
-  .dl-sub{font-family:var(--mono);font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.16em;color:var(--faint);margin-bottom:18px}
-
-  .dl-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px}
-  .dl-col{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;
-    border:1px solid var(--line2);border-radius:12px;padding:22px 18px;background:#FbFcFd}
-  .badge{display:inline-flex;align-items:center;gap:11px;background:#1A1A1A;color:#fff;border-radius:11px;padding:9px 18px;min-width:188px;justify-content:center;transition:transform .12s}
-  .badge:hover{transform:translateY(-1px)}
-  .badge svg{flex:none}
-  .b-txt{display:flex;flex-direction:column;align-items:flex-start;line-height:1.05}
-  .b-top{font-family:var(--sans);font-size:9.5px;text-transform:uppercase;letter-spacing:.08em;opacity:.85}
-  .b-main{font-size:19px;font-weight:600;letter-spacing:.01em}
-  .dl-url{font-family:var(--mono);font-size:11.5px;color:var(--accent);word-break:break-all;border-bottom:1px solid var(--accent-soft)}
-  .dl-url:hover{border-color:var(--accent)}
-  .qr{width:128px;height:128px;background:#fff;border:1px solid var(--line2);border-radius:10px;padding:9px;display:flex;align-items:center;justify-content:center}
-  .qr img,.qr canvas{display:block;width:108px;height:108px}
-  .qr-label{font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--faint)}
-
-  /* ---------- Groups & chapters ---------- */
-  .group-label{
-    font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.16em;
-    color:var(--faint);margin:84px 0 6px;padding-top:30px;border-top:1px solid var(--line);
+  .panel{
+    min-height:100%;scroll-snap-align:start;scroll-snap-stop:always;
+    display:flex;flex-direction:column;justify-content:center;
+    padding:54px 56px;position:relative;
   }
-  .group-label:first-of-type{border-top:none;padding-top:0;margin-top:14px}
+  .panel-inner{width:100%;max-width:720px;margin:0 auto}
+  .panel-kicker{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.14em;color:var(--accent);margin-bottom:12px}
+  .panel-title{font-size:30px;font-weight:700;letter-spacing:.005em;line-height:1.12;margin-bottom:20px}
 
-  .chapter{scroll-margin-top:28px;padding-top:48px}
-  .chapter:first-of-type{padding-top:24px}
-  .ch-cap{font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px}
-  .chapter h2{font-size:25px;font-weight:700;letter-spacing:.005em;margin-bottom:10px}
-  .ch-lead{color:var(--muted);font-size:16px;margin-bottom:8px}
-
-  .chapter h3{font-size:17px;font-weight:600;color:var(--ink);margin:44px 0 12px;letter-spacing:.01em}
-  .chapter p{margin-bottom:15px;color:#333b44}
-  .chapter ul,.chapter ol{margin:0 0 16px 22px}
-  .chapter li{margin-bottom:6px;color:#333b44}
-  .chapter li::marker{color:var(--faint)}
+  /* content typography */
+  .panel p{margin-bottom:15px;color:#333b44}
+  .panel ul,.panel ol{margin:0 0 16px 22px}
+  .panel li{margin-bottom:6px;color:#333b44}
+  .panel li::marker{color:var(--faint)}
   code{font-family:var(--mono);font-size:.82em;background:var(--line);padding:2px 6px;border-radius:4px;color:#374151;letter-spacing:0}
   mark{background:#FFE9A8;padding:0 3px;border-radius:2px}
   a.ext{color:var(--accent);font-weight:500;border-bottom:1px solid var(--accent-soft);transition:border-color .12s}
   a.ext:hover{border-color:var(--accent)}
 
-  .callout{border-left:3px solid var(--line2);background:#F7F8FA;padding:13px 16px;border-radius:0 8px 8px 0;margin:6px 0 18px;font-size:15px;color:var(--muted)}
+  .callout{border-left:3px solid var(--line2);background:#F7F8FA;padding:13px 16px;border-radius:0 8px 8px 0;margin:6px 0 16px;font-size:15px;color:var(--muted)}
   .callout.warn{border-color:var(--accent);background:var(--accent-soft);color:#9a2218}
   .callout b{color:inherit;font-weight:600}
 
-  .cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:6px 0 18px}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:6px 0 16px}
   .card{border:1px solid var(--line2);border-radius:10px;padding:15px 16px}
   .card h4{font-size:15px;font-weight:600;margin-bottom:5px;display:flex;align-items:center;gap:8px}
   .card .pill{font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;padding:2px 7px;border-radius:20px;background:#EEF0F3;color:var(--muted)}
   .card .pill.adv{background:var(--accent-soft);color:var(--accent)}
   .card p{font-size:14px;color:var(--muted);margin:0}
 
-  .tree{font-family:var(--mono);font-size:12.5px;background:#F7F8FA;border:1px solid var(--line2);border-radius:8px;padding:15px 16px;margin:6px 0 18px;color:#374151;line-height:1.95;white-space:pre;letter-spacing:0}
+  .tree{font-family:var(--mono);font-size:12.5px;background:#F7F8FA;border:1px solid var(--line2);border-radius:8px;padding:15px 16px;margin:6px 0 16px;color:#374151;line-height:1.95;white-space:pre;letter-spacing:0}
+  .figure{margin:18px 0 4px;border:1px solid var(--line2);border-radius:10px;background:#E7EAEE;aspect-ratio:16/9;width:100%;max-height:38vh;display:flex;align-items:center;justify-content:center;color:var(--faint);font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+  .todo{border:1px dashed var(--line2);border-radius:8px;padding:12px 15px;color:var(--faint);font-size:14.5px;margin:6px 0 4px}
 
-  .figure{
-    margin:20px 0 8px;border:1px solid var(--line2);border-radius:10px;background:#E7EAEE;
-    aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;
-    color:var(--faint);font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;
-  }
+  .redirect{display:inline-flex;align-items:center;gap:7px;background:#fff;border:1px solid var(--accent);color:var(--accent);border-radius:8px;padding:9px 18px;font-family:var(--sans);font-size:16px;font-weight:600;letter-spacing:.01em;cursor:pointer;transition:background .12s,color .12s}
+  .redirect:hover{background:var(--accent);color:#fff}
 
-  /* ---------- Floating chapter rail ---------- */
-  .rail{position:sticky;top:40px;align-self:start;max-height:calc(100vh - 80px);overflow-y:auto;padding:6px 4px 0 0}
+  .cform{display:flex;flex-direction:column;gap:9px;max-width:460px;margin:8px 0 4px}
+  .cform label{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+  .cform input,.cform textarea{font-family:var(--sans);font-size:15.5px;padding:9px 12px;border:1px solid var(--line2);border-radius:8px;background:#fff;color:var(--ink);outline:none;transition:border-color .12s,box-shadow .12s}
+  .cform input:focus,.cform textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  .cform textarea{min-height:84px;resize:vertical}
+  .cbtn{align-self:flex-start;margin-top:4px;background:var(--accent);color:#fff;border:none;border-radius:8px;padding:9px 22px;font-family:var(--sans);font-size:15.5px;font-weight:600;letter-spacing:.01em;cursor:pointer;transition:filter .12s}
+  .cbtn:hover{filter:brightness(1.06)}
+  .cform-card{background:var(--accent-soft);border:1px solid #F2C9C5;border-left:3px solid var(--accent);border-radius:12px;padding:18px 20px 20px;margin:8px 0 4px}
+  .cform-card>p:first-child{margin-top:0}
+  .providers{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 6px}
+  .providers span{font-size:13.5px;background:#fff;border:1px solid var(--line2);border-radius:20px;padding:5px 13px;color:#333b44}
+  .dim{color:var(--faint);font-size:14px}
+
+  /* intro panel header */
+  .intro-head{border-bottom:2px solid var(--ink);padding-bottom:20px;margin-bottom:22px}
+  .doc-title{font-size:30px;font-weight:700;text-transform:uppercase;letter-spacing:.015em;line-height:1.1;margin-bottom:16px}
+  .dl-sub{font-family:var(--mono);font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.16em;color:var(--faint)}
+  .dl-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+  .dl-col{display:flex;flex-direction:column;align-items:center;gap:11px;text-align:center;border:1px solid var(--line2);border-radius:12px;padding:20px 18px;background:#FbFcFd}
+  .badge{display:inline-block;width:172px;border-radius:8px;transition:transform .12s}
+  .badge:hover{transform:translateY(-1px)}
+  .store-badge{display:block;width:100%;height:auto}
+  .dl-url{font-family:var(--mono);font-size:11.5px;color:var(--accent);word-break:break-all;border-bottom:1px solid var(--accent-soft)}
+  .dl-url:hover{border-color:var(--accent)}
+  .qr{width:120px;height:120px;background:#fff;border:1px solid var(--line2);border-radius:10px;padding:8px;display:flex;align-items:center;justify-content:center}
+  .qr img,.qr canvas{display:block;width:104px;height:104px}
+  .qr-label{font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--faint)}
+
+  /* next-section affordance */
+  .panel-next{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);width:36px;height:36px;border-radius:50%;border:1px solid var(--line2);background:#fff;color:var(--muted);display:grid;place-items:center;cursor:pointer;transition:color .12s,border-color .12s}
+  .panel-next:hover{color:var(--accent);border-color:var(--accent)}
+  .panel-next svg{width:18px;height:18px}
+  #doc .panel:last-child .panel-next{display:none}
+
+  /* progress pill */
+  .progress{position:fixed;top:14px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--muted);background:rgba(255,255,255,.82);backdrop-filter:blur(6px);padding:5px 13px;border-radius:20px;border:1px solid var(--line2);z-index:30;pointer-events:none}
+
+  /* ---------- Rail ---------- */
+  .rail{height:100%;overflow-y:auto;padding:6px 4px 0 0;scrollbar-width:thin}
   .rail-group{margin-bottom:16px}
   .rail-group .grp{font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--faint);margin-bottom:5px}
-  .rail-link{display:block;font-size:14px;color:var(--muted);padding:5px 0 5px 12px;border-left:2px solid var(--line2);cursor:pointer;transition:color .12s,border-color .12s}
+  .rail-item{display:flex;align-items:stretch;gap:4px}
+  .rail-link{flex:1;min-width:0;display:block;font-size:14px;color:var(--muted);padding:5px 0 5px 12px;border-left:2px solid var(--line2);cursor:pointer;transition:color .12s,border-color .12s}
   .rail-link:hover{color:var(--ink)}
   .rail-link.active{color:var(--accent);border-color:var(--accent);font-weight:600}
+  .rail-copy{flex:none;border:none;background:none;padding:2px;margin:2px 0;display:grid;place-items:center;color:var(--faint);cursor:pointer;opacity:.5;border-radius:5px;transition:opacity .12s,color .12s,background .12s}
+  .rail-copy:hover{opacity:1;color:var(--accent);background:var(--accent-soft)}
+  .rail-copy svg{width:13px;height:13px;display:block}
 
-  /* ---------- Responsive ---------- */
+  /* toast */
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(14px);background:var(--ink);color:#fff;font-size:13px;letter-spacing:.01em;padding:9px 16px;border-radius:9px;box-shadow:0 6px 20px rgba(20,30,45,.22);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:60;max-width:80vw}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
   @media(max-width:760px){
-    .wrap{grid-template-columns:1fr;gap:0;padding:20px 14px 60px}
+    .wrap{grid-template-columns:1fr;gap:0;padding:0}
     .rail{display:none}
-    .content{padding:30px 20px 40px}
-    .doc-title{font-size:24px}
+    .viewer{border-radius:0;border:none}
+    .panel{padding:64px 22px 56px}
+    .doc-title,.panel-title{font-size:23px}
     .cards,.dl-grid{grid-template-columns:1fr}
   }
   @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
@@ -124,333 +134,426 @@
 </head>
 <body>
 <div class="wrap">
-
-  <!-- ================= CONTENT (left, stacked) ================= -->
-  <main class="content">
-    <div class="doc-head">
-      <div class="doc-title">Step by step guide for the set up of the autofox app</div>
-      <div class="dl-sub">iOS &amp; Android App</div>
-      <div class="dl-grid">
-        <div class="dl-col">
-          <a class="badge" href="https://apps.apple.com/ch/app/autofox-ai/id1563750787" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="#fff" d="M16.365 1.43c0 1.14-.494 2.27-1.178 3.08-.735.9-1.93 1.6-3.1 1.5-.14-1.13.41-2.32 1.05-3.05.72-.85 2-1.49 3.06-1.53.02.03.17 0 .17 0zM20.93 17.14c-.03.07-.46 1.58-1.52 3.12-.92 1.34-1.88 2.67-3.39 2.7-1.48.03-1.96-.88-3.65-.88-1.69 0-2.22.85-3.62.91-1.45.06-2.56-1.45-3.49-2.78-1.9-2.75-3.35-7.78-1.4-11.17.97-1.69 2.7-2.76 4.58-2.79 1.43-.03 2.78.96 3.65.96.87 0 2.51-1.19 4.23-1.01.72.03 2.74.29 4.04 2.19-.1.07-2.41 1.41-2.39 4.2.03 3.34 2.92 4.45 2.95 4.46z"/></svg>
-            <span class="b-txt"><span class="b-top">Download on the</span><span class="b-main">App Store</span></span>
-          </a>
-          <a class="dl-url" href="https://apps.apple.com/ch/app/autofox-ai/id1563750787" target="_blank" rel="noopener">apps.apple.com/ch/app/autofox-ai</a>
-          <div class="qr" id="qr-ios"></div>
-          <div class="qr-label">Scan for iOS</div>
+  <main class="viewer" id="viewer">
+    <!-- intro panel -->
+    <section class="panel" id="__intro" data-chapter="__intro">
+      <div class="panel-inner">
+        <div class="intro-head">
+          <div class="doc-title">Step by step guide for the set up of the autofox app</div>
+          <div class="dl-sub">iOS &amp; Android App</div>
         </div>
-        <div class="dl-col">
-          <a class="badge" href="https://play.google.com/store/apps/details?id=com.autofox.ai&hl=de_CH" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><defs><linearGradient id="gp" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#00C3FF"/><stop offset=".4" stop-color="#00E676"/><stop offset=".7" stop-color="#FFD600"/><stop offset="1" stop-color="#FF3D00"/></linearGradient></defs><path fill="url(#gp)" d="M3 2.3v19.4c0 .5.54.82.98.56l16.3-9.7c.46-.27.46-.94 0-1.21L3.98 1.74A.65.65 0 0 0 3 2.3z"/></svg>
-            <span class="b-txt"><span class="b-top">Get it on</span><span class="b-main">Google Play</span></span>
-          </a>
-          <a class="dl-url" href="https://play.google.com/store/apps/details?id=com.autofox.ai&hl=de_CH" target="_blank" rel="noopener">play.google.com/store/apps/details?id=com.autofox.ai</a>
-          <div class="qr" id="qr-android"></div>
-          <div class="qr-label">Scan for Android</div>
+        <div class="dl-grid">
+          <div class="dl-col">
+            <a class="badge" href="https://apps.apple.com/ch/app/autofox-ai/id1563750787" target="_blank" rel="noopener" aria-label="Download on the App Store">
+              <svg class="store-badge" viewBox="0 0 135 40" xmlns="http://www.w3.org/2000/svg" role="img">
+                <rect x=".5" y=".5" width="134" height="39" rx="6.5" fill="#000" stroke="#A6A6A6"/>
+                <path transform="translate(12,9.6) scale(.78)" fill="#fff" d="M16.365 1.43c0 1.14-.494 2.27-1.178 3.08-.735.9-1.93 1.6-3.1 1.5-.14-1.13.41-2.32 1.05-3.05.72-.85 2-1.49 3.06-1.53.02.03.17 0 .17 0zM20.93 17.14c-.03.07-.46 1.58-1.52 3.12-.92 1.34-1.88 2.67-3.39 2.7-1.48.03-1.96-.88-3.65-.88-1.69 0-2.22.85-3.62.91-1.45.06-2.56-1.45-3.49-2.78-1.9-2.75-3.35-7.78-1.4-11.17.97-1.69 2.7-2.76 4.58-2.79 1.43-.03 2.78.96 3.65.96.87 0 2.51-1.19 4.23-1.01.72.03 2.74.29 4.04 2.19-.1.07-2.41 1.41-2.39 4.2.03 3.34 2.92 4.45 2.95 4.46z"/>
+                <text x="40" y="16" fill="#fff" font-family="-apple-system,Helvetica,Arial,sans-serif" font-size="6.6" letter-spacing=".4">Download on the</text>
+                <text x="39.5" y="30.5" fill="#fff" font-family="-apple-system,Helvetica,Arial,sans-serif" font-size="16.5" font-weight="500">App Store</text>
+              </svg>
+            </a>
+            <a class="dl-url" href="https://apps.apple.com/ch/app/autofox-ai/id1563750787" target="_blank" rel="noopener">apps.apple.com/ch/app/autofox-ai</a>
+            <div class="qr" id="qr-ios"></div>
+            <div class="qr-label">Scan for iOS</div>
+          </div>
+          <div class="dl-col">
+            <a class="badge" href="https://play.google.com/store/apps/details?id=com.autofox.ai&hl=de_CH" target="_blank" rel="noopener" aria-label="Get it on Google Play">
+              <svg class="store-badge" viewBox="0 0 135 40" xmlns="http://www.w3.org/2000/svg" role="img">
+                <rect x=".5" y=".5" width="134" height="39" rx="6.5" fill="#000" stroke="#A6A6A6"/>
+                <g transform="translate(12,10) scale(.82)">
+                  <polygon points="4,3.5 4,12 10.5,12" fill="#00C3FF"/>
+                  <polygon points="4,12 4,20.5 10.5,12" fill="#FF424B"/>
+                  <polygon points="4,20.5 20,12 10.5,12" fill="#00E676"/>
+                  <polygon points="20,12 4,3.5 10.5,12" fill="#FFD500"/>
+                </g>
+                <text x="40" y="15" fill="#fff" font-family="Roboto,Arial,sans-serif" font-size="6.4" letter-spacing="1">GET IT ON</text>
+                <text x="39.5" y="31" fill="#fff" font-family="Roboto,Arial,sans-serif" font-size="15" font-weight="500">Google Play</text>
+              </svg>
+            </a>
+            <a class="dl-url" href="https://play.google.com/store/apps/details?id=com.autofox.ai&hl=de_CH" target="_blank" rel="noopener">play.google.com/store/apps/details?id=com.autofox.ai</a>
+            <div class="qr" id="qr-android"></div>
+            <div class="qr-label">Scan for Android</div>
+          </div>
         </div>
       </div>
-    </div>
-
+      <button class="panel-next" aria-label="Weiter"></button>
+    </section>
     <div id="doc"></div>
   </main>
-
-  <!-- ================= FLOATING CHAPTER RAIL (right) ================= -->
   <aside class="rail"><div id="rail"></div></aside>
 </div>
+
+<div class="progress" id="progress"></div>
+<div class="toast" id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
 /* =================================================================
-   CONTENT
-   Each entry = a chapter { id, group, title, steps, lead, sections }.
-   sections = [{ id, title, html }]. Append a chapter and the document
-   plus the floating rail rebuild themselves.
+   CONTENT  ·  chapter { id, group, title, steps, lead, sections }
+   section { id, title, html, noFig? }
    ================================================================= */
 const CHAPTERS = [
-  /* ---------------- App (EN) ---------------- */
+  /* ---------- Getting Started ---------- */
   {
-    id:"setup", group:"Getting started", title:"App setup", steps:"Steps 1–2",
-    lead:"Install the app and sign in with your token.",
+    id:"login", group:"Getting Started", title:"Wie melde ich mich an",
     sections:[
-      { id:"download", title:"Download the app", html:`
-        <p>Download the autofox app from the App Store or Google Play — use the badges and QR codes at the top of this page.</p>`},
-      { id:"token", title:"Enter your token", html:`
-        <p>Open the app and enter the token you received by email under <b>Account Settings → Enter Token</b>, then tap <b>Login</b>.</p>
-        <div class="callout">The token is valid for multiple users in your organisation and can be shared accordingly.</div>
-        <p>Trouble accessing your account? Contact <a class="ext" href="mailto:hello@autofox.ai">hello@autofox.ai</a>.</p>`}
+      { id:"login-app", title:"App", html:`
+        <p>Öffnen Sie die App und geben Sie unter <b>Account Settings → Enter Token</b> den Token ein, den Sie per E-Mail erhalten haben. Tippen Sie anschliessend auf <b>Login</b>.</p>
+        <div class="callout">Der Token gilt für mehrere Benutzer Ihrer Organisation und kann entsprechend geteilt werden.</div>
+        <p>Probleme beim Zugriff? Schreiben Sie an <a class="ext" href="mailto:hello@autofox.ai">hello@autofox.ai</a>.</p>`},
+      { id:"login-crm", title:"CRM", html:`
+        <p>Öffnen Sie <a class="ext" href="https://crm.autofox.ai" target="_blank" rel="noopener">crm.autofox.ai</a> und melden Sie sich mit dem Token aus Ihrer E-Mail an. Dort laden Sie Bilder herunter und veröffentlichen sie auf Online-Plattformen.</p>`}
+    ]
+  },
+
+  /* ---------- App ---------- */
+  {
+    id:"app-ui", group:"App", title:"User Interface",
+    sections:[
+      { id:"app-ui-overview", title:"Übersicht", html:`
+        <p>Inhalt folgt.</p>
+        <div class="todo">Erklärung der App-Oberfläche: Toolbar (Bilder, Inserate, Einstellungen), Guthaben-Anzeige, Fahrzeugliste und Aufnahme-Ansicht.</div>`}
     ]
   },
   {
-    id:"capture", group:"Getting started", title:"Capture a vehicle", steps:"Steps 3–4",
-    lead:"Create the vehicle record, then photograph it with on-screen guidance.",
+    id:"app-photo", group:"App", title:"Wie fotografiere ich",
     sections:[
-      { id:"new-vehicle", title:"Create the vehicle", html:`
-        <p>Tap the red <b>+</b> button at the bottom of the screen. Then either <b>scan the VIN</b>, or enter the make, model and internal stock number manually.</p>`},
-      { id:"photos", title:"Take the photos", html:`
-        <p>Hold your smartphone straight and use the visual navigation to line up each shot. When you see the message that everything is perfectly aligned, save the photo.</p>
-        <p>After <b>5–20 seconds</b>, the AI cuts the vehicle automatically. Repeat until every required perspective has been photographed.</p>
-        <div class="callout">You can repeat the process for any perspective that doesn't fit.</div>`}
+      { id:"app-capture", title:"Fahrzeug erfassen", html:`
+        <p>Tippen Sie unten auf den roten <b>+</b>-Button. Scannen Sie dann die <b>VIN</b> oder geben Sie Marke, Modell und interne Bestandsnummer manuell ein.</p>`},
+      { id:"app-shoot", title:"Fotos aufnehmen", html:`
+        <p>Halten Sie das Smartphone gerade und richten Sie jede Aufnahme mit der visuellen Navigation aus. Sobald die Meldung erscheint, dass alles perfekt ausgerichtet ist, speichern Sie das Foto.</p>
+        <p>Nach <b>5–20 Sekunden</b> stellt die KI das Fahrzeug automatisch frei. Wiederholen Sie dies, bis alle vorgegebenen Perspektiven aufgenommen sind.</p>
+        <div class="callout">Passt eine Perspektive nicht, können Sie sie einfach erneut aufnehmen.</div>`},
+      { id:"app-force", title:"Force-Fotografie", html:`
+        <p>Halten Sie den Auslöser <b>3–4 Sekunden</b> gedrückt, um auch aus einem ungewöhnlichen Winkel ein Foto aufzunehmen — so machen Sie Bilder ausserhalb der geführten Perspektiven.</p>`},
+      { id:"app-bg", title:"Hintergrund neu zuschneiden", html:`
+        <p>Sie können den Hintergrund jederzeit neu freistellen oder ändern:</p>
+        <ol><li><b>Home</b> → Fahrzeugfoto antippen</li><li><b>Drei-Punkte-Menü</b> (oben rechts) → <b>Cut Again</b></li><li>Hintergrund wählen → <b>Next</b> → <b>Done</b></li></ol>`},
+      { id:"app-tips", title:"Tipps für gute Bilder", html:`
+        <ol><li><b>Gutes Licht</b> ist das A und O guter Fahrzeugbilder.</li><li>Ist ein Ergebnis nicht zufriedenstellend, nehmen Sie die Ansicht einfach neu auf.</li><li>Halten Sie das Telefon auf Höhe der <b>Fensterlinie</b> des Fahrzeugs.</li></ol>
+        <div class="callout">Kamera waagrecht zur Fensterlinie halten. Beide Wasserwaagen-Blasen müssen vor der Aufnahme zentriert sein — vertikal wie horizontal. Bei Halb- oder Dreiviertelansicht sollten immer drei Räder sichtbar sein.</div>`}
     ]
   },
   {
-    id:"editing", group:"App features", title:"Editing photos", steps:"Steps 5–6",
-    lead:"Re-cut backgrounds and force a shot from an awkward angle.",
+    id:"app-photoorder", group:"App", title:"Fotoreihenfolge anpassen",
     sections:[
-      { id:"crop-again", title:"Crop again / change background", html:`
-        <p>You can refresh or change the existing background at any time:</p>
-        <ol>
-          <li><b>Home</b> → tap the vehicle photo</li>
-          <li>Tap the <b>three-dot</b> button (top right) → <b>Cut Again</b></li>
-          <li>Select a background → <b>Next</b> → <b>Done</b></li>
-        </ol>`},
-      { id:"force", title:"Force photography", html:`
-        <p>Hold the shutter button for <b>3–4 seconds</b> to capture a photo even at an unusual angle. This lets you take images however you like, outside the guided perspectives.</p>`}
+      { id:"app-photoorder-guide", title:"Fotoguide", html:`
+        <p>Inhalt folgt.</p>
+        <div class="todo">Fotoguide für die App: in welcher Reihenfolge die Perspektiven aufgenommen werden und wie sich die Reihenfolge nachträglich ändern lässt.</div>`}
     ]
   },
   {
-    id:"crm", group:"CRM & downloads", title:"CRM & downloads", steps:"Steps 7–8",
-    lead:"Log in to the web CRM to retrieve finished images.",
+    id:"im", group:"App", title:"Inserate Manager",
     sections:[
-      { id:"login", title:"Log in to the CRM", html:`
-        <p>Open <a class="ext" href="https://crm.autofox.ai" target="_blank" rel="noopener">crm.autofox.ai</a> and log in with the token from your email. From there you can download images and publish them on online platforms.</p>`},
-      { id:"download-img", title:"Download images", html:`
-        <p>Use the <b>Download all</b> button to save every captured view of a vehicle locally in a single click.</p>`}
+      { id:"im-config", title:"Online-Plattformen einrichten", html:`
+        <div class="callout">Zum Inserieren wird der Inserate Manager nicht zwingend benötigt — Ihre Bilder können Sie auch direkt auf <a class="ext" href="https://crm.autofox.ai" target="_blank" rel="noopener">crm.autofox.ai</a> herunterladen.</div>
+        <p>Öffnen Sie <b>Einstellungen → Online-Plattformen</b>. Hier verwalten Sie alle Verbindungen (sofern ein Insertions-Vertrag besteht).</p>
+        <p><b>Datenexport zu:</b> Gesamtübersicht aller verfügbaren Plattformen. Sie wählen genau eine als Standard — jederzeit anpassbar.</p>`},
+      { id:"im-credentials", title:"Zugangsdaten & Schnittstellen", html:`
+        <p><b>autolina.ch</b> hat eine direkte Schnittstelle zur Datenbank — Sie geben nur die Zugangsdaten ein. <b>carcloud.ch</b> verbindet autofox mit <b>AutoScout24</b> und <b>CarforYou</b>.</p>
+        <div class="callout warn"><b>Wichtig:</b> Erst wenn die Schnittstelle aktiviert ist, können Daten über carcloud.ch an die Online-Börse geliefert werden.</div>
+        <p><b>Autoscout:</b> E-Mail an <a class="ext" href="mailto:info@autoscout24.ch">info@autoscout24.ch</a> mit vollständigen Angaben (Garagen-Name, Auto-i-dat-Nummer). <b>Car4You:</b> Support telefonisch kontaktieren und Auto-i-Nummer mitteilen.</p>`},
+      { id:"im-carcloud", title:"CarCloud einrichten", html:`
+        <p>Registrieren unter <a class="ext" href="https://www.carcloud.ch/Account/Register" target="_blank" rel="noopener">carcloud.ch/Account/Register</a>:</p>
+        <ol><li>Formular ausfüllen und auf <b>Registrieren</b> klicken.</li><li>Weiterleitung zu <b>Konto verwalten</b>.</li><li>Restliche Felder ausfüllen und einreichen.</li><li>Auf <b>Fahrzeugplattformen</b> klicken.</li><li>Login-Daten aller Plattformen hinterlegen.</li></ol>
+        <p>Als neuer Benutzer erhalten Sie eine sechsstellige <b>Benutzer-Nr.</b>; die <b>auto-i Kunden-Nr.</b> tragen Sie im zweiten Feld ein. Danach die Login-Daten in der App eingeben — fertig.</p>`},
+      { id:"im-start", title:"Überblick & Start", html:`
+        <p>Der Inserate Manager unterstützt das Inserieren auf verschiedenen Plattformen — direkt aus der App. Sie finden ihn im Hauptmenü in der Toolbar zwischen <b>Bilder</b> und <b>Einstellungen</b>.</p>`},
+      { id:"im-list", title:"Meine Inserate", html:`
+        <p>Beim ersten Öffnen ist die Liste leer. Die wichtigsten Infos je Inserat:</p>
+        <ul><li><b>Online-Status</b> — zeigt, ob das Inserat aktiv ist.</li><li><b>Bearbeiten</b> — führt erneut durch den Manager.</li><li><b>Fotos</b> — zugewiesene Fotos ansehen/ändern.</li><li><b>+</b> — neues Inserat erstellen.</li></ul>`},
+      { id:"im-create", title:"Inserat erstellen", html:`
+        <p>Sie erfassen ein Fahrzeug auf drei Arten: <b>Fahrzeugausweis</b> (fotografieren/hochladen), <b>Typengenehmigung / Marke &amp; Modell</b> oder <b>Fahrgestellnummer (VIN)</b>.</p>
+        <div class="callout warn"><b>Vollständig manuelles Inserieren:</b> [IN ARBEIT – Release geplant für Oktober 2022].</div>
+        <p><b>VIN-Abfrage</b> nur für: Abarth, Alfa Romeo, Audi, BMW, Cadillac, Chevrolet, Citroën, Dacia, Fiat, Ford, Lancia, Mercedes-Benz, Mini, Nissan, Opel, Peugeot, Porsche, Seat, Skoda, Smart, Volkswagen, Volvo.</p>
+        <p><b>Typengenehmigung:</b> Code eingeben, dann Inverkehrsetzung sowie Monat und Jahr. <b>Marke &amp; Modell:</b> Marke muss einen offiziellen Schweizer Importeur haben.</p>`},
+      { id:"im-type", title:"Fahrzeug-Typ & letzte Angaben", html:`
+        <p>Wählen Sie das passende Modell. Zur Orientierung werden angezeigt: PS, Türen, Getriebeart, Treibstoff.</p>
+        <p>Zum Schluss ergänzen Sie: <b>Kilometerstand</b>, <b>Preis</b> und <b>Farbe</b> (passend zum fotografierten Fahrzeug).</p>`},
+      { id:"im-photos", title:"Fotos zuweisen", html:`
+        <p>Inserat mit den passenden Fotos verknüpfen:</p>
+        <ol><li>Feld antippen</li><li>Foto-Set auswählen</li><li>mit <b>Fotos zuweisen</b> bestätigen</li></ol>`},
+      { id:"im-activate", title:"Inserat aktivieren & Status", html:`
+        <p>Plattform wählen: AutoScout24, Autolina oder CarforYou.</p>
+        <p><b>Autolina (LiveLink):</b> 2–5 Minuten; im Status-Fenster erscheint ein blauer Button zum Inserat. <b>CarCloud (AutoScout24 &amp; CarforYou):</b> bis 30 Minuten.</p>
+        <p><b>Inserat aktualisieren:</b> Häkchen im Status-Fenster entfernen und auf <b>Aktualisieren</b> tippen.</p>`}
+    ]
+  },
+
+  /* ---------- CRM ---------- */
+  {
+    id:"crm-dashboard", group:"CRM", title:"Dashboard",
+    sections:[
+      { id:"crm-dashboard-overview", title:"Übersicht", html:`
+        <p>Inhalt folgt.</p>
+        <div class="todo">Überblick über das Dashboard (Armaturenbrett): wichtigste Kennzahlen und Einstiegspunkte.</div>`}
     ]
   },
   {
-    id:"webupload", group:"Web upload", title:"Web upload (optional)", steps:"Step 9",
-    lead:"An alternative to the app — submit DSLR images through the CRM.",
+    id:"crm-vehicles", group:"CRM", title:"Meine Fahrzeuge",
     sections:[
-      { id:"overview", title:"Two upload methods", html:`
-        <p>If you prefer shooting with a DSLR instead of a smartphone, you can submit all your images through the autofox CRM. There are two methods:</p>
+      { id:"crm-vehicles-list", title:"Übersicht & Download", html:`
+        <p>Unter <b>Meine Fahrzeuge</b> sehen Sie alle erfassten Fahrzeuge mit Status und Bildern.</p>
+        <p>Mit der Schaltfläche <b>Alle herunterladen</b> speichern Sie alle aufgenommenen Ansichten eines Fahrzeugs mit einem Klick lokal.</p>
+        <div class="todo">Weitere Details zur Fahrzeugverwaltung hier ergänzen.</div>`}
+    ]
+  },
+  {
+    id:"crm-photoorder", group:"CRM", title:"Fotoreihenfolge",
+    sections:[
+      { id:"crm-photoorder-info", title:"Kurzinfo", noFig:true, html:`
+        <p>Die Fotoreihenfolge lässt sich auch im CRM anpassen. Die vollständige Anleitung finden Sie im App-Abschnitt.</p>
+        <button class="redirect" onclick="goToChapter('app-photoorder')">→ Zum Abschnitt „Fotoreihenfolge anpassen"</button>`}
+    ]
+  },
+  {
+    id:"crm-ftp", group:"CRM", title:"FTP Status",
+    sections:[
+      { id:"crm-ftp-status", title:"Status prüfen", html:`
+        <p>Inhalt folgt.</p>
+        <div class="todo">Status der FTP-Übertragungen im CRM (Mein FTP): was die Anzeige bedeutet und wie man fehlgeschlagene Übertragungen erkennt.</div>`}
+    ]
+  },
+
+  /* ---------- Webupload ---------- */
+  {
+    id:"webupload", group:"Webupload", title:"Webupload",
+    sections:[
+      { id:"wu-overview", title:"Zwei Upload-Methoden", html:`
+        <p>Wenn Sie lieber mit einer DSLR statt dem Smartphone fotografieren, reichen Sie Ihre Bilder über das autofox CRM ein. Zwei Methoden:</p>
         <div class="cards">
-          <div class="card"><h4>Web Upload <span class="pill">Easy</span></h4><p>Upload one image set for a single vehicle. You keep full control over the image order.</p></div>
-          <div class="card"><h4>Zip Upload <span class="pill adv">Advanced</span></h4><p>Upload several vehicle sets in one ZIP file. Best for bulk uploads, but it needs more preparation upfront.</p></div>
+          <div class="card"><h4>Web-Upload <span class="pill">Easy</span></h4><p>Ein Bild-Set pro Fahrzeug hochladen. Sie behalten die Kontrolle über die Reihenfolge.</p></div>
+          <div class="card"><h4>ZIP-Upload <span class="pill adv">Advanced</span></h4><p>Mehrere Fahrzeug-Sets in einer ZIP-Datei. Ideal für grosse Mengen, braucht aber Vorbereitung.</p></div>
         </div>`},
-      { id:"steps", title:"Web upload — step by step", html:`
+      { id:"wu-steps", title:"Web-Upload Schritt für Schritt", html:`
         <ol>
-          <li>Enter a valid <b>VIN / Name</b></li>
-          <li>Select your <b>background</b></li>
-          <li>Upload your images in the correct <b>image order</b></li>
-          <li>Check the images and swap any that landed in the wrong slot</li>
-          <li><b>Apply &amp; Finish</b></li>
-        </ol>`},
-      { id:"zip", title:"Zip upload", html:`
-        <p>Zip Upload lets you submit images from multiple vehicles at once in a single ZIP file. For ZIP uploads, a manual retouch within four hours cannot be guaranteed.</p>
-        <div class="callout warn"><b>Important:</b> use only alphanumeric characters (A–Z, 0–9) for the <code>&lt;VIN&gt;</code> name.</div>`}
+          <li>Gültige <b>VIN / Bezeichnung</b> eingeben</li>
+          <li><b>Hintergrund</b> wählen</li>
+          <li>Bilder in der richtigen <b>Reihenfolge</b> hochladen</li>
+          <li>Bilder prüfen und falsch zugeordnete tauschen</li>
+          <li><b>Übernehmen &amp; abschliessen</b></li>
+        </ol>`}
     ]
   },
   {
-    id:"files", group:"Web upload", title:"Files & storage", steps:"Steps 10–12",
-    lead:"Locate, extract and organise your downloaded files.",
+    id:"zipupload", group:"Webupload", title:"ZIP Upload",
     sections:[
-      { id:"localize", title:"Locate the ZIP file", html:`
-        <p>A ZIP folder is generated that you can unpack locally on your computer, e.g. <code>WF0FXXWPMHMR36973-images.zip</code>.</p>`},
-      { id:"extract", title:"Extract the ZIP folder", html:`
-        <p>Extract the folder to see all vehicle images. The extracted content is stored in the same folder as the ZIP file.</p>
-        <p>Files follow this naming pattern:</p>
+      { id:"zu-zip", title:"ZIP-Upload", html:`
+        <p>Mit dem ZIP-Upload reichen Sie Bilder mehrerer Fahrzeuge in einer einzigen ZIP-Datei ein. Bei ZIP-Uploads kann eine manuelle Retusche innerhalb von vier Stunden nicht garantiert werden.</p>
+        <div class="callout warn"><b>Wichtig:</b> für den <code>&lt;VIN&gt;</code>-Namen nur alphanumerische Zeichen (A–Z, 0–9) verwenden.</div>`},
+      { id:"zu-extract", title:"ZIP-Datei entpacken", html:`
+        <p>Entpacken Sie den Ordner, um alle Fahrzeugbilder zu sehen. Der Inhalt liegt anschliessend im selben Ordner wie die ZIP-Datei. Namensschema:</p>
         <div class="tree">&lt;Name&gt;.zip
   &lt;VIN1&gt;_01.jpg
   &lt;VIN1&gt;_02.jpg
   &lt;VIN2&gt;_01.jpg
   &lt;VIN2&gt;_02.jpg
-  &lt;VIN3&gt;_01.jpg</div>`},
-      { id:"clean", title:"Keep storage clean", html:`
-        <p>Maintain a uniform, clean folder structure so vehicle sets stay easy to find.</p>`}
-    ]
-  },
-  /* ---------------- Inserate Manager (DE) — erweiterter Teil ---------------- */
-  {
-    id:"im-platforms", group:"Inserate Manager · Einrichtung", title:"Online-Plattformen einrichten", steps:"Einrichtung · 1",
-    lead:"Richten Sie die gewünschten Online-Plattformen ein, bevor Sie Fahrzeuge erfassen.",
-    sections:[
-      { id:"im-config", title:"Einmalige Konfiguration", html:`
-        <div class="callout">Zum Inserieren wird der Inserate Manager nicht zwingend benötigt — Ihre Bilder können Sie auch direkt auf <a class="ext" href="https://crm.autofox.ai" target="_blank" rel="noopener">crm.autofox.ai</a> herunterladen.</div>
-        <p>Öffnen Sie <b>Einstellungen → Online-Plattformen</b>. Hier verwalten Sie alle Verbindungen zu den Online-Plattformen (sofern ein Insertions-Vertrag mit der jeweiligen Plattform besteht).</p>`},
-      { id:"im-export", title:"Datenexport zu", html:`
-        <p>Gesamtübersicht aller verfügbaren Online-Plattformen. Sie wählen genau eine Plattform als Standard — jederzeit anpassbar.</p>`},
-      { id:"im-credentials", title:"Zugangsdaten", html:`
-        <p><b>autolina.ch</b> hat eine direkte Schnittstelle zur Datenbank — Sie geben nur die Zugangsdaten ein.</p>
-        <p><b>carcloud.ch</b> verbindet autofox mit den Plattformen <b>AutoScout24</b> und <b>CarforYou</b>.</p>
-        <div class="callout warn"><b>Autoscout:</b> [IN ARBEIT – Release geplant für Oktober 2022]</div>
-        <p>Falls Sie Ihre „Auto-I-Nummer" nicht kennen, hilft autofox beim Herausfinden oder Generieren einer neuen Nummer.</p>`},
-      { id:"im-interface", title:"Schnittstellen aktivieren", html:`
-        <div class="callout warn"><b>Wichtig:</b> Erst wenn die Schnittstelle aktiviert ist, können Daten über carcloud.ch an die Online-Börse geliefert werden.</div>
-        <p><b>Autoscout:</b> Senden Sie eine E-Mail an <a class="ext" href="mailto:info@autoscout24.ch">info@autoscout24.ch</a> mit Ihren vollständigen Angaben (Garagen-Name, Auto-i-dat-Nummer), um die Verbindung zwischen CarCloud und AutoScout24 herzustellen.</p>
-        <p><b>Car4You:</b> Kontaktieren Sie die Support-Abteilung telefonisch und teilen Sie Ihre Auto-i-Nummer mit, damit die auto-i-dat-Schnittstelle aktiviert wird.</p>`}
+  &lt;VIN3&gt;_01.jpg</div>`}
     ]
   },
   {
-    id:"im-carcloud", group:"Inserate Manager · Einrichtung", title:"CarCloud einrichten", steps:"Einrichtung · 2",
-    lead:"Konto bei CarCloud registrieren und die Plattform-Logins hinterlegen.",
+    id:"datenablage", group:"Webupload", title:"Datenablage",
     sections:[
-      { id:"im-register", title:"Registrierung", html:`
-        <p>Registrieren unter <a class="ext" href="https://www.carcloud.ch/Account/Register" target="_blank" rel="noopener">carcloud.ch/Account/Register</a>:</p>
-        <ol>
-          <li>Formular vollständig ausfüllen und auf <b>Registrieren</b> klicken.</li>
-          <li>Sie werden zu <b>Konto verwalten</b> weitergeleitet.</li>
-          <li>Restliche Felder ausfüllen und einreichen.</li>
-          <li>Über den Link unten links können Sie Ihr Konto löschen.</li>
-          <li>Auf <b>Fahrzeugplattformen</b> klicken.</li>
-          <li>Login-Daten aller bereitgestellten Online-Plattformen hinterlegen.</li>
-        </ol>`},
-      { id:"im-platforms-login", title:"Fahrzeug-Plattformen", html:`
-        <p>Als neuer Benutzer erhalten Sie eine persönliche, sechsstellige <b>Benutzer-Nr.</b> Die <b>auto-i Kunden-Nr.</b> tragen Sie im zweiten Feld ein.</p>
-        <p>Sind alle Login-Daten eingegeben, ist das Setup abgeschlossen. Geben Sie die Login-Daten anschliessend in der autofox App ein — und schon können Sie inserieren.</p>`}
-    ]
-  },
-  {
-    id:"im-overview", group:"Inserate Manager · Inserieren", title:"Überblick & Start", steps:"Inserieren · 1–3",
-    lead:"Wo Sie den Inserate Manager finden und was Sie dort sehen.",
-    sections:[
-      { id:"im-about", title:"Allgemeines", html:`
-        <p>Der Inserate Manager wurde entwickelt, damit Sie in einer App mehr als nur Fahrzeuge freistellen können: Er unterstützt auch das Inserieren auf verschiedenen Plattformen.</p>`},
-      { id:"im-start", title:"Start", html:`
-        <p>Den Inserate Manager finden Sie im Hauptmenü in der Toolbar — zwischen <b>Bilder</b> und <b>Einstellungen</b>.</p>`},
-      { id:"im-list", title:"Meine Inserate", html:`
-        <p>Beim ersten Öffnen ist die Liste leer, da noch keine Inserate aufgeschaltet wurden. Die wichtigsten Infos sind direkt aufgelistet:</p>
-        <ul>
-          <li><b>Online-Status</b> — zeigt, ob das Inserat aktiv ist.</li>
-          <li><b>Bearbeiten</b> — führt Sie erneut durch den Manager; alle Angaben lassen sich anpassen.</li>
-          <li><b>Fotos</b> — zugewiesene Fotos ansehen und ändern.</li>
-          <li><b>+</b> — neues Inserat erstellen.</li>
-        </ul>`}
-    ]
-  },
-  {
-    id:"im-create", group:"Inserate Manager · Inserieren", title:"Inserat erstellen", steps:"Inserieren · 4–6",
-    lead:"Fahrzeug erfassen, Typ wählen und die Eckdaten ergänzen.",
-    sections:[
-      { id:"im-three-ways", title:"Drei Wege, ein Ziel", html:`
-        <p>Sie erfassen ein Fahrzeug auf drei Arten:</p>
-        <ul>
-          <li><b>Fahrzeugausweis</b> — fotografieren oder die nötigen Infos hochladen.</li>
-          <li><b>Typengenehmigung / Marke &amp; Modell</b> — siehe unten.</li>
-          <li><b>Fahrgestellnummer (VIN)</b> — VIN des Fahrzeugs angeben.</li>
-        </ul>
-        <div class="callout warn"><b>Vollständig manuelles Inserieren:</b> [IN ARBEIT – Release geplant für Oktober 2022]. Für Fahrzeuge, die nicht automatisiert erfasst werden können, können Sie bald alle Angaben selbst eintippen.</div>
-        <p><b>VIN-Abfrage</b> ist nur für folgende Marken möglich: Abarth, Alfa Romeo, Audi, BMW, Cadillac, Chevrolet, Citroën, Dacia, Fiat, Ford, Lancia, Mercedes-Benz, Mini, Nissan, Opel, Peugeot, Porsche, Seat, Skoda, Smart, Volkswagen, Volvo.</p>
-        <p><b>Typengenehmigung:</b> Code im ersten Feld eingeben, dann Inverkehrsetzung sowie Monat und Jahr angeben.</p>
-        <p><b>Marke &amp; Modell:</b> Marke und Modell angeben. Beachten Sie, dass die Marke einen offiziellen Schweizer Importeur haben muss.</p>`},
-      { id:"im-type", title:"Fahrzeug-Typ", html:`
-        <p>Da ein Fahrzeug viele Unterkategorien hat, wählen Sie das passende Modell. Zur Orientierung werden neben dem Namen folgende Daten angezeigt:</p>
-        <ul><li>PS</li><li>Türen</li><li>Getriebeart</li><li>Treibstoff</li></ul>`},
-      { id:"im-details", title:"Letzte Angaben", html:`
-        <p>Zum Schluss ergänzen Sie drei Angaben:</p>
-        <ul>
-          <li><b>Kilometerstand</b> — hilft Kundinnen und Kunden bei der Kaufentscheidung.</li>
-          <li><b>Preis</b> — je nach Zustand des Fahrzeugs.</li>
-          <li><b>Farbe</b> — sollte der Farbe des fotografierten Fahrzeugs entsprechen.</li>
-        </ul>`}
-    ]
-  },
-  {
-    id:"im-publish", group:"Inserate Manager · Inserieren", title:"Veröffentlichen", steps:"Inserieren · 7–8",
-    lead:"Fotos zuweisen und das Inserat aufschalten.",
-    sections:[
-      { id:"im-photos", title:"Fotos zuweisen", html:`
-        <p>Verknüpfen Sie das Inserat mit den passenden Fotos:</p>
-        <ol><li>Feld antippen</li><li>Foto-Set auswählen</li><li>mit <b>Fotos zuweisen</b> bestätigen</li></ol>`},
-      { id:"im-activate", title:"Inserat aktivieren & Status", html:`
-        <p>Geben Sie einmalig an, auf welcher Plattform das Inserat aufgeschaltet wird. Verfügbar sind:</p>
-        <ul><li>AutoScout24</li><li>Autolina</li><li>CarforYou</li></ul>
-        <p>Danach werden Sie zur Übersicht weitergeleitet und das Inserat ist erstellt.</p>
-        <p><b>Autolina (LiveLink):</b> Aufschaltung in 2–5 Minuten. Im Status-Fenster erscheint zusätzlich ein blauer Button zum aktiven Inserat.</p>
-        <p><b>CarCloud (AutoScout24 &amp; CarforYou):</b> Import und Aufschaltung über die Schnittstelle dauern bis zu 30 Minuten.</p>
-        <p><b>Inserat aktualisieren:</b> Nach einer Änderung im Inserate Manager das Häkchen im Status-Fenster entfernen und auf <b>Aktualisieren</b> tippen.</p>`}
+      { id:"da-localize", title:"ZIP-Datei lokalisieren", html:`
+        <p>Es wird eine ZIP-Datei erzeugt, die Sie lokal entpacken können, z. B. <code>WF0FXXWPMHMR36973-images.zip</code>.</p>`},
+      { id:"da-clean", title:"Saubere Ablage", html:`
+        <p>Achten Sie auf eine einheitliche, saubere Ordnerstruktur, damit Fahrzeug-Sets leicht auffindbar bleiben.</p>`}
     ]
   },
 
-  /* ---------------- Help (EN) — zuletzt ---------------- */
+  /* ---------- Master Token ---------- */
   {
-    id:"troubleshooting", group:"Help", title:"Troubleshooting", steps:"Step 13",
-    lead:"When images don't reach the server.",
+    id:"master-token", group:"Master Token", title:"Master Token",
     sections:[
-      { id:"not-on-server", title:"Images are not on the server", html:`
-        <ol>
-          <li>Open the app and let it run for <b>5–10 minutes</b>.</li>
-          <li>If some images start submitting, the app is working normally.</li>
-          <li>If nothing submits, follow the steps below.</li>
-        </ol>`},
-      { id:"not-uploaded", title:"Images are not uploaded for editing", html:`
-        <ul>
-          <li>Restart the autofox app</li>
-          <li>Move to a location with a more stable connection</li>
-          <li>Update the autofox app</li>
-          <li>Switch between Wi-Fi and mobile data</li>
-          <li>Restart your phone</li>
-        </ul>`}
+      { id:"mt-what", title:"Was ist der Master Token", noFig:true, html:`
+        <p>Der Token, den Sie per E-Mail erhalten, ist ein <b>Master Token</b>: Er gilt für mehrere Benutzer Ihrer Organisation und kann in App und CRM geteilt werden.</p>
+        <div class="todo">autofox-spezifische Details zur Verwaltung/Rotation des Master Tokens hier ergänzen.</div>`}
+    ]
+  },
+
+  /* ---------- Help ---------- */
+  {
+    id:"fehlerbehebung", group:"Help", title:"Fehlerbehebung",
+    sections:[
+      { id:"tb-server", title:"Bilder sind nicht auf dem Server", noFig:true, html:`
+        <ol><li>App öffnen und <b>5–10 Minuten</b> laufen lassen.</li><li>Werden einige Bilder übertragen, arbeitet die App normal.</li><li>Wird nichts übertragen, folgen Sie den Schritten unten.</li></ol>`},
+      { id:"tb-upload", title:"Bilder werden nicht hochgeladen", noFig:true, html:`
+        <ul><li>autofox App neu starten</li><li>An einen Ort mit stabilerer Verbindung wechseln</li><li>App aktualisieren</li><li>Zwischen WLAN und mobilen Daten wechseln</li><li>Telefon neu starten</li></ul>`}
     ]
   },
   {
-    id:"browser", group:"Help", title:"Browsers & photo tips", steps:"Step 14",
-    lead:"Recommended browsers and how to get clean vehicle images.",
+    id:"browser", group:"Help", title:"Browser & Video",
     sections:[
-      { id:"browsers", title:"Recommended browsers", html:`
-        <p>For smooth use of the platform we recommend <b>Google Chrome</b> or <b>Mozilla Firefox</b>. Set your browser to prompt you for the location every time you save a file.</p>
-        <ul>
-          <li><b>Chrome:</b> open Settings and search for <code>download</code></li>
-          <li><b>Firefox:</b> open Settings and search for <code>save</code></li>
-        </ul>`},
-      { id:"tips", title:"Tips for perfect images", html:`
-        <ol>
-          <li><b>Good lighting</b> is essential — it's at the heart of good vehicle images.</li>
-          <li>If a result isn't satisfactory, simply <b>re-shoot</b> that view.</li>
-          <li>Hold your phone at the level of the vehicle's <b>window line</b>.</li>
-        </ol>
-        <div class="callout">Keep the camera level with the window line. Both spirit-level bubbles must be centred — vertically and horizontally — before you shoot. At a half or three-quarter angle, three wheels should always be visible.</div>`},
-      { id:"video", title:"Intro video", html:`
-        <p>Short introductory video: <a class="ext" href="https://autofox.ai/video" target="_blank" rel="noopener">autofox.ai/video</a></p>`}
+      { id:"browsers", title:"Empfohlene Browser", html:`
+        <p>Für eine reibungslose Nutzung empfehlen wir <b>Google Chrome</b> oder <b>Mozilla Firefox</b>. Stellen Sie den Browser so ein, dass er bei jedem Download nach dem Speicherort fragt.</p>
+        <ul><li><b>Chrome:</b> in den Einstellungen nach <code>download</code> suchen</li><li><b>Firefox:</b> in den Einstellungen nach <code>save</code> suchen</li></ul>`},
+      { id:"video", title:"Einführungsvideo", noFig:true, html:`
+        <p>Kurzes Einführungsvideo: <a class="ext" href="https://autofox.ai/video" target="_blank" rel="noopener">autofox.ai/video</a></p>`}
+    ]
+  },
+  {
+    id:"ftp", group:"Help", title:"FTP-Einrichtung",
+    sections:[
+      { id:"ftp-what", title:"Erklärung zu FTP", noFig:true, html:`
+        <p>FTP (File Transfer Protocol) ist ein Standard, um Dateien automatisch zwischen zwei Systemen zu übertragen. Im autofox-Kontext: fertige Fahrzeugbilder gehen direkt an Ihr Zielsystem (z. B. Händler-/DMS-System oder eine Online-Plattform) — ohne manuelles Herunter- und wieder Hochladen.</p>`},
+      { id:"ftp-needs", title:"Was wird für eine Anbindung benötigt", html:`
+        <p>Für eine FTP-Anbindung brauchen Sie in der Regel folgende Angaben Ihres Zielsystems:</p>
+        <ul><li><b>Host / Server-Adresse</b> (z. B. <code>ftp.ihre-domain.ch</code>)</li><li><b>Port</b> (Standard 21 für FTP, 22 für SFTP)</li><li><b>Benutzername</b> und <b>Passwort</b></li><li><b>Zielordner / Pfad</b></li><li>optional <b>SFTP/FTPS</b> für verschlüsselte Übertragung</li></ul>
+        <div class="todo">Die konkreten Zugangsdaten erhalten Sie von Ihrem Zielsystem-Anbieter. autofox-spezifische Schritte hier ergänzen.</div>`},
+      { id:"ftp-check", title:"Wie prüfe ich die Übertragung", noFig:true, html:`
+        <ul><li>Nach dem ersten Transfer im Zielordner kontrollieren, ob die Dateien angekommen sind.</li><li>Anzahl und Dateinamen mit den exportierten Bildern vergleichen.</li><li>Zum Testen einen FTP-Client (z. B. FileZilla) verbinden.</li><li>Bei Problemen das Übertragungsprotokoll (Log) prüfen.</li></ul>`},
+      { id:"ftp-dms", title:"Unterstützte DMS-Systeme (FTP)", noFig:true, html:`
+        <p>Über die FTP-Schnittstelle werden u. a. folgende DMS-Systeme unterstützt:</p>
+        <div class="providers"><span>Schwacke</span><span>Canada Budget</span><span>AutoManager</span><span>D2C Media</span><span>Carmacs</span><span>vAuto</span><span>Forthright Auto</span><span>Marine Chrysler</span></div>
+        <p class="dim">… und viele mehr.</p>`}
+    ]
+  },
+  {
+    id:"api", group:"Help", title:"API-Anbindung",
+    sections:[
+      { id:"api-what", title:"Was ist eine API – brauche ich das?", noFig:true, html:`
+        <p>Eine <b>API</b> (Application Programming Interface) erlaubt es zwei Systemen, automatisch Daten auszutauschen — ohne manuelles Hoch- und Herunterladen.</p>
+        <p>Sinnvoll, wenn Sie autofox direkt mit einem bestehenden System verbinden (DMS, Website, Lagerverwaltung) oder grosse Stückzahlen voll automatisiert verarbeiten.</p>
+        <div class="callout">Für die meisten reichen App oder CRM völlig aus. Eine API lohnt sich vor allem bei hohem Volumen oder durchgängig automatisierten Abläufen.</div>`},
+      { id:"api-providers", title:"Verfügbare API-Anbindungen", noFig:true, html:`
+        <p>Aktuell sind u. a. folgende API- und Webhook-Anbindungen verfügbar:</p>
+        <div class="providers"><span>AutoPlay (Webhook)</span><span>Slattery Auctions (Webhook)</span><span>Autorola</span><span>SilverDat</span><span>INSiDE</span><span>Mobile.de</span><span>Emil Frey</span><span>Fastback</span><span>ITKrebs</span><span>Planet VO2</span><span>Maxipublica</span></div>
+        <p class="dim">… und weitere auf Anfrage.</p>`},
+      { id:"api-contact", title:"Kontaktformular", noFig:true, html:`
+        <div class="cform-card">
+        <p>Interesse an einer API-Anbindung? Schreiben Sie uns — wir melden uns mit den nächsten Schritten.</p>
+        <div class="cform">
+          <label for="af-name">Name</label>
+          <input id="af-name" type="text" placeholder="Vor- und Nachname">
+          <label for="af-company">Firma</label>
+          <input id="af-company" type="text" placeholder="Garage / Unternehmen">
+          <label for="af-email">E-Mail</label>
+          <input id="af-email" type="email" placeholder="name@firma.ch">
+          <label for="af-msg">Nachricht</label>
+          <textarea id="af-msg" placeholder="Worum geht es? Welche Systeme sollen verbunden werden?"></textarea>
+          <button class="cbtn" type="button" onclick="afContact()">Anfrage senden</button>
+        </div>
+        </div>`}
     ]
   }
 ];
 
 /* =================================================================
-   RENDER
+   RENDER  ·  one panel per section
    ================================================================= */
+const viewer=document.getElementById("viewer");
 const docEl=document.getElementById("doc");
 const railEl=document.getElementById("rail");
+const progressEl=document.getElementById("progress");
+const toast=document.getElementById("toast");
 
-let docHtml="", lastGroup=null;
+const CHEVRON=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>`;
+const LINK_ICON=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`;
+
+let docHtml="";
 CHAPTERS.forEach(c=>{
-  if(c.group!==lastGroup){ docHtml+=`<div class="group-label">${c.group}</div>`; lastGroup=c.group; }
-  let inner=`<div class="ch-cap">${c.steps}</div><h2>${c.title}</h2><p class="ch-lead">${c.lead}</p>`;
-  c.sections.forEach(s=>{ inner+=`<h3 id="${s.id}">${s.title}</h3>${s.html}<div class="figure">Grafik</div>`; });
-  docHtml+=`<section class="chapter" id="${c.id}">${inner}</section>`;
+  c.sections.forEach(s=>{
+    const fig = s.noFig ? "" : `<div class="figure">Grafik</div>`;
+    docHtml+=`<section class="panel" id="${s.id}" data-chapter="${c.id}">
+      <div class="panel-inner">
+        <div class="panel-kicker">${c.group} · ${c.title}</div>
+        <h2 class="panel-title">${s.title}</h2>
+        ${s.html}${fig}
+      </div>
+      <button class="panel-next" aria-label="Weiter">${CHEVRON}</button>
+    </section>`;
+  });
 });
 docEl.innerHTML=docHtml;
+/* chevron icon for the intro panel's next button */
+document.querySelector("#__intro .panel-next").innerHTML=CHEVRON;
 
-let railHtml=""; lastGroup=null;
+/* floating rail (chapters) */
+let railHtml="", lastGroup=null;
 CHAPTERS.forEach(c=>{
   if(c.group!==lastGroup){
     if(lastGroup!==null) railHtml+=`</div>`;
     railHtml+=`<div class="rail-group"><div class="grp">${c.group}</div>`;
     lastGroup=c.group;
   }
-  railHtml+=`<a class="rail-link" data-target="${c.id}">${c.title}</a>`;
+  railHtml+=`<div class="rail-item"><a class="rail-link" data-target="${c.id}">${c.title}</a><button class="rail-copy" data-target="${c.id}" title="Link kopieren & hierhin springen" aria-label="Link kopieren">${LINK_ICON}</button></div>`;
 });
 railHtml+=`</div>`;
 railEl.innerHTML=railHtml;
 
+/* =================================================================
+   NAVIGATION
+   ================================================================= */
+const panels=[...viewer.querySelectorAll(".panel")];
+const total=panels.length;
 const links=[...railEl.querySelectorAll(".rail-link")];
-links.forEach(l=>l.addEventListener("click",()=>{
-  const el=document.getElementById(l.dataset.target);
-  if(el) el.scrollIntoView({behavior:"smooth",block:"start"});
-}));
+let current=0, toastTimer=null;
 
-const spy=new IntersectionObserver(entries=>{
+function updateProgress(){ progressEl.textContent=String(current+1).padStart(2,"0")+" / "+String(total).padStart(2,"0"); }
+function setActiveChapter(chId){ links.forEach(l=>l.classList.toggle("active",l.dataset.target===chId)); }
+function scrollToPanel(i){ if(i<0||i>=total) return; panels[i].scrollIntoView({behavior:"smooth",block:"start"}); }
+function panelById(id){ return panels.find(p=>p.id===id); }
+function firstPanelOfChapter(chId){ return panels.find(p=>p.dataset.chapter===chId); }
+
+window.goToChapter=function(chId){ const p=firstPanelOfChapter(chId); if(p) p.scrollIntoView({behavior:"smooth",block:"start"}); };
+
+/* rail interactions */
+links.forEach(l=>l.addEventListener("click",()=>goToChapter(l.dataset.target)));
+railEl.querySelectorAll(".rail-copy").forEach(b=>b.addEventListener("click",e=>{ e.stopPropagation(); const id=b.dataset.target; goToChapter(id); copyLink(id); }));
+
+/* next-section chevrons */
+panels.forEach((p,i)=>{ const btn=p.querySelector(".panel-next"); if(btn) btn.addEventListener("click",()=>scrollToPanel(i+1)); });
+
+/* keyboard nav (ignore while typing) */
+document.addEventListener("keydown",e=>{
+  const tag=(e.target.tagName||"").toLowerCase();
+  if(tag==="input"||tag==="textarea") return;
+  if(e.key==="ArrowDown"||e.key==="PageDown"){ e.preventDefault(); scrollToPanel(current+1); }
+  else if(e.key==="ArrowUp"||e.key==="PageUp"){ e.preventDefault(); scrollToPanel(current-1); }
+});
+
+/* observe which panel is centred */
+const io=new IntersectionObserver(entries=>{
   entries.forEach(e=>{ if(e.isIntersecting){
-    links.forEach(l=>l.classList.toggle("active",l.dataset.target===e.target.id));
+    current=panels.indexOf(e.target);
+    updateProgress();
+    setActiveChapter(e.target.dataset.chapter);
   }});
-},{rootMargin:"-12% 0px -78% 0px"});
-CHAPTERS.forEach(c=>{ const el=document.getElementById(c.id); if(el) spy.observe(el); });
+},{root:viewer,rootMargin:"-45% 0px -45% 0px",threshold:0});
+panels.forEach(p=>io.observe(p));
+updateProgress();
 
-/* QR codes for the store links */
-function makeQR(id,url){
-  const el=document.getElementById(id); if(!el||typeof QRCode==="undefined") return;
-  new QRCode(el,{text:url,width:108,height:108,colorDark:"#1F2328",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M});
+/* deep-link: shared section/chapter URL */
+function handleHash(){
+  const raw=(location.hash||"").replace("#",""); if(!raw) return;
+  let p=panelById(raw)||firstPanelOfChapter(raw);
+  if(p) setTimeout(()=>p.scrollIntoView({block:"start"}),60);
 }
+window.addEventListener("hashchange",handleHash);
+setTimeout(handleHash,200);
+
+/* copy deep link */
+function showToast(msg){ toast.textContent=msg; toast.classList.add("show"); clearTimeout(toastTimer); toastTimer=setTimeout(()=>toast.classList.remove("show"),1700); }
+async function copyLink(id){
+  const url=location.href.split("#")[0]+"#"+id;
+  try{ history.replaceState(null,"","#"+id); }catch(e){}
+  let ok=false;
+  try{ await navigator.clipboard.writeText(url); ok=true; }
+  catch(e){ try{ const t=document.createElement("textarea"); t.value=url; t.style.position="fixed"; t.style.opacity="0"; document.body.appendChild(t); t.select(); ok=document.execCommand("copy"); document.body.removeChild(t); }catch(_){} }
+  showToast(ok?"Link kopiert":url);
+}
+
+/* contact form → prefilled email */
+function afContact(){
+  const v=id=>(document.getElementById(id)&&document.getElementById(id).value||"").trim();
+  const name=v("af-name"), firma=v("af-company"), email=v("af-email"), msg=v("af-msg");
+  const subject="API-Anbindung – Anfrage"+(firma?(" ("+firma+")"):"");
+  const body=`Name: ${name}\nFirma: ${firma}\nE-Mail: ${email}\n\n${msg}`;
+  window.location.href="mailto:hello@autofox.ai?subject="+encodeURIComponent(subject)+"&body="+encodeURIComponent(body);
+}
+
+/* QR codes */
+function makeQR(id,url){ const el=document.getElementById(id); if(!el||typeof QRCode==="undefined") return; new QRCode(el,{text:url,width:104,height:104,colorDark:"#1F2328",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M}); }
 makeQR("qr-ios","https://apps.apple.com/ch/app/autofox-ai/id1563750787");
 makeQR("qr-android","https://play.google.com/store/apps/details?id=com.autofox.ai&hl=de_CH");
 </script>
